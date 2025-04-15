@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
           iconTheme: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
               return const IconThemeData(
-                color: const Color(0xFF008080),
+                color: Color(0xFF008080),
               ); // selected icon
             }
             return const IconThemeData(color: Colors.grey); // unselected icon
