@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_frontend/core/widgets/bottom_nav_bar.dart';
-import 'package:mobile_frontend/core/widgets/side_menu.dart';
+import 'package:mobile_frontend/features/consumer/presentation/pages/consumer_market_place.dart';
 
 void main() {
   runApp(const MyApp());
@@ -31,7 +30,7 @@ class MyApp extends StatelessWidget {
                 color: Color(0xFF008080),
               ); // selected label
             }
-            return const TextStyle(color: Colors.grey); // unselected label
+            return const TextStyle(color: Colors.grey);
           }),
           iconTheme: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
@@ -44,34 +43,8 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      initialRoute: '/',
+      routes: {'/': (context) => const ConsumerMarketPlace()},
     );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  _MyHomePageState createState() => _MyHomePageState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        drawer: const SideMenu(),
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text(widget.title),
-        ),
-        body: const Center(
-          child: Text("Hello"),
-        ),
-        bottomNavigationBar: const BottomNavBar());
   }
 }
