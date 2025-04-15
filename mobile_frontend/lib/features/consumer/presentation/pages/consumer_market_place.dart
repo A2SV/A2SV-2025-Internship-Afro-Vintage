@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_frontend/core/widgets/bottom_nav_bar.dart';
 import 'package:mobile_frontend/core/widgets/side_menu.dart';
-import 'package:mobile_frontend/features/consumer/presentation/widgets/common_app_bar.dart';
+import 'package:mobile_frontend/core/widgets/common_app_bar.dart';
 import 'package:mobile_frontend/core/widgets/search_market.dart';
 
 class ConsumerMarketPlace extends StatefulWidget {

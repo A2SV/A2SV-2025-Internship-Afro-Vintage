@@ -19,7 +19,7 @@ class _CommonAppBarState extends State<CommonAppBar> {
       title: Center(
           child: Text(
         widget.title,
-        style: TextStyle(fontWeight: FontWeight.bold),
+        style: const TextStyle(fontWeight: FontWeight.bold),
       )),
       actions: [
         Padding(
