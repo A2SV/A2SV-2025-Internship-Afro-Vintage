@@ -1,5 +1,7 @@
+import React from 'react';
 import type { Preview } from "@storybook/react";
-import "../styles/globals.css";
+import { SessionProvider } from 'next-auth/react';
+import '../app/globals.css';
 
 const preview: Preview = {
   parameters: {
@@ -7,10 +9,29 @@ const preview: Preview = {
     controls: {
       matchers: {
         color: /(background|color)$/i,
-        date: /Date$/i,
+        date: /Date$/,
       },
     },
   },
+  decorators: [
+    (Story, context) => {
+      const mockSession = context.parameters.session || {
+        user: {
+          name: 'John Doe',
+          email: 'john@example.com',
+          image: '/images/avatar.png',
+          role: 'Consumer'
+        },
+        expires: '2024-01-01'
+      };
+
+      return (
+        <SessionProvider session={mockSession}>
+          <Story />
+        </SessionProvider>
+      );
+    },
+  ],
 };
 
 export default preview; 

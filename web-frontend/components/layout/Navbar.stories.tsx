@@ -2,7 +2,28 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { SessionProvider } from 'next-auth/react';
 import Navbar from './Navbar';
 
-const mockSession = {
+const NavbarWithSession = ({ session }: { session: any }) => {
+  return (
+    <SessionProvider session={session}>
+      <div className="min-h-screen">
+        <Navbar />
+      </div>
+    </SessionProvider>
+  );
+};
+
+const meta: Meta<typeof NavbarWithSession> = {
+  title: 'Layout/Navbar',
+  component: NavbarWithSession,
+  parameters: {
+    layout: 'fullscreen',
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof NavbarWithSession>;
+
+const defaultSession = {
   user: {
     name: 'John Doe',
     email: 'john@example.com',
@@ -12,46 +33,25 @@ const mockSession = {
   expires: '2024-01-01'
 };
 
-const meta: Meta<typeof Navbar> = {
-  title: 'Layout/Navbar',
-  component: Navbar,
-  parameters: {
-    layout: 'fullscreen',
-  },
-  decorators: [
-    (Story, context) => {
-      const session = context.parameters.session || mockSession;
-      return (
-        <SessionProvider session={session}>
-          <div className="min-h-screen">
-            <Story />
-          </div>
-        </SessionProvider>
-      );
-    },
-  ],
-};
-
-export default meta;
-type Story = StoryObj<typeof Navbar>;
-
 export const Default: Story = {
-  parameters: {
-    session: mockSession
+  args: {
+    session: defaultSession
   }
 };
 
 export const Loading: Story = {
-  parameters: {
+  args: {
     session: null
   }
 };
 
 export const MobileMenuOpen: Story = {
+  args: {
+    session: defaultSession
+  },
   parameters: {
     viewport: {
-      defaultViewport: 'mobile1',
-    },
-    session: mockSession
+      defaultViewport: 'mobile1'
+    }
   }
 }; 

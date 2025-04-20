@@ -1,23 +1,47 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { SessionProvider } from 'next-auth/react';
 import MarketplacePage from './page';
 
-const meta: Meta<typeof MarketplacePage> = {
-  title: 'Pages/MarketplacePage',
-  component: MarketplacePage,
+const MarketplaceWithSession = ({ session }: { session: any }) => {
+  return (
+    <SessionProvider session={session}>
+      <MarketplacePage />
+    </SessionProvider>
+  );
+};
+
+const meta: Meta<typeof MarketplaceWithSession> = {
+  title: 'Consumer/MarketplacePage',
+  component: MarketplaceWithSession,
   parameters: {
     layout: 'fullscreen',
   },
-  decorators: [
-    (Story) => (
-      <div className="min-h-screen bg-gray-50">
-        <Story />
-      </div>
-    ),
-  ],
 };
 
 export default meta;
-type Story = StoryObj<typeof MarketplacePage>;
+type Story = StoryObj<typeof MarketplaceWithSession>;
+
+const defaultSession = {
+  user: {
+    name: 'John Doe',
+    email: 'john@example.com',
+    image: '/images/avatar.png',
+    role: 'Consumer'
+  },
+  expires: '2024-01-01'
+};
+
+export const Default: Story = {
+  args: {
+    session: defaultSession
+  }
+};
+
+export const Loading: Story = {
+  args: {
+    session: null
+  }
+};
 
 const mockItems = [
   {
@@ -49,7 +73,7 @@ const mockItems = [
   }
 ];
 
-export const Default: Story = {
+export const DefaultStory: Story = {
   parameters: {
     msw: {
       handlers: [
@@ -69,7 +93,7 @@ export const Default: Story = {
   }
 };
 
-export const Loading: Story = {
+export const LoadingStory: Story = {
   parameters: {
     msw: {
       handlers: [
@@ -90,7 +114,7 @@ export const Loading: Story = {
   }
 };
 
-export const Error: Story = {
+export const ErrorStory: Story = {
   parameters: {
     msw: {
       handlers: [
