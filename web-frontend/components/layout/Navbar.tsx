@@ -1,11 +1,15 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Filter } from 'lucide-react';
 import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 
-const Navbar = () => {
+type NavbarProps = {
+  onFilterClick: () => void;
+};
+
+const Navbar = ({ onFilterClick }: NavbarProps) => {
   const { data: session } = useSession();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -26,10 +30,11 @@ const Navbar = () => {
               className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-500 text-sm"
             />
           </div>
-          <button className="ml-2 p-2 border border-gray-200 rounded-lg hover:bg-gray-50">
-            <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" clipRule="evenodd" d="M2 4.75C2 4.33579 2.33579 4 2.75 4H17.25C17.6642 4 18 4.33579 18 4.75C18 5.16421 17.6642 5.5 17.25 5.5H2.75C2.33579 5.5 2 5.16421 2 4.75ZM4 9.75C4 9.33579 4.33579 9 4.75 9H15.25C15.6642 9 16 9.33579 16 9.75C16 10.1642 15.6642 10.5 15.25 10.5H4.75C4.33579 10.5 4 10.1642 4 9.75ZM7 14.75C7 14.3358 7.33579 14 7.75 14H12.25C12.6642 14 13 14.3358 13 14.75C13 15.1642 12.6642 15.5 12.25 15.5H7.75C7.33579 15.5 7 15.1642 7 14.75Z" fill="#374151"/>
-            </svg>
+          <button 
+            onClick={onFilterClick}
+            className="ml-2 p-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+          >
+            <Filter className="w-5 h-5 text-gray-600" />
           </button>
         </div>
 

@@ -1,17 +1,98 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { SessionProvider } from 'next-auth/react';
 import MarketplacePage from './page';
+import { ItemPreview } from '@/types/marketplace';
 
-const MarketplaceWithSession = ({ session }: { session: any }) => {
+// Sample data for stories
+const sampleItems: ItemPreview[] = [
+  {
+    id: '1',
+    title: 'Vintage African Print Dress',
+    price: 129.99,
+    thumbnailUrl: '/images/item-card-image.png',
+    rating: 4.5,
+    description: 'Beautiful handmade dress with traditional African prints',
+    category: 'Clothing',
+    size: 'M',
+    grade: 'Like New'
+  },
+  {
+    id: '2',
+    title: 'Handwoven Basket',
+    price: 49.99,
+    thumbnailUrl: '/images/item-card-image2.png',
+    rating: 4.5,
+    description: 'Traditional handwoven basket perfect for storage or decoration',
+    category: 'Home & Living',
+    size: 'One Size',
+    grade: 'New'
+  },
+  {
+    id: '3',
+    title: 'Beaded Necklace',
+    price: 79.99,
+    thumbnailUrl: '/images/item-card-image.png',
+    rating: 4.5,
+    description: 'Stunning beaded necklace made with authentic African beads',
+    category: 'Jewelry',
+    size: 'One Size',
+    grade: 'Good'
+  },
+  {
+    id: '4',
+    title: 'Wooden Sculpture',
+    price: 199.99,
+    thumbnailUrl: '/images/item-card-image2.png',
+    rating: 4.5,
+    description: 'Hand-carved wooden sculpture representing African heritage',
+    category: 'Art',
+    size: 'One Size',
+    grade: 'Like New'
+  }
+];
+
+const MarketplaceWithSession = ({ 
+  session,
+  initialItems = [],
+  initialLoading = false,
+  initialFilters = {
+    search: '',
+    category: [],
+    size: [],
+    priceRange: {
+      min: 0,
+      max: 1000,
+    },
+    grade: [],
+  }
+}: { 
+  session: any;
+  initialItems?: ItemPreview[];
+  initialLoading?: boolean;
+  initialFilters?: {
+    search: string;
+    category: string[];
+    size: string[];
+    priceRange: {
+      min: number;
+      max: number;
+    };
+    grade: string[];
+  };
+}) => {
   return (
     <SessionProvider session={session}>
-      <MarketplacePage />
+      <MarketplacePage 
+        initialItems={initialItems}
+        initialLoading={initialLoading}
+        initialFilters={initialFilters}
+      />
     </SessionProvider>
   );
 };
 
 const meta: Meta<typeof MarketplaceWithSession> = {
-  title: 'Consumer/MarketplacePage',
+  title: 'Pages/Marketplace',
   component: MarketplaceWithSession,
   parameters: {
     layout: 'fullscreen',
@@ -21,112 +102,78 @@ const meta: Meta<typeof MarketplaceWithSession> = {
 export default meta;
 type Story = StoryObj<typeof MarketplaceWithSession>;
 
-const defaultSession = {
-  user: {
-    name: 'John Doe',
-    email: 'john@example.com',
-    image: '/images/avatar.png',
-    role: 'Consumer'
-  },
-  expires: '2024-01-01'
-};
-
-export const Default: Story = {
+// Default story with items
+export const WithItems: Story = {
   args: {
-    session: defaultSession
-  }
+    session: {
+      user: {
+        name: 'John Doe',
+        email: 'john@example.com',
+        role: 'consumer',
+        image: '/images/avatar.png',
+      },
+    },
+    initialItems: sampleItems,
+    initialLoading: false,
+  },
 };
 
+// Loading state
 export const Loading: Story = {
   args: {
-    session: null
-  }
-};
-
-const mockItems = [
-  {
-    id: '1',
-    title: 'Nike Sportswear Club Fleece',
-    price: 99,
-    thumbnailUrl: 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/3df241d1-ede8-47a5-9434-c72607f0c0b1/sportswear-club-fleece-crew-KflRdQ.png',
-    condition: 'New',
-    rating: 4.8,
-    status: 'available'
+    session: {
+      user: {
+        name: 'John Doe',
+        email: 'john@example.com',
+        role: 'consumer',
+        image: '/images/avatar.png',
+      },
+    },
+    initialItems: [],
+    initialLoading: true,
   },
-  {
-    id: '2',
-    title: 'Trail Running Jacket Nike Windrunner',
-    price: 99,
-    thumbnailUrl: 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/bdf4c1b0-54c0-4c04-b2ba-7c0d29d7a67a/windrunner-jacket-K5Hhrd.png',
-    condition: 'Like New',
-    rating: 4.9,
-    status: 'available'
+};
+
+// No items found state
+export const NoItems: Story = {
+  args: {
+    session: {
+      user: {
+        name: 'John Doe',
+        email: 'john@example.com',
+        role: 'consumer',
+        image: '/images/avatar.png',
+      },
+    },
+    initialItems: [],
+    initialLoading: false,
   },
-  {
-    id: '3',
-    title: 'Nike Sportswear Club Fleece Limited Edition',
-    price: 149,
-    thumbnailUrl: 'https://static.nike.com/a/images/t_PDP_1280_v1/f_auto,q_auto:eco/3df241d1-ede8-47a5-9434-c72607f0c0b1/sportswear-club-fleece-crew-KflRdQ.png',
-    condition: 'New',
-    rating: 5.0,
-    status: 'sold'
-  }
-];
-
-export const DefaultStory: Story = {
-  parameters: {
-    msw: {
-      handlers: [
-        {
-          url: '/api/marketplace/items*',
-          method: 'GET',
-          status: 200,
-          response: {
-            items: mockItems,
-            total: mockItems.length,
-            page: 1,
-            limit: 12
-          }
-        }
-      ]
-    }
-  }
 };
 
-export const LoadingStory: Story = {
-  parameters: {
-    msw: {
-      handlers: [
-        {
-          url: '/api/marketplace/items*',
-          method: 'GET',
-          status: 200,
-          delay: 2000,
-          response: {
-            items: mockItems,
-            total: mockItems.length,
-            page: 1,
-            limit: 12
-          }
-        }
-      ]
-    }
-  }
-};
-
-export const ErrorStory: Story = {
-  parameters: {
-    msw: {
-      handlers: [
-        {
-          url: '/api/marketplace/items*',
-          method: 'GET',
-          status: 500,
-          response: {
-            message: 'Internal Server Error'
-          }
-        }
-      ]
-    }
-  }
+// With filters applied
+export const WithFilters: Story = {
+  args: {
+    session: {
+      user: {
+        name: 'Jake Santiago',
+        email: 'jake@example.com',
+        role: 'Consumer',
+        image: '/images/avatar.png',
+      },
+    },
+    initialItems: sampleItems.filter(item => 
+      item.category === 'Clothing'
+    ),
+    initialLoading: false,
+    initialFilters: {
+      search: '',
+      category: ['#2025', 'Hoodie', 'Men'],
+      size: [],
+      priceRange: {
+        min: 0,
+        max: 1000,
+      },
+      grade: [],
+    },
+  },
 }; 

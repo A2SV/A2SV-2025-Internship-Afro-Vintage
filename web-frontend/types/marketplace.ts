@@ -1,12 +1,14 @@
-export interface ItemPreview {
+export type ItemPreview = {
   id: string;
   title: string;
   price: number;
   thumbnailUrl: string;
-  condition: string;
   rating: number;
-  status: 'available' | 'sold';
-}
+  description: string;
+  category: string;
+  size: string;
+  grade: string;
+};
 
 export interface MarketplaceResponse {
   items: ItemPreview[];
