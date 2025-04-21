@@ -86,6 +86,11 @@ func (m *MockTrustUseCase) UpdateSupplierTrustScoreOnNewRating(ctx context.Conte
 	return args.Error(0)
 }
 
+func (m *MockTrustUseCase) UpdateResellerTrustScoreOnNewRating(ctx context.Context, resellerID string, declaredRating, actualRating float64) error {
+	args := m.Called(ctx, resellerID, declaredRating, actualRating)
+	return args.Error(0)
+}
+
 type MockBundleUseCase struct {
 	mock.Mock
 }

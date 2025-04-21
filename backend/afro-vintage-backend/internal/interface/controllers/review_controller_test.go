@@ -7,15 +7,18 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"errors"
 
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/review"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type MockReviewUsecase struct {
@@ -27,16 +30,39 @@ func (m *MockReviewUsecase) SubmitReview(ctx context.Context, r *review.Review) 
 	return args.Error(0)
 }
 
+type MockTrustUsecase struct {
+	mock.Mock
+}
+
+func (m *MockTrustUsecase) UpdateSupplierTrustScoreOnNewRating(ctx context.Context, supplierID string, declaredRating, productRating float64) error {
+	args := m.Called(ctx, supplierID, declaredRating, productRating)
+	return args.Error(0)
+}
+
+func (m *MockTrustUsecase) UpdateResellerTrustScoreOnNewRating(ctx context.Context, resellerID string, declaredRating, productRating float64) error {
+	args := m.Called(ctx, resellerID, declaredRating, productRating)
+	return args.Error(0)
+}
+
+func (m *MockProductUsecase) UpdateProductRating(ctx context.Context, productID string, rating float64) error {
+	args := m.Called(ctx, productID, rating)
+	return args.Error(0)
+}
+
 type ReviewControllerTestSuite struct {
 	suite.Suite
-	usecase    *MockReviewUsecase
-	controller *ReviewController
-	router     *gin.Engine
+	reviewUsecase  *MockReviewUsecase
+	trustUsecase   *MockTrustUsecase
+	productUsecase *MockProductUsecase
+	controller     *ReviewController
+	router         *gin.Engine
 }
 
 func (suite *ReviewControllerTestSuite) SetupTest() {
-	suite.usecase = new(MockReviewUsecase)
-	suite.controller = NewReviewController(suite.usecase)
+	suite.reviewUsecase = new(MockReviewUsecase)
+	suite.trustUsecase = new(MockTrustUsecase)
+	suite.productUsecase = new(MockProductUsecase)
+	suite.controller = NewReviewController(suite.reviewUsecase, suite.trustUsecase, suite.productUsecase)
 	gin.SetMode(gin.TestMode)
 	suite.router = gin.Default()
 }
@@ -54,8 +80,17 @@ func (suite *ReviewControllerTestSuite) TestSubmitReview_Success() {
 		Comment:   "Great product!",
 	}
 
-	suite.usecase.On("SubmitReview", mock.Anything, mock.Anything).
+	product := &product.Product{
+		ResellerID: primitive.NewObjectID(),
+		Rating:     4.5,
+	}
+
+	suite.productUsecase.On("GetProductByID", mock.Anything, req.ProductID).
+		Return(product, nil)
+	suite.reviewUsecase.On("SubmitReview", mock.Anything, mock.Anything).
 		Return(nil)
+	suite.trustUsecase.On("UpdateResellerTrustScoreOnNewRating", mock.Anything, product.ResellerID.Hex(), product.Rating, float64(req.Rating)).
+		Return(nil).Maybe()
 
 	// Create test request
 	w := httptest.NewRecorder()
@@ -72,7 +107,12 @@ func (suite *ReviewControllerTestSuite) TestSubmitReview_Success() {
 
 	// Assert
 	assert.Equal(suite.T(), http.StatusCreated, w.Code)
-	suite.usecase.AssertExpectations(suite.T())
+	suite.reviewUsecase.AssertExpectations(suite.T())
+	suite.productUsecase.AssertExpectations(suite.T())
+
+	// Wait a bit for the goroutine to complete
+	time.Sleep(100 * time.Millisecond)
+	suite.trustUsecase.AssertExpectations(suite.T())
 }
 
 func (suite *ReviewControllerTestSuite) TestSubmitReview_InvalidPayload() {
@@ -93,7 +133,7 @@ func (suite *ReviewControllerTestSuite) TestSubmitReview_InvalidPayload() {
 
 	// Assert
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
-	suite.usecase.AssertNotCalled(suite.T(), "SubmitReview")
+	suite.reviewUsecase.AssertNotCalled(suite.T(), "SubmitReview")
 }
 
 func (suite *ReviewControllerTestSuite) TestSubmitReview_Unauthorized() {
@@ -120,7 +160,7 @@ func (suite *ReviewControllerTestSuite) TestSubmitReview_Unauthorized() {
 
 	// Assert
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
-	suite.usecase.AssertNotCalled(suite.T(), "SubmitReview")
+	suite.reviewUsecase.AssertNotCalled(suite.T(), "SubmitReview")
 }
 
 func (suite *ReviewControllerTestSuite) TestSubmitReview_UseCaseError() {
@@ -132,8 +172,15 @@ func (suite *ReviewControllerTestSuite) TestSubmitReview_UseCaseError() {
 		Comment:   "Great product!",
 	}
 
+	product := &product.Product{
+		ResellerID: primitive.NewObjectID(),
+		Rating:     4.5,
+	}
+
 	expectedError := errors.New("review already exists")
-	suite.usecase.On("SubmitReview", mock.Anything, mock.Anything).
+	suite.productUsecase.On("GetProductByID", mock.Anything, req.ProductID).
+		Return(product, nil)
+	suite.reviewUsecase.On("SubmitReview", mock.Anything, mock.Anything).
 		Return(expectedError)
 
 	// Create test request
@@ -151,5 +198,6 @@ func (suite *ReviewControllerTestSuite) TestSubmitReview_UseCaseError() {
 
 	// Assert
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
-	suite.usecase.AssertExpectations(suite.T())
+	suite.reviewUsecase.AssertExpectations(suite.T())
+	suite.productUsecase.AssertExpectations(suite.T())
 }
