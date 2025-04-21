@@ -1,27 +1,30 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { SessionProvider } from 'next-auth/react';
+import { CartProvider } from '@/context/CartContext';
 import Navbar from './Navbar';
 
-const NavbarWithSession = ({ session }: { session: any }) => {
+const NavbarWithProviders = ({ session }: { session: any }) => {
   return (
     <SessionProvider session={session}>
-      <div className="min-h-screen">
-        <Navbar />
-      </div>
+      <CartProvider>
+        <div className="min-h-screen">
+          <Navbar onFilterClick={() => {}} />
+        </div>
+      </CartProvider>
     </SessionProvider>
   );
 };
 
-const meta: Meta<typeof NavbarWithSession> = {
+const meta: Meta<typeof NavbarWithProviders> = {
   title: 'Layout/Navbar',
-  component: NavbarWithSession,
+  component: NavbarWithProviders,
   parameters: {
     layout: 'fullscreen',
   },
 };
 
 export default meta;
-type Story = StoryObj<typeof NavbarWithSession>;
+type Story = StoryObj<typeof NavbarWithProviders>;
 
 const defaultSession = {
   user: {

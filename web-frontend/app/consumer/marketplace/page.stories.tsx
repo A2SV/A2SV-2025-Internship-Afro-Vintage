@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { SessionProvider } from 'next-auth/react';
 import MarketplacePage from './page';
+import { CartProvider } from '@/context/CartContext';
+import { SessionProvider } from 'next-auth/react';
 import { ItemPreview } from '@/types/marketplace';
 
 // Sample data for stories
@@ -51,68 +52,48 @@ const sampleItems: ItemPreview[] = [
   }
 ];
 
-const MarketplaceWithSession = ({ 
-  session,
-  initialItems = [],
-  initialLoading = false,
-  initialFilters = {
-    search: '',
-    category: [],
-    size: [],
-    priceRange: {
-      min: 0,
-      max: 1000,
-    },
-    grade: [],
-  }
-}: { 
-  session: any;
-  initialItems?: ItemPreview[];
-  initialLoading?: boolean;
-  initialFilters?: {
-    search: string;
-    category: string[];
-    size: string[];
-    priceRange: {
-      min: number;
-      max: number;
-    };
-    grade: string[];
-  };
-}) => {
-  return (
-    <SessionProvider session={session}>
-      <MarketplacePage 
-        initialItems={initialItems}
-        initialLoading={initialLoading}
-        initialFilters={initialFilters}
-      />
-    </SessionProvider>
-  );
-};
-
-const meta: Meta<typeof MarketplaceWithSession> = {
-  title: 'Pages/Marketplace',
-  component: MarketplaceWithSession,
+const meta: Meta<typeof MarketplacePage> = {
+  title: 'Pages/Consumer/Marketplace',
+  component: MarketplacePage,
   parameters: {
     layout: 'fullscreen',
   },
+  decorators: [
+    (Story) => {
+      const session = {
+        user: {
+          name: 'John Doe',
+          email: 'john@example.com',
+          image: '/images/avatar.png',
+          role: 'Consumer'
+        },
+        expires: '2024-01-01'
+      };
+
+      return (
+        <SessionProvider session={session}>
+          <CartProvider>
+            <Story />
+          </CartProvider>
+        </SessionProvider>
+      );
+    },
+  ],
 };
 
 export default meta;
-type Story = StoryObj<typeof MarketplaceWithSession>;
+type Story = StoryObj<typeof MarketplacePage>;
+
+export const Default: Story = {
+  args: {
+    initialItems: [],
+    initialLoading: false,
+  },
+};
 
 // Default story with items
 export const WithItems: Story = {
   args: {
-    session: {
-      user: {
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'consumer',
-        image: '/images/avatar.png',
-      },
-    },
     initialItems: sampleItems,
     initialLoading: false,
   },
@@ -121,14 +102,6 @@ export const WithItems: Story = {
 // Loading state
 export const Loading: Story = {
   args: {
-    session: {
-      user: {
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'consumer',
-        image: '/images/avatar.png',
-      },
-    },
     initialItems: [],
     initialLoading: true,
   },
@@ -137,14 +110,6 @@ export const Loading: Story = {
 // No items found state
 export const NoItems: Story = {
   args: {
-    session: {
-      user: {
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'consumer',
-        image: '/images/avatar.png',
-      },
-    },
     initialItems: [],
     initialLoading: false,
   },
@@ -153,14 +118,6 @@ export const NoItems: Story = {
 // With filters applied
 export const WithFilters: Story = {
   args: {
-    session: {
-      user: {
-        name: 'Jake Santiago',
-        email: 'jake@example.com',
-        role: 'Consumer',
-        image: '/images/avatar.png',
-      },
-    },
     initialItems: sampleItems.filter(item => 
       item.category === 'Clothing'
     ),

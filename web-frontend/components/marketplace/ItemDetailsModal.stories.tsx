@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import ItemDetailsModal from './ItemDetailsModal';
+import { CartProvider } from '@/context/CartContext';
 
 const meta: Meta<typeof ItemDetailsModal> = {
   title: 'Components/ItemDetailsModal',
@@ -7,6 +8,13 @@ const meta: Meta<typeof ItemDetailsModal> = {
   parameters: {
     layout: 'fullscreen',
   },
+  decorators: [
+    (Story) => (
+      <CartProvider>
+        <Story />
+      </CartProvider>
+    ),
+  ],
 };
 
 export default meta;

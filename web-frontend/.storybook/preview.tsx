@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Preview } from "@storybook/react";
 import { SessionProvider } from 'next-auth/react';
+import { CartProvider } from '../context/CartContext';
 import '../app/globals.css';
 
 const preview: Preview = {
@@ -27,7 +28,9 @@ const preview: Preview = {
 
       return (
         <SessionProvider session={mockSession}>
-          <Story />
+          <CartProvider>
+            <Story />
+          </CartProvider>
         </SessionProvider>
       );
     },
