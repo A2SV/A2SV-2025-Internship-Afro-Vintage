@@ -1,6 +1,8 @@
 package product
 
 import (
+	"errors"
+
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -23,4 +25,19 @@ type Product struct {
 
 func (p *Product) GenerateID() string {
 	return primitive.NewObjectID().Hex()
+}
+
+func (p *Product) ValidateRating() error {
+	if p.Rating < 0 || p.Rating > 5 {
+		return errors.New("rating must be between 0 and 5")
+	}
+	return nil
+}
+
+func (p *Product) UpdateRating(newRating float64) error {
+	if newRating < 0 || newRating > 5 {
+		return errors.New("rating must be between 0 and 5")
+	}
+	p.Rating = newRating
+	return nil
 }

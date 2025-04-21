@@ -58,7 +58,7 @@ func main() {
 	orderSvc := orderusecase.NewOrderUsecase(bundleRepo, orderRepo, warehouseRepo, paymentRepo, userRepo)
 	cartItemUC := cartitemusecase.NewCartItemUsecase(cartItemRepo, productRepo, paymentRepo, orderSvc, orderRepo)
 
-	reviewUC := reviewusecase.NewReviewUsecase(reviewRepo, orderRepo)                                     // Add review usecase
+	reviewUC := reviewusecase.NewReviewUsecase(reviewRepo, orderRepo) // Add review usecase
 	warehouseSvc := warehouse_usecase.NewWarehouseUseCase(warehouseRepo, bundleRepo)
 
 	// Init Controllers
@@ -69,7 +69,7 @@ func main() {
 	consumerCtrl := controllers.NewConsumerController(orderRepo)
 	supplierCtrl := controllers.NewSupplierController(orderSvc) // Add consumer controller
 	cartItemCtrl := controllers.NewCartItemController(cartItemUC, productUC)
-	reviewCtrl := controllers.NewReviewController(reviewUC) // Add review controller
+	reviewCtrl := controllers.NewReviewController(reviewUC, trustUC, productUC) // Add trust and product usecases
 	warehouseCtrl := controllers.NewWarehouseController(warehouseSvc)
 	orderCtrl := controllers.NewOrderController(orderSvc) // Add order controller
 
@@ -77,7 +77,7 @@ func main() {
 	r := gin.Default()
 
 	routes.RegisterAuthRoutes(r, authCtrl)
-	routes.RegisterProductRoutes(r, productCtrl, jwtSvc, reviewCtrl) // Register product routes with review controller
+	routes.RegisterProductRoutes(r, productCtrl, jwtSvc, reviewCtrl, trustUC, productUC)
 	routes.RegisterAdminRoutes(r, adminCtrl, jwtSvc)
 	routes.RegisterBundleRoutes(r, bundleCtrl, jwtSvc)
 	routes.RegisterCartItemRoutes(r, cartItemCtrl, jwtSvc) // Register cart item routes
