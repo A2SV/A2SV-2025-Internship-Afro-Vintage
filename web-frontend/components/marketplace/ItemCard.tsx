@@ -3,11 +3,15 @@ import { ItemPreview } from '@/types/marketplace';
 
 interface ItemCardProps {
   item: ItemPreview;
+  onItemClick?: (item: ItemPreview) => void;
 }
 
-export default function ItemCard({ item }: ItemCardProps) {
+export default function ItemCard({ item, onItemClick }: ItemCardProps) {
   return (
-    <div className="group relative bg-white rounded-lg overflow-hidden">
+    <div 
+      className="group relative bg-white rounded-lg overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+      onClick={() => onItemClick?.(item)}
+    >
       <div className="relative h-64 w-full">
         <Image
           src={item.thumbnailUrl}

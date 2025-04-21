@@ -23,4 +23,16 @@ export interface MarketplaceFilters {
   minPrice?: number;
   maxPrice?: number;
   type?: string;
-} 
+}
+
+export type Item = {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  description: string;
+  category: string;
+  size?: string;
+  grade?: string;
+  status: 'available' | 'sold' | 'reserved';
+}; 
