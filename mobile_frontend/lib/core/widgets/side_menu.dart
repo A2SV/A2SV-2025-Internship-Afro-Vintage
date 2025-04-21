@@ -96,7 +96,9 @@ class SideMenu extends StatelessWidget {
               "MarketPlace",
               style: TextStyle(color: Color(0xFF8C8787)),
             ),
-            onTap: () {},
+            onTap: () {
+              Navigator.pushNamed(context, '/');
+            },
           ),
           ListTile(
             leading: const Icon(
@@ -107,7 +109,9 @@ class SideMenu extends StatelessWidget {
               "Orders",
               style: TextStyle(color: Color(0xFF8C8787)),
             ),
-            onTap: () {},
+            onTap: () {
+              Navigator.pushNamed(context, '/allorder');
+            },
           ),
           ListTile(
             leading: const Icon(
@@ -118,7 +122,9 @@ class SideMenu extends StatelessWidget {
               "Reviews",
               style: TextStyle(color: Color(0xFF8C8787)),
             ),
-            onTap: () {},
+            onTap: () {
+              Navigator.pushNamed(context, '/reviews');
+            },
           ),
           ListTile(
             leading: const Icon(
