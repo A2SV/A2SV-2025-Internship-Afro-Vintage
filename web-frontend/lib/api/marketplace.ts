@@ -1,21 +1,42 @@
-import { MarketplaceResponse, MarketplaceFilters } from '@/types/marketplace';
+import { ItemPreview } from '@/types/marketplace';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+export interface MarketplaceFilters {
+  page: number;
+  limit: number;
+  search?: string;
+  category?: string[];
+  size?: string[];
+  minPrice?: number;
+  maxPrice?: number;
+  grade?: string[];
+}
 
-export async function fetchMarketplaceItems(filters: MarketplaceFilters = {}): Promise<MarketplaceResponse> {
-  const queryParams = new URLSearchParams();
-  
-  if (filters.page) queryParams.append('page', filters.page.toString());
-  if (filters.limit) queryParams.append('limit', filters.limit.toString());
-  if (filters.minPrice) queryParams.append('minPrice', filters.minPrice.toString());
-  if (filters.maxPrice) queryParams.append('maxPrice', filters.maxPrice.toString());
-  if (filters.type) queryParams.append('type', filters.type);
+export interface MarketplaceResponse {
+  items: ItemPreview[];
+  total: number;
+}
 
-  const response = await fetch(`${API_URL}/marketplace/items?${queryParams.toString()}`);
-  
-  if (!response.ok) {
-    throw new Error('Unable to load items. Please try again later.');
+export const fetchMarketplaceItems = async (filters: MarketplaceFilters): Promise<MarketplaceResponse> => {
+  try {
+    // TODO: Replace with actual API call
+    const response = await fetch('/api/marketplace/items?' + new URLSearchParams({
+      page: filters.page.toString(),
+      limit: filters.limit.toString(),
+      ...(filters.search && { search: filters.search }),
+      ...(filters.category?.length && { category: filters.category.join(',') }),
+      ...(filters.size?.length && { size: filters.size.join(',') }),
+      ...(filters.minPrice !== undefined && { minPrice: filters.minPrice.toString() }),
+      ...(filters.maxPrice !== undefined && { maxPrice: filters.maxPrice.toString() }),
+      ...(filters.grade?.length && { grade: filters.grade.join(',') })
+    }));
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch items');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching marketplace items:', error);
+    throw error;
   }
-
-  return response.json();
-} 
+}; 
