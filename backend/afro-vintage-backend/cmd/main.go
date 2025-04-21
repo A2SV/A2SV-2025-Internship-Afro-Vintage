@@ -55,10 +55,10 @@ func main() {
 	productUC := productusecase.NewProductUsecase(productRepo, bundleRepo)
 	bundleUC := bundleusecase.NewBundleUsecase(bundleRepo)
 	trustUC := trustusecase.NewTrustUsecase(productRepo, bundleRepo, userRepo)
-	cartItemUC := cartitemusecase.NewCartItemUsecase(cartItemRepo, productRepo, paymentRepo)
+	orderSvc := orderusecase.NewOrderUsecase(bundleRepo, orderRepo, warehouseRepo, paymentRepo, userRepo)
+	cartItemUC := cartitemusecase.NewCartItemUsecase(cartItemRepo, productRepo, paymentRepo, orderSvc, orderRepo)
 
 	reviewUC := reviewusecase.NewReviewUsecase(reviewRepo, orderRepo)                                     // Add review usecase
-	orderSvc := orderusecase.NewOrderUsecase(bundleRepo, orderRepo, warehouseRepo, paymentRepo, userRepo) // Add order service
 	warehouseSvc := warehouse_usecase.NewWarehouseUseCase(warehouseRepo, bundleRepo)
 
 	// Init Controllers

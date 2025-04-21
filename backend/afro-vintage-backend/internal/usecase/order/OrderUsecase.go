@@ -271,3 +271,46 @@ func (uc *orderUseCaseImpl) GetAdminDashboardMetrics(ctx context.Context) (*admi
 func (uc *orderUseCaseImpl) GetOrderByID(ctx context.Context, orderID string) (*order.Order, error) {
 	return uc.orderRepo.GetOrderByID(ctx, orderID)
 }
+
+func (uc *orderUseCaseImpl) PurchaseProduct(ctx context.Context, productID, consumerID string, totalPrice float64) (*order.Order, *payment.Payment, error) {
+	// Calculate platform fee and net amount
+	platformFee := totalPrice * 0.02
+	netAmount := totalPrice - platformFee
+
+	// Create order
+	order := &order.Order{
+		ID:          primitive.NewObjectID().Hex(),
+		ResellerID:  "", // Will be set by cart checkout
+		SupplierID:  "", // Not needed for product orders
+		BundleID:    "", // Not needed for product orders
+		ConsumerID:  consumerID,
+		ProductIDs:  []string{productID},
+		TotalPrice:  totalPrice,
+		PlatformFee: platformFee,
+		Status:      order.OrderStatusProcessing,
+		CreatedAt:   time.Now().Format(time.RFC3339),
+	}
+
+	if err := uc.orderRepo.CreateOrder(ctx, order); err != nil {
+		return nil, nil, err
+	}
+
+	// Create payment record
+	payment := &payment.Payment{
+		FromUserID:    consumerID,
+		ToUserID:      "", // Will be set by cart checkout
+		Amount:        totalPrice,
+		PlatformFee:   platformFee,
+		SellerEarning: netAmount,
+		Status:        "Paid",
+		ReferenceID:   productID,
+		Type:          payment.B2C,
+		CreatedAt:     time.Now().Format(time.RFC3339),
+	}
+
+	if err := uc.paymentRepo.RecordPayment(ctx, payment); err != nil {
+		return nil, nil, err
+	}
+
+	return order, payment, nil
+}

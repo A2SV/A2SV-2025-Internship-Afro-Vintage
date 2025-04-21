@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/cartitem"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/order"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/payment"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/warehouse"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -84,17 +86,6 @@ func (m *MockProductRepository) GetProductsByBundleID(ctx context.Context, bundl
 	return args.Get(0).([]*product.Product), args.Error(1)
 }
 
-// --- Test Suite ---
-
-type CartItemUsecaseTestSuite struct {
-	suite.Suite
-	ctx             context.Context
-	usecase         cartitem.Usecase
-	mockCartRepo    *MockCartItemRepository
-	mockProductRepo *MockProductRepository
-	mockPaymentRepo *MockPaymentRepository // ✅ Add this
-	userID          string
-}
 type MockPaymentRepository struct {
 	mock.Mock
 }
@@ -103,24 +94,116 @@ func (m *MockPaymentRepository) RecordPayment(ctx context.Context, p *payment.Pa
 	args := m.Called(ctx, p)
 	return args.Error(0)
 }
+
 func (m *MockPaymentRepository) GetAllPlatformFees(ctx context.Context) (float64, float64, error) {
 	args := m.Called(ctx)
 	return args.Get(0).(float64), args.Get(1).(float64), args.Error(2)
 }
+
 func (m *MockPaymentRepository) GetPaymentsByType(ctx context.Context, userID string, pType payment.PaymentType) ([]*payment.Payment, error) {
 	args := m.Called(ctx, userID, pType)
 	return args.Get(0).([]*payment.Payment), args.Error(1)
 }
+
 func (m *MockPaymentRepository) GetPaymentsByUser(ctx context.Context, userID string) ([]*payment.Payment, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).([]*payment.Payment), args.Error(1)
 }
+
+type MockOrderRepository struct {
+	mock.Mock
+}
+
+func (m *MockOrderRepository) CreateOrder(ctx context.Context, o *order.Order) error {
+	args := m.Called(ctx, o)
+	return args.Error(0)
+}
+
+func (m *MockOrderRepository) GetOrdersByConsumer(ctx context.Context, consumerID string) ([]*order.Order, error) {
+	args := m.Called(ctx, consumerID)
+	return args.Get(0).([]*order.Order), args.Error(1)
+}
+
+func (m *MockOrderRepository) GetOrderByID(ctx context.Context, orderID string) (*order.Order, error) {
+	args := m.Called(ctx, orderID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*order.Order), args.Error(1)
+}
+
+func (m *MockOrderRepository) UpdateOrderStatus(ctx context.Context, orderID string, status order.OrderStatus) error {
+	args := m.Called(ctx, orderID, status)
+	return args.Error(0)
+}
+
+func (m *MockOrderRepository) DeleteOrder(ctx context.Context, orderID string) error {
+	args := m.Called(ctx, orderID)
+	return args.Error(0)
+}
+
+func (m *MockOrderRepository) GetOrdersBySupplier(ctx context.Context, supplierID string) ([]*order.Order, error) {
+	args := m.Called(ctx, supplierID)
+	return args.Get(0).([]*order.Order), args.Error(1)
+}
+
+func (m *MockOrderRepository) GetOrdersByReseller(ctx context.Context, resellerID string) ([]*order.Order, error) {
+	args := m.Called(ctx, resellerID)
+	return args.Get(0).([]*order.Order), args.Error(1)
+}
+
+type MockOrderUsecase struct {
+	mock.Mock
+}
+
+func (m *MockOrderUsecase) PurchaseProduct(ctx context.Context, productID, consumerID string, totalPrice float64) (*order.Order, *payment.Payment, error) {
+	args := m.Called(ctx, productID, consumerID, totalPrice)
+	if args.Get(0) == nil {
+		return nil, nil, args.Error(2)
+	}
+	return args.Get(0).(*order.Order), args.Get(1).(*payment.Payment), args.Error(2)
+}
+
+func (m *MockOrderUsecase) PurchaseBundle(ctx context.Context, bundleID, resellerID string) (*order.Order, *payment.Payment, *warehouse.WarehouseItem, error) {
+	args := m.Called(ctx, bundleID, resellerID)
+	if args.Get(0) == nil {
+		return nil, nil, nil, args.Error(3)
+	}
+	return args.Get(0).(*order.Order), args.Get(1).(*payment.Payment), args.Get(2).(*warehouse.WarehouseItem), args.Error(3)
+}
+
+func (m *MockOrderUsecase) GetDashboardMetrics(ctx context.Context, supplierID string) (*order.DashboardMetrics, error) {
+	args := m.Called(ctx, supplierID)
+	return args.Get(0).(*order.DashboardMetrics), args.Error(1)
+}
+
+func (m *MockOrderUsecase) GetOrderByID(ctx context.Context, orderID string) (*order.Order, error) {
+	args := m.Called(ctx, orderID)
+	return args.Get(0).(*order.Order), args.Error(1)
+}
+
+// --- Test Suite ---
+
+type CartItemUsecaseTestSuite struct {
+	suite.Suite
+	ctx             context.Context
+	usecase         cartitem.Usecase
+	mockCartRepo    *MockCartItemRepository
+	mockProductRepo *MockProductRepository
+	mockPaymentRepo *MockPaymentRepository
+	mockOrderRepo   *MockOrderRepository
+	mockOrderUC     *MockOrderUsecase
+	userID          string
+}
+
 func (suite *CartItemUsecaseTestSuite) SetupTest() {
 	suite.ctx = context.Background()
 	suite.mockCartRepo = new(MockCartItemRepository)
 	suite.mockProductRepo = new(MockProductRepository)
-	suite.mockPaymentRepo = new(MockPaymentRepository) // ✅ init payment mock
-	suite.usecase = NewCartItemUsecase(suite.mockCartRepo, suite.mockProductRepo, suite.mockPaymentRepo)
+	suite.mockPaymentRepo = new(MockPaymentRepository)
+	suite.mockOrderRepo = new(MockOrderRepository)
+	suite.mockOrderUC = new(MockOrderUsecase)
+	suite.usecase = NewCartItemUsecase(suite.mockCartRepo, suite.mockProductRepo, suite.mockPaymentRepo, suite.mockOrderUC, suite.mockOrderRepo)
 	suite.userID = "user123"
 }
 
@@ -213,7 +296,6 @@ func (suite *CartItemUsecaseTestSuite) TestRemoveCartItem_Success() {
 // --- Tests for CheckoutCart ---
 
 func (suite *CartItemUsecaseTestSuite) TestCheckoutCart_Success() {
-	// Set up two cart items.
 	now := time.Now()
 	cartItems := []*cartitem.CartItem{
 		{
@@ -238,31 +320,42 @@ func (suite *CartItemUsecaseTestSuite) TestCheckoutCart_Success() {
 		},
 	}
 	suite.mockCartRepo.On("GetCartItems", suite.ctx, suite.userID).Return(cartItems, nil).Once()
-	// For each cart item, define product lookup.
+
 	prod1 := createTestProduct("prod1", 100.0, "available", "Test Product 1")
 	prod2 := createTestProduct("prod2", 200.0, "available", "Test Product 2")
 	suite.mockProductRepo.On("GetProductByID", suite.ctx, "prod1").Return(prod1, nil).Once()
 	suite.mockProductRepo.On("GetProductByID", suite.ctx, "prod2").Return(prod2, nil).Once()
-	suite.mockPaymentRepo.On("RecordPayment", suite.ctx, mock.MatchedBy(func(p *payment.Payment) bool {
-		return p.FromUserID == suite.userID &&
-			(p.ReferenceID == "prod1" || p.ReferenceID == "prod2") &&
-			p.Status == "paid" &&
-			p.Type == payment.B2C
-	})).Return(nil).Twice()
-	// Expect ClearCart call.
+
+	// Mock order and payment creation
+	order1 := &order.Order{ID: "order1"}
+	payment1 := &payment.Payment{ID: "payment1"}
+	order2 := &order.Order{ID: "order2"}
+	payment2 := &payment.Payment{ID: "payment2"}
+
+	suite.mockOrderUC.On("PurchaseProduct", suite.ctx, "prod1", suite.userID, 100.0).Return(order1, payment1, nil).Once()
+	suite.mockOrderUC.On("PurchaseProduct", suite.ctx, "prod2", suite.userID, 200.0).Return(order2, payment2, nil).Once()
+
+	// Mock payment updates
+	suite.mockPaymentRepo.On("RecordPayment", suite.ctx, mock.Anything).Return(nil).Twice()
+
+	// Mock product status updates
+	suite.mockProductRepo.On("UpdateProduct", suite.ctx, "prod1", mock.Anything).Return(nil).Once()
+	suite.mockProductRepo.On("UpdateProduct", suite.ctx, "prod2", mock.Anything).Return(nil).Once()
+
+	// Mock cart clearing
 	suite.mockCartRepo.On("ClearCart", suite.ctx, suite.userID).Return(nil).Once()
 
 	resp, err := suite.usecase.CheckoutCart(suite.ctx, suite.userID)
 	assert.NoError(suite.T(), err)
-	// Total amount should be 300.0, fee = 6, net = 294.
 	assert.Equal(suite.T(), 300.0, resp.TotalAmount)
 	assert.Equal(suite.T(), 6.0, resp.PlatformFee)
 	assert.Equal(suite.T(), 294.0, resp.NetPayable)
 	assert.Len(suite.T(), resp.Items, 2)
+
 	suite.mockCartRepo.AssertExpectations(suite.T())
 	suite.mockProductRepo.AssertExpectations(suite.T())
 	suite.mockPaymentRepo.AssertExpectations(suite.T())
-
+	suite.mockOrderUC.AssertExpectations(suite.T())
 }
 
 func (suite *CartItemUsecaseTestSuite) TestCheckoutCart_EmptyCart() {
@@ -277,7 +370,6 @@ func (suite *CartItemUsecaseTestSuite) TestCheckoutCart_EmptyCart() {
 // --- Tests for CheckoutSingleItem ---
 
 func (suite *CartItemUsecaseTestSuite) TestCheckoutSingleItem_Success() {
-	// Set up a cart with one item.
 	now := time.Now()
 	cartItems := []*cartitem.CartItem{
 		{
@@ -292,20 +384,35 @@ func (suite *CartItemUsecaseTestSuite) TestCheckoutSingleItem_Success() {
 		},
 	}
 	suite.mockCartRepo.On("GetCartItems", suite.ctx, suite.userID).Return(cartItems, nil).Once()
+
 	prod1 := createTestProduct("prod1", 100.0, "available", "Test Product 1")
 	suite.mockProductRepo.On("GetProductByID", suite.ctx, "prod1").Return(prod1, nil).Once()
-	// Expect deletion of the single item from cart.
+
+	// Mock order and payment creation
+	order := &order.Order{ID: "order1"}
+	payment := &payment.Payment{ID: "payment1"}
+	suite.mockOrderUC.On("PurchaseProduct", suite.ctx, "prod1", suite.userID, 100.0).Return(order, payment, nil).Once()
+
+	// Mock payment update
+	suite.mockPaymentRepo.On("RecordPayment", suite.ctx, mock.Anything).Return(nil).Once()
+
+	// Mock product status update
+	suite.mockProductRepo.On("UpdateProduct", suite.ctx, "prod1", mock.Anything).Return(nil).Once()
+
+	// Mock cart item deletion
 	suite.mockCartRepo.On("DeleteCartItem", suite.ctx, suite.userID, "prod1").Return(nil).Once()
 
 	resp, err := suite.usecase.CheckoutSingleItem(suite.ctx, suite.userID, "prod1")
 	assert.NoError(suite.T(), err)
-	// Total should be 100, fee=2, net=98.
 	assert.Equal(suite.T(), 100.0, resp.TotalAmount)
 	assert.Equal(suite.T(), 2.0, resp.PlatformFee)
 	assert.Equal(suite.T(), 98.0, resp.NetPayable)
 	assert.Len(suite.T(), resp.Items, 1)
+
 	suite.mockCartRepo.AssertExpectations(suite.T())
 	suite.mockProductRepo.AssertExpectations(suite.T())
+	suite.mockPaymentRepo.AssertExpectations(suite.T())
+	suite.mockOrderUC.AssertExpectations(suite.T())
 }
 
 func (suite *CartItemUsecaseTestSuite) TestCheckoutSingleItem_ItemNotFoundInCart() {

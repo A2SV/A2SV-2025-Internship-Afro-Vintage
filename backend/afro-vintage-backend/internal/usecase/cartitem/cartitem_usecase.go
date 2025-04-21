@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/cartitem"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/order"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/payment"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
+	orderusecase "github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/usecase/order"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/models"
 	"github.com/google/uuid"
 )
@@ -19,15 +21,19 @@ type cartItemUsecase struct {
 	repo        cartitem.Repository
 	productRepo product.Repository // Used to fetch product details
 	paymentRepo payment.Repository
+	orderUC     orderusecase.OrderUseCase
+	orderRepo   order.Repository
 }
 
 // NewCartItemUsecase creates a new CartItem usecase instance.
 // Note: productRepo is used for product lookup and validation during checkout.
-func NewCartItemUsecase(repo cartitem.Repository, productRepo product.Repository, paymentRepo payment.Repository) cartitem.Usecase {
+func NewCartItemUsecase(repo cartitem.Repository, productRepo product.Repository, paymentRepo payment.Repository, orderUC orderusecase.OrderUseCase, orderRepo order.Repository) cartitem.Usecase {
 	return &cartItemUsecase{
 		repo:        repo,
 		productRepo: productRepo,
-		paymentRepo: paymentRepo, // ✅ INJECT IT
+		paymentRepo: paymentRepo,
+		orderUC:     orderUC,
+		orderRepo:   orderRepo,
 	}
 }
 
@@ -101,28 +107,23 @@ func (u *cartItemUsecase) CheckoutCart(ctx context.Context, userID string) (*mod
 			Status:    prod.Status,
 		})
 
-		// Mark product as sold
-		prod.Status = "sold"
-		// TODO: Save product update to DB if needed
-
-		// ✅ Calculate per-product fee
-		fee := prod.Price * 0.02
-		net := prod.Price - fee
-
-		// ✅ Record individual payment
-		payment := &payment.Payment{
-			FromUserID:    userID,
-			ToUserID:      prod.ResellerID.Hex(),
-			Amount:        prod.Price,
-			PlatformFee:   fee,
-			SellerEarning: net,
-			Status:        "paid",
-			ReferenceID:   prod.ID,
-			Type:          payment.B2C,
-			CreatedAt:     time.Now().Format(time.RFC3339),
+		// Create order and payment before marking product as sold
+		_, payment, err := u.orderUC.PurchaseProduct(ctx, prod.ID, userID, prod.Price)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create order for product %s: %w", prod.ID, err)
 		}
+
+		// Update payment with reseller ID
+		payment.ToUserID = prod.ResellerID.Hex()
 		if err := u.paymentRepo.RecordPayment(ctx, payment); err != nil {
-			return nil, fmt.Errorf("failed to record payment for item %s: %w", prod.ID, err)
+			return nil, fmt.Errorf("failed to update payment for product %s: %w", prod.ID, err)
+		}
+
+		// Mark product as sold and save to database
+		if err := u.productRepo.UpdateProduct(ctx, prod.ID, map[string]interface{}{
+			"status": "sold",
+		}); err != nil {
+			return nil, fmt.Errorf("failed to mark product %s as sold: %w", prod.ID, err)
 		}
 	}
 
@@ -178,24 +179,23 @@ func (u *cartItemUsecase) CheckoutSingleItem(ctx context.Context, userID, listin
 	platformFee := total * 0.02
 	netPayable := total - platformFee
 
-	// Mark product as sold
-	prod.Status = "sold"
-	// TODO: Save product status if necessary
-
-	// ✅ Record payment
-	payment := &payment.Payment{
-		FromUserID:    userID,
-		ToUserID:      prod.ResellerID.Hex(),
-		Amount:        prod.Price,
-		PlatformFee:   platformFee,
-		SellerEarning: netPayable,
-		Status:        "paid",
-		ReferenceID:   prod.ID,
-		Type:          payment.B2C,
-		CreatedAt:     time.Now().Format(time.RFC3339),
+	// Create order and payment before marking product as sold
+	_, payment, err := u.orderUC.PurchaseProduct(ctx, prod.ID, userID, prod.Price)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create order for product %s: %w", prod.ID, err)
 	}
+
+	// Update payment with reseller ID
+	payment.ToUserID = prod.ResellerID.Hex()
 	if err := u.paymentRepo.RecordPayment(ctx, payment); err != nil {
-		return nil, fmt.Errorf("failed to record payment: %w", err)
+		return nil, fmt.Errorf("failed to update payment for product %s: %w", prod.ID, err)
+	}
+
+	// Mark product as sold and save to database
+	if err := u.productRepo.UpdateProduct(ctx, prod.ID, map[string]interface{}{
+		"status": "sold",
+	}); err != nil {
+		return nil, fmt.Errorf("failed to mark product %s as sold: %w", prod.ID, err)
 	}
 
 	// Remove the item from cart
@@ -217,7 +217,7 @@ func (u *cartItemUsecase) CheckoutSingleItem(ctx context.Context, userID, listin
 				Title:     prod.Title,
 				Price:     prod.Price,
 				SellerID:  prod.ResellerID.Hex(),
-				Status:    prod.Status,
+				Status:    "sold", // Update status in response
 			},
 		},
 		PlatformFee: platformFee,

@@ -13,7 +13,8 @@ import (
 type OrderUseCase interface {
 	PurchaseBundle(ctx context.Context, bundleID, resellerID string) (*order.Order, *payment.Payment, *warehouse.WarehouseItem, error)
 	GetDashboardMetrics(ctx context.Context, supplierID string) (*order.DashboardMetrics, error)
-	GetOrderByID(ctx context.Context, orderID string)
+	GetOrderByID(ctx context.Context, orderID string) (*order.Order, error)
+	PurchaseProduct(ctx context.Context, productID, consumerID string, totalPrice float64) (*order.Order, *payment.Payment, error)
 }
 
 type orderUseCaseImpl struct {
