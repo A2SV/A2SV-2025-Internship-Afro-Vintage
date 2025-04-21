@@ -5,18 +5,20 @@ import (
 	"time"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/cartitem"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/models"
 	"github.com/gin-gonic/gin"
 )
 
 type CartItemController struct {
-	usecase cartitem.Usecase
+	usecase        cartitem.Usecase
+	productUsecase product.Usecase
 }
 
-// NewCartItemController creates a new CartItemController.
-func NewCartItemController(usecase cartitem.Usecase) *CartItemController {
+func NewCartItemController(cartUC cartitem.Usecase, productUC product.Usecase) *CartItemController {
 	return &CartItemController{
-		usecase: usecase,
+		usecase:        cartUC,
+		productUsecase: productUC, // ✅ Assign it
 	}
 }
 
@@ -61,6 +63,12 @@ func (ctr *CartItemController) GetCartItems(c *gin.Context) {
 	// Convert domain items to response models.
 	var responses []models.CartItemResponse
 	for _, item := range items {
+		var rating float64 = 0
+		product, err := ctr.productUsecase.GetProductByID(c.Request.Context(), item.ListingID)
+		if err == nil {
+			rating = product.Rating
+		}
+
 		responses = append(responses, models.CartItemResponse{
 			ID:        item.ID,
 			ListingID: item.ListingID,
@@ -68,9 +76,11 @@ func (ctr *CartItemController) GetCartItems(c *gin.Context) {
 			Price:     item.Price,
 			ImageURL:  item.ImageURL,
 			Grade:     item.Grade,
+			Rating:    rating, // ✅ Include the rating
 			CreatedAt: item.CreatedAt.Format(time.RFC3339),
 		})
 	}
+
 	c.JSON(http.StatusOK, responses)
 }
 

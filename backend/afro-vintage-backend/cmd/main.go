@@ -55,11 +55,11 @@ func main() {
 	productUC := productusecase.NewProductUsecase(productRepo, bundleRepo)
 	bundleUC := bundleusecase.NewBundleUsecase(bundleRepo)
 	trustUC := trustusecase.NewTrustUsecase(productRepo, bundleRepo, userRepo)
-	cartItemUC := cartitemusecase.NewCartItemUsecase(cartItemRepo, productRepo)
+	cartItemUC := cartitemusecase.NewCartItemUsecase(cartItemRepo, productRepo, paymentRepo)
 
 	reviewUC := reviewusecase.NewReviewUsecase(reviewRepo, orderRepo)                                     // Add review usecase
 	orderSvc := orderusecase.NewOrderUsecase(bundleRepo, orderRepo, warehouseRepo, paymentRepo, userRepo) // Add order service
-	warehouseSvc := warehouse_usecase.NewWarehouseUseCase(warehouseRepo)
+	warehouseSvc := warehouse_usecase.NewWarehouseUseCase(warehouseRepo, bundleRepo)
 
 	// Init Controllers
 	authCtrl := controllers.NewAuthController(authUC)
@@ -68,7 +68,7 @@ func main() {
 	bundleCtrl := controllers.NewBundleController(bundleUC, userUC)
 	consumerCtrl := controllers.NewConsumerController(orderRepo)
 	supplierCtrl := controllers.NewSupplierController(orderSvc) // Add consumer controller
-	cartItemCtrl := controllers.NewCartItemController(cartItemUC)
+	cartItemCtrl := controllers.NewCartItemController(cartItemUC, productUC)
 	reviewCtrl := controllers.NewReviewController(reviewUC) // Add review controller
 	warehouseCtrl := controllers.NewWarehouseController(warehouseSvc)
 	orderCtrl := controllers.NewOrderController(orderSvc) // Add order controller

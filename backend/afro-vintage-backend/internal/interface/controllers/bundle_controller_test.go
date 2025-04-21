@@ -98,7 +98,6 @@ func (suite *BundleControllerTestSuite) TestCreateBundle_Success() {
 		Grade:              "A",
 		Type:               "basic",
 		EstimatedBreakdown: map[string]int{"shirts": 5, "pants": 5},
-		ClothingTypes:      []string{"shirt"},
 		Price:              100.0,
 		DeclaredRating:     4,
 	}
@@ -139,7 +138,6 @@ func (suite *BundleControllerTestSuite) TestCreateBundle_BlacklistedUser() {
 		Grade:              "A",
 		Type:               "basic",
 		EstimatedBreakdown: map[string]int{"shirts": 5, "pants": 5},
-		ClothingTypes:      []string{"shirt"},
 		Price:              100.0,
 		DeclaredRating:     4,
 	}

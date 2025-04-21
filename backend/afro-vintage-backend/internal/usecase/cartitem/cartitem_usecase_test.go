@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/cartitem"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/payment"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -91,14 +92,35 @@ type CartItemUsecaseTestSuite struct {
 	usecase         cartitem.Usecase
 	mockCartRepo    *MockCartItemRepository
 	mockProductRepo *MockProductRepository
+	mockPaymentRepo *MockPaymentRepository // ✅ Add this
 	userID          string
 }
+type MockPaymentRepository struct {
+	mock.Mock
+}
 
+func (m *MockPaymentRepository) RecordPayment(ctx context.Context, p *payment.Payment) error {
+	args := m.Called(ctx, p)
+	return args.Error(0)
+}
+func (m *MockPaymentRepository) GetAllPlatformFees(ctx context.Context) (float64, float64, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(float64), args.Get(1).(float64), args.Error(2)
+}
+func (m *MockPaymentRepository) GetPaymentsByType(ctx context.Context, userID string, pType payment.PaymentType) ([]*payment.Payment, error) {
+	args := m.Called(ctx, userID, pType)
+	return args.Get(0).([]*payment.Payment), args.Error(1)
+}
+func (m *MockPaymentRepository) GetPaymentsByUser(ctx context.Context, userID string) ([]*payment.Payment, error) {
+	args := m.Called(ctx, userID)
+	return args.Get(0).([]*payment.Payment), args.Error(1)
+}
 func (suite *CartItemUsecaseTestSuite) SetupTest() {
 	suite.ctx = context.Background()
 	suite.mockCartRepo = new(MockCartItemRepository)
 	suite.mockProductRepo = new(MockProductRepository)
-	suite.usecase = NewCartItemUsecase(suite.mockCartRepo, suite.mockProductRepo)
+	suite.mockPaymentRepo = new(MockPaymentRepository) // ✅ init payment mock
+	suite.usecase = NewCartItemUsecase(suite.mockCartRepo, suite.mockProductRepo, suite.mockPaymentRepo)
 	suite.userID = "user123"
 }
 
@@ -221,6 +243,12 @@ func (suite *CartItemUsecaseTestSuite) TestCheckoutCart_Success() {
 	prod2 := createTestProduct("prod2", 200.0, "available", "Test Product 2")
 	suite.mockProductRepo.On("GetProductByID", suite.ctx, "prod1").Return(prod1, nil).Once()
 	suite.mockProductRepo.On("GetProductByID", suite.ctx, "prod2").Return(prod2, nil).Once()
+	suite.mockPaymentRepo.On("RecordPayment", suite.ctx, mock.MatchedBy(func(p *payment.Payment) bool {
+		return p.FromUserID == suite.userID &&
+			(p.ReferenceID == "prod1" || p.ReferenceID == "prod2") &&
+			p.Status == "paid" &&
+			p.Type == payment.B2C
+	})).Return(nil).Twice()
 	// Expect ClearCart call.
 	suite.mockCartRepo.On("ClearCart", suite.ctx, suite.userID).Return(nil).Once()
 
@@ -233,6 +261,8 @@ func (suite *CartItemUsecaseTestSuite) TestCheckoutCart_Success() {
 	assert.Len(suite.T(), resp.Items, 2)
 	suite.mockCartRepo.AssertExpectations(suite.T())
 	suite.mockProductRepo.AssertExpectations(suite.T())
+	suite.mockPaymentRepo.AssertExpectations(suite.T())
+
 }
 
 func (suite *CartItemUsecaseTestSuite) TestCheckoutCart_EmptyCart() {

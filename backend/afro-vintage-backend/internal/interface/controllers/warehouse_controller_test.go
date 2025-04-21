@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/warehouse"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -17,12 +17,9 @@ type MockWarehouseUsecase struct {
 	mock.Mock
 }
 
-func (m *MockWarehouseUsecase) GetWarehouseItems(ctx context.Context, resellerID string) ([]*warehouse.WarehouseItem, error) {
+func (m *MockWarehouseUsecase) GetWarehouseItems(ctx context.Context, resellerID string) ([]*models.WarehouseItemResponse, error) {
 	args := m.Called(ctx, resellerID)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).([]*warehouse.WarehouseItem), args.Error(1)
+	return args.Get(0).([]*models.WarehouseItemResponse), args.Error(1)
 }
 
 type WarehouseControllerTestSuite struct {
@@ -45,22 +42,28 @@ func TestWarehouseControllerTestSuite(t *testing.T) {
 
 func (suite *WarehouseControllerTestSuite) TestGetWarehouseItems_Success() {
 	// Setup
-	expectedItems := []*warehouse.WarehouseItem{
+	expectedItems := []*models.WarehouseItemResponse{
 		{
-			ID:         "item1",
-			ResellerID: "reseller123",
-			BundleID:   "bundle1",
-			ProductID:  "product1",
-			Status:     "listed",
-			CreatedAt:  "2024-01-01",
+			ID:             "item1",
+			ResellerID:     "reseller123",
+			BundleID:       "bundle1",
+			Status:         "listed",
+			CreatedAt:      "2024-01-01",
+			Title:          "Winter Bundle",
+			SampleImage:    "https://example.com/image.jpg",
+			DeclaredRating: 85,
+			RemainingItems: 5,
 		},
 		{
-			ID:         "item2",
-			ResellerID: "reseller123",
-			BundleID:   "bundle2",
-			ProductID:  "product2",
-			Status:     "pending",
-			CreatedAt:  "2024-01-02",
+			ID:             "item2",
+			ResellerID:     "reseller123",
+			BundleID:       "bundle2",
+			Status:         "pending",
+			CreatedAt:      "2024-01-02",
+			Title:          "Summer Mix",
+			SampleImage:    "https://example.com/summer.jpg",
+			DeclaredRating: 90,
+			RemainingItems: 3,
 		},
 	}
 

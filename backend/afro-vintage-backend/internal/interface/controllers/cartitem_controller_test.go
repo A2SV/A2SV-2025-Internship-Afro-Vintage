@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/cartitem"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/models"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -55,17 +56,52 @@ func (m *MockCartItemUsecase) CheckoutSingleItem(ctx context.Context, userID, li
 	return args.Get(0).(*models.CheckoutResponse), args.Error(1)
 }
 
+type MockProductUsecase struct {
+	mock.Mock
+}
+
+func (m *MockProductUsecase) GetProductByID(ctx context.Context, id string) (*product.Product, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*product.Product), args.Error(1)
+}
+func (m *MockProductUsecase) AddProduct(ctx context.Context, p *product.Product) error {
+	args := m.Called(ctx, p)
+	return args.Error(0)
+}
+func (m *MockProductUsecase) DeleteProduct(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+func (m *MockProductUsecase) UpdateProduct(ctx context.Context, id string, updates map[string]interface{}) error {
+	args := m.Called(ctx, id, updates)
+	return args.Error(0)
+}
+
+func (m *MockProductUsecase) ListAvailableProducts(ctx context.Context, page int, limit int) ([]*product.Product, error) {
+	args := m.Called(ctx, page, limit)
+	return args.Get(0).([]*product.Product), args.Error(1)
+}
+func (m *MockProductUsecase) ListProductsByReseller(ctx context.Context, resellerID string, page int, limit int) ([]*product.Product, error) {
+	args := m.Called(ctx, resellerID, page, limit)
+	return args.Get(0).([]*product.Product), args.Error(1)
+}
+
 type CartItemControllerTestSuite struct {
 	suite.Suite
-	controller *CartItemController
-	mockUC     *MockCartItemUsecase
-	router     *gin.Engine
-	userID     string
+	controller    *CartItemController
+	mockUC        *MockCartItemUsecase
+	mockProductUC *MockProductUsecase
+	router        *gin.Engine
+	userID        string
 }
 
 func (suite *CartItemControllerTestSuite) SetupTest() {
 	suite.mockUC = new(MockCartItemUsecase)
-	suite.controller = NewCartItemController(suite.mockUC)
+	suite.mockProductUC = new(MockProductUsecase)
+	suite.controller = NewCartItemController(suite.mockUC, suite.mockProductUC)
 	gin.SetMode(gin.TestMode)
 	suite.router = gin.Default()
 	suite.userID = "user123"
@@ -133,7 +169,6 @@ func (suite *CartItemControllerTestSuite) TestAddCartItem_InvalidRequest() {
 	// Assert
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }
-
 func (suite *CartItemControllerTestSuite) TestGetCartItems_Success() {
 	// Setup
 	now := time.Now()
@@ -150,6 +185,13 @@ func (suite *CartItemControllerTestSuite) TestGetCartItems_Success() {
 	}
 	suite.mockUC.On("GetCartItems", mock.Anything, suite.userID).Return(items, nil)
 
+	// 🔥 Mock Product Usecase to return rating
+	product := &product.Product{
+		ID:     "listing1",
+		Rating: 85.0,
+	}
+	suite.mockProductUC.On("GetProductByID", mock.Anything, "listing1").Return(product, nil)
+
 	// Execute
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/api/cart", nil)
@@ -162,7 +204,10 @@ func (suite *CartItemControllerTestSuite) TestGetCartItems_Success() {
 	json.Unmarshal(w.Body.Bytes(), &response)
 	assert.Len(suite.T(), response, 1)
 	assert.Equal(suite.T(), items[0].ID, response[0].ID)
+	assert.Equal(suite.T(), float64(85), response[0].Rating) // ✅ Assert rating
+
 	suite.mockUC.AssertExpectations(suite.T())
+	suite.mockProductUC.AssertExpectations(suite.T())
 }
 
 func (suite *CartItemControllerTestSuite) TestGetCartItems_Unauthorized() {

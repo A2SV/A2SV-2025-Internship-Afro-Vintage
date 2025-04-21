@@ -8,6 +8,7 @@ import (
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/bundle"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/trust"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/models"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/warehouse"
 	"github.com/gin-gonic/gin"
@@ -112,7 +113,25 @@ func (h *ProductController) Create(c *gin.Context) {
 		)
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "product created"})
+	c.JSON(http.StatusCreated, gin.H{
+		"success": true,
+		"message": "Product created successfully",
+		"data": models.ProductResponse{
+			ID:          p.ID,
+			Title:       p.Title,
+			Price:       p.Price,
+			Photo:       p.ImageURL,
+			Grade:       p.Grade,
+			Size:        p.Size,
+			Status:      p.Status,
+			SellerID:    p.ResellerID.Hex(),
+			Rating:      p.Rating,
+			Description: p.Description,
+			Type:        p.Type,
+			BundleID:    p.BundleID,
+		},
+	})
+
 }
 
 func (h *ProductController) GetByID(c *gin.Context) {

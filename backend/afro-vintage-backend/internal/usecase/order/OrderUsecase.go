@@ -104,10 +104,17 @@ func (uc *orderUseCaseImpl) PurchaseBundle(ctx context.Context, bundleID, resell
 	}
 
 	warehouseItem := &warehouse.WarehouseItem{
-		ID:         primitive.NewObjectID().Hex(),
-		BundleID:   b.ID,
-		ResellerID: resellerID,
-		Status:     "pending",
+		ID:                 primitive.NewObjectID().Hex(),
+		BundleID:           b.ID,
+		ResellerID:         resellerID,
+		Status:             "pending",
+		DeclaredRating:     b.DeclaredRating,
+		RemainingItemCount: b.RemainingItemCount,
+		Grade:              b.Grade,
+		Type:               b.Type,
+		Quantity:           b.Quantity,
+		SortingLevel:       string(b.SortingLevel),
+		SampleImage:        b.SampleImage,
 	}
 	if err := uc.warehouseRepo.AddItem(ctx, warehouseItem); err != nil {
 		return nil, nil, nil, err

@@ -28,4 +28,5 @@ type Bundle struct {
 	DeclaredRating     int            `bson:"declared_rating"`
 	EstimatedItemCount int            `bson:"estimated_item_count"`
 	RemainingItemCount int            `bson:"remaining_item_count"`
+	SizeRange          string         `bson:"size_range" json:"size_range"`
 }
