@@ -79,7 +79,7 @@ func (c *BundleController) CreateBundle(ctx *gin.Context) {
 		Grade:              req.Grade,
 		SortingLevel:       bundle.SortingLevel(req.Type),
 		EstimatedBreakdown: req.EstimatedBreakdown,
-		Type:               req.ClothingTypes[0],
+		Type:               req.Type,
 		Price:              req.Price,
 		Status:             "available",
 		CreatedAt:          time.Now().Format(time.RFC3339),
@@ -96,12 +96,20 @@ func (c *BundleController) CreateBundle(ctx *gin.Context) {
 	}
 
 	resp := models.BundleResponse{
-		ID:     b.ID,
-		Title:  b.Title,
-		Grade:  b.Grade,
-		Price:  b.Price,
-		Type:   string(b.SortingLevel),
-		Status: b.Status,
+		ID:                 b.ID,
+		Title:              b.Title,
+		SampleImage:        b.SampleImage,
+		Quantity:           b.Quantity, // from NumberOfItems
+		Grade:              b.Grade,
+		Description:        b.Description,
+		SizeRange:          b.SizeRange,
+		Type:               b.Type,
+		Price:              b.Price,
+		Status:             b.Status,
+		EstimatedBreakdown: b.EstimatedBreakdown,
+		DeclaredRating:     b.DeclaredRating,
+		SortingLevel:       string(b.SortingLevel),
+		CreatedAt:          b.CreatedAt,
 	}
 
 	ctx.JSON(http.StatusOK, common.APIResponse{
@@ -151,12 +159,20 @@ func (c *BundleController) ListBundles(ctx *gin.Context) {
 	var resp []models.BundleResponse
 	for _, b := range bundles {
 		resp = append(resp, models.BundleResponse{
-			ID:     b.ID,
-			Title:  b.Title,
-			Grade:  b.Grade,
-			Price:  b.Price,
-			Type:   string(b.SortingLevel),
-			Status: b.Status,
+			ID:                 b.ID,
+			Title:              b.Title,
+			SampleImage:        b.SampleImage,
+			Quantity:           b.Quantity,
+			Grade:              b.Grade,
+			Description:        b.Description,
+			SizeRange:          b.SizeRange,
+			Type:               b.Type,
+			Price:              b.Price,
+			Status:             b.Status,
+			EstimatedBreakdown: b.EstimatedBreakdown,
+			DeclaredRating:     b.DeclaredRating,
+			SortingLevel:       string(b.SortingLevel),
+			CreatedAt:          b.CreatedAt,
 		})
 	}
 
@@ -447,7 +463,7 @@ func (c *BundleController) GetBundleDetail(ctx *gin.Context) {
 
 	// Construct response
 	response := models.BundleDetailResponse{}
-	
+
 	// Fill bundle details
 	response.Bundle.ID = bundle.ID
 	response.Bundle.Title = bundle.Title

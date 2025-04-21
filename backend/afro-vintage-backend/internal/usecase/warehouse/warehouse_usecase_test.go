@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/bundle"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/warehouse"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -61,12 +62,65 @@ func (m *MockRepository) CountByStatus(ctx context.Context, status string) (int,
 	return args.Int(0), args.Error(1)
 }
 
+type MockBundleRepository struct {
+	mock.Mock
+}
+
+func (m *MockBundleRepository) GetBundleByID(ctx context.Context, id string) (*bundle.Bundle, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*bundle.Bundle), args.Error(1)
+}
+func (m *MockBundleRepository) CountBundles(ctx context.Context) (int, error) {
+	args := m.Called(ctx)
+	return args.Int(0), args.Error(1)
+}
+func (m *MockBundleRepository) CreateBundle(ctx context.Context, b *bundle.Bundle) error {
+	args := m.Called(ctx, b)
+	return args.Error(0)
+}
+func (m *MockBundleRepository) DecreaseBundleQuantity(ctx context.Context, bundleID string) error {
+	args := m.Called(ctx, bundleID)
+	return args.Error(0)
+}
+func (m *MockBundleRepository) DeleteBundle(ctx context.Context, bundleID string) error {
+	args := m.Called(ctx, bundleID)
+	return args.Error(0)
+}
+func (m *MockBundleRepository) ListAvailableBundles(ctx context.Context) ([]*bundle.Bundle, error) {
+	args := m.Called(ctx)
+	return args.Get(0).([]*bundle.Bundle), args.Error(1)
+}
+func (m *MockBundleRepository) ListBundles(ctx context.Context, supplierID string) ([]*bundle.Bundle, error) {
+	args := m.Called(ctx, supplierID)
+	return args.Get(0).([]*bundle.Bundle), args.Error(1)
+}
+func (m *MockBundleRepository) ListPurchasedByReseller(ctx context.Context, resellerID string) ([]*bundle.Bundle, error) {
+	args := m.Called(ctx, resellerID)
+	return args.Get(0).([]*bundle.Bundle), args.Error(1)
+}
+func (m *MockBundleRepository) MarkAsPurchased(ctx context.Context, bundleID, resellerID string) error {
+	args := m.Called(ctx, bundleID, resellerID)
+	return args.Error(0)
+}
+func (m *MockBundleRepository) UpdateBundle(ctx context.Context, bundleID string, updates map[string]interface{}) error {
+	args := m.Called(ctx, bundleID, updates)
+	return args.Error(0)
+}
+func (m *MockBundleRepository) UpdateBundleStatus(ctx context.Context, bundleID string, status string) error {
+	args := m.Called(ctx, bundleID, status)
+	return args.Error(0)
+}
+
 func TestNewWarehouseUseCase(t *testing.T) {
 	// Arrange
 	mockRepo := new(MockRepository)
 
 	// Act
-	useCase := NewWarehouseUseCase(mockRepo)
+	mockBundleRepo := new(MockBundleRepository)
+	useCase := NewWarehouseUseCase(mockRepo, mockBundleRepo)
 
 	// Assert
 	assert.NotNil(t, useCase)
@@ -116,7 +170,8 @@ func TestGetWarehouseItems(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Arrange
 			mockRepo := new(MockRepository)
-			useCase := NewWarehouseUseCase(mockRepo)
+			mockBundleRepo := new(MockBundleRepository)
+			useCase := NewWarehouseUseCase(mockRepo, mockBundleRepo)
 			ctx := context.Background()
 
 			mockRepo.On("GetItemsByReseller", ctx, tt.resellerID).Return(tt.mockItems, tt.mockError)

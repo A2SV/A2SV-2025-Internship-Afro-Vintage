@@ -13,6 +13,7 @@ type CartItemResponse struct {
 	ImageURL  string  `json:"image_url"`
 	Grade     string  `json:"grade"`
 	CreatedAt string  `json:"created_at"`
+	Rating    float64 `json:"rating"`
 }
 
 type CheckoutItemResponse struct {

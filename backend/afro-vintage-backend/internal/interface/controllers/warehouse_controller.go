@@ -9,10 +9,10 @@ import (
 )
 
 type WarehouseController struct {
-	warehouseUsecase warehouse.Usecase
+	warehouseUsecase warehouse.WarehouseUseCase
 }
 
-func NewWarehouseController(warehouseUsecase warehouse.Usecase) *WarehouseController {
+func NewWarehouseController(warehouseUsecase warehouse.WarehouseUseCase) *WarehouseController {
 	return &WarehouseController{warehouseUsecase: warehouseUsecase}
 }
 

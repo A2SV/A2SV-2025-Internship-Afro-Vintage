@@ -2,8 +2,10 @@ package warehouse
 
 import (
 	"context"
+
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/models"
 )
 
-type Usecase interface {
-	GetWarehouseItems(ctx context.Context, resellerID string) ([]*WarehouseItem, error)
+type WarehouseUseCase interface {
+	GetWarehouseItems(ctx context.Context, resellerID string) ([]*models.WarehouseItemResponse, error)
 }

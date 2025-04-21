@@ -67,7 +67,9 @@ func (repo *mongoPaymentRepository) GetAllPlatformFees(ctx context.Context) (flo
 	pipeline := mongo.Pipeline{
 		bson.D{
 			{Key: "$match", Value: bson.D{
-				{Key: "status", Value: "paid"},
+				{Key: "status", Value: bson.D{
+					{Key: "$in", Value: bson.A{"paid", "Paid"}},
+				}},
 			}},
 		},
 		bson.D{
