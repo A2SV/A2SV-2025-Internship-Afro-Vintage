@@ -1,12 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { ItemPreview } from '@/types/marketplace';
+import { ItemPreview, Item } from '@/types/marketplace';
 import { fetchMarketplaceItems } from '@/lib/api/marketplace';
 import ItemCard from '@/components/marketplace/ItemCard';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import FilterPanel, { FilterValues } from '@/components/marketplace/FilterPanel';
+import ItemDetailsModal from '@/components/marketplace/ItemDetailsModal';
 
 type MarketplacePageProps = {
   initialItems?: ItemPreview[];
@@ -36,6 +37,8 @@ export default function MarketplacePage({
   const [activeFilters, setActiveFilters] = useState<string[]>(initialFilters.category);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<FilterValues>(initialFilters);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const loadItems = async (page: number, filters: FilterValues) => {
     try {
@@ -78,6 +81,20 @@ export default function MarketplacePage({
   const removeFilter = (filter: string) => {
     // This is a simplified version - in a real app, you'd need to update the actual filter state
     setActiveFilters(activeFilters.filter(f => f !== filter));
+  };
+
+  const handleItemClick = (item: ItemPreview) => {
+    setSelectedItem({
+      id: item.id,
+      name: item.title,
+      price: item.price,
+      image: item.thumbnailUrl,
+      description: item.description,
+      category: item.category,
+      grade: item.grade,
+      status: 'available'
+    });
+    setIsModalOpen(true);
   };
 
   if (error) {
@@ -145,7 +162,7 @@ export default function MarketplacePage({
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {items.map((item) => (
-                      <ItemCard key={item.id} item={item} />
+                      <ItemCard key={item.id} item={item} onItemClick={handleItemClick} />
                     ))}
                   </div>
                 )}
@@ -205,6 +222,13 @@ export default function MarketplacePage({
           </div>
         </div>
       </main>
+      {selectedItem && (
+        <ItemDetailsModal
+          item={selectedItem}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
     </div>
   );
 } 
