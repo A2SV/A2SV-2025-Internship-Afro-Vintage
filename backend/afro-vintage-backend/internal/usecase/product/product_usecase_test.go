@@ -63,6 +63,14 @@ func (m *MockRepository) UpdateProduct(ctx context.Context, id string, updates m
 	return args.Error(0)
 }
 
+func (m *MockRepository) GetSoldProductsByReseller(ctx context.Context, resellerID string) ([]*product.Product, error) {
+	args := m.Called(ctx, resellerID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*product.Product), args.Error(1)
+}
+
 type MockBundleRepository struct {
 	mock.Mock
 }

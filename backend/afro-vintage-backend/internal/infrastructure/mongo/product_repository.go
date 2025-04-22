@@ -126,3 +126,33 @@ func (r *mongoProductRepository) GetProductsByBundleID(ctx context.Context, bund
 
 	return products, nil
 }
+
+// GetSoldProductsByReseller returns all products that are marked as sold for a specific reseller
+func (r *mongoProductRepository) GetSoldProductsByReseller(ctx context.Context, resellerID string) ([]*product.Product, error) {
+	collection := r.collection
+	
+	// Convert string ID to ObjectID
+	objID, err := primitive.ObjectIDFromHex(resellerID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid reseller ID: %w", err)
+	}
+
+	// Find all products that are sold and belong to this reseller
+	filter := bson.M{
+		"reseller_id": objID,
+		"status": "sold",
+	}
+
+	cursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find sold products: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var products []*product.Product
+	if err := cursor.All(ctx, &products); err != nil {
+		return nil, fmt.Errorf("failed to decode products: %w", err)
+	}
+
+	return products, nil
+}

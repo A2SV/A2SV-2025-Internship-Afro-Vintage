@@ -3,6 +3,7 @@ package mongo
 import (
 	"context"
 	"errors" // Added
+	"fmt"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/bundle"
 	"go.mongodb.org/mongo-driver/bson"
@@ -83,9 +84,12 @@ func (r *BundleRepository) ListAvailableBundles(ctx context.Context) ([]*bundle.
 }
 
 func (r *BundleRepository) ListPurchasedByReseller(ctx context.Context, resellerID string) ([]*bundle.Bundle, error) {
+	fmt.Printf("🔍 Fetching purchased bundles for reseller: %s\n", resellerID)
+	
 	var bundles []*bundle.Bundle
 	cursor, err := r.collection.Find(ctx, bson.M{"resellerid": resellerID, "status": "purchased"})
 	if err != nil {
+		fmt.Printf("❌ Error querying bundles: %v\n", err)
 		return nil, err
 	}
 	defer cursor.Close(ctx)
@@ -93,15 +97,18 @@ func (r *BundleRepository) ListPurchasedByReseller(ctx context.Context, reseller
 	for cursor.Next(ctx) {
 		var b bundle.Bundle
 		if err := cursor.Decode(&b); err != nil {
+			fmt.Printf("❌ Error decoding bundle: %v\n", err)
 			return nil, err
 		}
 		bundles = append(bundles, &b)
 	}
 
 	if err := cursor.Err(); err != nil {
+		fmt.Printf("❌ Cursor error: %v\n", err)
 		return nil, err
 	}
 
+	fmt.Printf("✅ Found %d purchased bundles for reseller %s\n", len(bundles), resellerID)
 	return bundles, nil
 }
 

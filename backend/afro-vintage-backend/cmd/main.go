@@ -55,23 +55,30 @@ func main() {
 	productUC := productusecase.NewProductUsecase(productRepo, bundleRepo)
 	bundleUC := bundleusecase.NewBundleUsecase(bundleRepo)
 	trustUC := trustusecase.NewTrustUsecase(productRepo, bundleRepo, userRepo)
-	orderSvc := orderusecase.NewOrderUsecase(bundleRepo, orderRepo, warehouseRepo, paymentRepo, userRepo)
-	cartItemUC := cartitemusecase.NewCartItemUsecase(cartItemRepo, productRepo, paymentRepo, orderSvc, orderRepo)
+	orderUC := orderusecase.NewOrderUsecase(
+		bundleRepo,
+		orderRepo,
+		warehouseRepo,
+		paymentRepo,
+		userRepo,
+		productRepo,
+	)
+	cartItemUC := cartitemusecase.NewCartItemUsecase(cartItemRepo, productRepo, paymentRepo, orderUC, orderRepo)
 
 	reviewUC := reviewusecase.NewReviewUsecase(reviewRepo, orderRepo) // Add review usecase
 	warehouseSvc := warehouse_usecase.NewWarehouseUseCase(warehouseRepo, bundleRepo)
 
 	// Init Controllers
 	authCtrl := controllers.NewAuthController(authUC)
-	adminCtrl := controllers.NewAdminController(userUC, orderSvc)
+	adminCtrl := controllers.NewAdminController(userUC, orderUC)
 	productCtrl := controllers.NewProductController(productUC, trustUC, bundleUC, warehouseRepo)
 	bundleCtrl := controllers.NewBundleController(bundleUC, userUC)
 	consumerCtrl := controllers.NewConsumerController(orderRepo)
-	supplierCtrl := controllers.NewSupplierController(orderSvc) // Add consumer controller
+	supplierCtrl := controllers.NewSupplierController(orderUC) // Add consumer controller
 	cartItemCtrl := controllers.NewCartItemController(cartItemUC, productUC)
 	reviewCtrl := controllers.NewReviewController(reviewUC, trustUC, productUC) // Add trust and product usecases
 	warehouseCtrl := controllers.NewWarehouseController(warehouseSvc)
-	orderCtrl := controllers.NewOrderController(orderSvc) // Add order controller
+	orderCtrl := controllers.NewOrderController(orderUC) // Add order controller
 
 	// Init Gin Engine and Routes
 	r := gin.Default()

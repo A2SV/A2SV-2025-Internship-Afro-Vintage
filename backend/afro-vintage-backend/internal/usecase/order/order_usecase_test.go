@@ -9,10 +9,12 @@ import (
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/bundle"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/order"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/payment"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/user"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/warehouse"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Mock Repositories
@@ -211,6 +213,11 @@ func (m *MockPaymentRepo) GetPaymentsByType(ctx context.Context, userID string, 
 	return args.Get(0).([]*payment.Payment), args.Error(1)
 }
 
+func (m *MockPaymentRepo) CreatePayment(ctx context.Context, p *payment.Payment) error {
+	args := m.Called(ctx, p)
+	return args.Error(0)
+}
+
 type MockUserRepo struct {
 	mock.Mock
 }
@@ -283,20 +290,84 @@ func (m *MockBundleRepo) CountBundles(ctx context.Context) (int, error) {
 	return args.Int(0), args.Error(1)
 }
 
+type MockProductRepo struct {
+	mock.Mock
+}
+
+func (m *MockProductRepo) GetProductByID(ctx context.Context, id string) (*product.Product, error) {
+	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*product.Product), args.Error(1)
+}
+
+func (m *MockProductRepo) AddProduct(ctx context.Context, p *product.Product) error {
+	args := m.Called(ctx, p)
+	return args.Error(0)
+}
+
+func (m *MockProductRepo) ListProducts(ctx context.Context) ([]*product.Product, error) {
+	args := m.Called(ctx)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*product.Product), args.Error(1)
+}
+
+func (m *MockProductRepo) UpdateProduct(ctx context.Context, id string, updates map[string]interface{}) error {
+	args := m.Called(ctx, id, updates)
+	return args.Error(0)
+}
+
+func (m *MockProductRepo) DeleteProduct(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *MockProductRepo) GetProductsByBundleID(ctx context.Context, bundleID string) ([]*product.Product, error) {
+	args := m.Called(ctx, bundleID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*product.Product), args.Error(1)
+}
+
+func (m *MockProductRepo) GetSoldProductsByReseller(ctx context.Context, resellerID string) ([]*product.Product, error) {
+	args := m.Called(ctx, resellerID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*product.Product), args.Error(1)
+}
+
+func (m *MockProductRepo) ListAvailableProducts(ctx context.Context, page int, limit int) ([]*product.Product, error) {
+	args := m.Called(ctx, page, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*product.Product), args.Error(1)
+}
+
+func (m *MockProductRepo) ListProductsByReseller(ctx context.Context, resellerID string, page int, limit int) ([]*product.Product, error) {
+	args := m.Called(ctx, resellerID, page, limit)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*product.Product), args.Error(1)
+}
+
 // Test Cases
 func TestNewOrderUsecase(t *testing.T) {
-	// Arrange
-	mockBundleRepo := new(MockBundleRepo)
-	mockOrderRepo := new(MockOrderRepo)
-	mockWarehouseRepo := new(MockWarehouseRepo)
-	mockPaymentRepo := new(MockPaymentRepo)
-	mockUserRepo := new(MockUserRepo)
+	bundleRepo := new(MockBundleRepo)
+	orderRepo := new(MockOrderRepo)
+	warehouseRepo := new(MockWarehouseRepo)
+	paymentRepo := new(MockPaymentRepo)
+	userRepo := new(MockUserRepo)
+	productRepo := new(MockProductRepo)
 
-	// Act
-	useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo)
-
-	// Assert
-	assert.NotNil(t, useCase)
+	uc := NewOrderUsecase(bundleRepo, orderRepo, warehouseRepo, paymentRepo, userRepo, productRepo)
+	assert.NotNil(t, uc)
 }
 
 func TestPurchaseBundle(t *testing.T) {
@@ -355,7 +426,8 @@ func TestPurchaseBundle(t *testing.T) {
 			mockWarehouseRepo := new(MockWarehouseRepo)
 			mockPaymentRepo := new(MockPaymentRepo)
 			mockUserRepo := new(MockUserRepo)
-			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo)
+			productRepo := new(MockProductRepo)
+			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo, productRepo)
 			ctx := context.Background()
 
 			mockBundleRepo.On("GetBundleByID", ctx, tt.bundleID).Return(tt.mockBundle, tt.mockError)
@@ -481,7 +553,8 @@ func TestGetDashboardMetrics(t *testing.T) {
 			mockWarehouseRepo := new(MockWarehouseRepo)
 			mockPaymentRepo := new(MockPaymentRepo)
 			mockUserRepo := new(MockUserRepo)
-			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo)
+			productRepo := new(MockProductRepo)
+			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo, productRepo)
 			ctx := context.Background()
 
 			mockBundleRepo.On("ListBundles", ctx, tt.supplierID).Return(tt.mockBundles, tt.mockError)
@@ -546,7 +619,8 @@ func TestGetOrderByID(t *testing.T) {
 			mockWarehouseRepo := new(MockWarehouseRepo)
 			mockPaymentRepo := new(MockPaymentRepo)
 			mockUserRepo := new(MockUserRepo)
-			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo)
+			productRepo := new(MockProductRepo)
+			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo, productRepo)
 			ctx := context.Background()
 
 			mockOrderRepo.On("GetOrderByID", ctx, tt.orderID).Return(tt.mockOrder, tt.mockError)
@@ -622,7 +696,8 @@ func TestGetSoldBundleHistory(t *testing.T) {
 			mockWarehouseRepo := new(MockWarehouseRepo)
 			mockPaymentRepo := new(MockPaymentRepo)
 			mockUserRepo := new(MockUserRepo)
-			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo)
+			productRepo := new(MockProductRepo)
+			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo, productRepo)
 			ctx := context.Background()
 
 			mockOrderRepo.On("GetOrdersBySupplier", ctx, tt.supplierID).Return(tt.mockOrders, tt.mockError)
@@ -646,4 +721,78 @@ func TestGetSoldBundleHistory(t *testing.T) {
 			mockOrderRepo.AssertExpectations(t)
 		})
 	}
+}
+
+func TestPurchaseProduct(t *testing.T) {
+	// Arrange
+	bundleRepo := new(MockBundleRepo)
+	orderRepo := new(MockOrderRepo)
+	warehouseRepo := new(MockWarehouseRepo)
+	paymentRepo := new(MockPaymentRepo)
+	userRepo := new(MockUserRepo)
+	productRepo := new(MockProductRepo)
+
+	uc := NewOrderUsecase(bundleRepo, orderRepo, warehouseRepo, paymentRepo, userRepo, productRepo)
+	ctx := context.Background()
+	productID := "test-product-id"
+	userID := "test-user-id"
+	price := 100.0
+
+	resellerObjID := primitive.NewObjectID()
+
+	// Mock product
+	mockProduct := &product.Product{
+		ID:         productID,
+		ResellerID: resellerObjID,
+		Price:      price,
+	}
+	productRepo.On("GetProductByID", ctx, productID).Return(mockProduct, nil)
+
+	// Mock order creation
+	orderRepo.On("CreateOrder", ctx, mock.Anything).Return(nil)
+
+	// Mock payment creation
+	paymentRepo.On("CreatePayment", ctx, mock.Anything).Return(nil)
+
+	// Act
+	order, payment, err := uc.PurchaseProduct(ctx, productID, userID, price)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, order)
+	assert.NotNil(t, payment)
+
+	productRepo.AssertExpectations(t)
+	orderRepo.AssertExpectations(t)
+	paymentRepo.AssertExpectations(t)
+}
+
+func TestPurchaseProduct_ProductNotFound(t *testing.T) {
+	// Arrange
+	bundleRepo := new(MockBundleRepo)
+	orderRepo := new(MockOrderRepo)
+	warehouseRepo := new(MockWarehouseRepo)
+	paymentRepo := new(MockPaymentRepo)
+	userRepo := new(MockUserRepo)
+	productRepo := new(MockProductRepo)
+
+	uc := NewOrderUsecase(bundleRepo, orderRepo, warehouseRepo, paymentRepo, userRepo, productRepo)
+	ctx := context.Background()
+	productID := "test-product-id"
+	userID := "test-user-id"
+	price := 100.0
+
+	// Mock product not found
+	productRepo.On("GetProductByID", ctx, productID).Return(nil, errors.New("product not found"))
+
+	// Act
+	order, payment, err := uc.PurchaseProduct(ctx, productID, userID, price)
+
+	// Assert
+	assert.Error(t, err)
+	assert.Nil(t, order)
+	assert.Nil(t, payment)
+	assert.Contains(t, err.Error(), "product not found")
+
+	productRepo.AssertExpectations(t)
 }

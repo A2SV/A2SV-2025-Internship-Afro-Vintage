@@ -14,16 +14,20 @@ import (
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/payment"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/user"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/warehouse"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func NewOrderUsecase(bRepo bundle.Repository, oRepo order.Repository, wRepo warehouse.Repository, pRepo payment.Repository, uRepo user.Repository) *orderUseCaseImpl {
+
+
+func NewOrderUsecase(bRepo bundle.Repository, oRepo order.Repository, wRepo warehouse.Repository, pRepo payment.Repository, uRepo user.Repository, prodRepo product.Repository) *orderUseCaseImpl {
 	return &orderUseCaseImpl{
 		bundleRepo:    bRepo,
 		orderRepo:     oRepo,
 		warehouseRepo: wRepo,
 		paymentRepo:   pRepo,
 		userRepo:      uRepo,
+		prodRepo:      prodRepo,
 	}
 }
 
@@ -178,49 +182,52 @@ func (uc *orderUseCaseImpl) GetDashboardMetrics(ctx context.Context, supplierID 
 }
 
 func (uc *orderUseCaseImpl) GetResellerMetrics(ctx context.Context, resellerID string) (*order.ResellerMetrics, error) {
+	fmt.Printf("🔍 Starting GetResellerMetrics for reseller: %s\n", resellerID)
+
+	// Get purchased bundles
 	bundles, err := uc.bundleRepo.ListPurchasedByReseller(ctx, resellerID)
 	if err != nil {
+		fmt.Printf("❌ Error getting bundles: %v\n", err)
 		return nil, err
 	}
+	fmt.Printf("📦 Found %d purchased bundles\n", len(bundles))
 
-	userData, err := uc.userRepo.GetByID(ctx, resellerID)
+	// Get reseller info
+	reseller, err := uc.userRepo.GetByID(ctx, resellerID)
 	if err != nil {
+		fmt.Printf("❌ Error getting reseller info: %v\n", err)
 		return nil, err
 	}
+	fmt.Printf("👤 Reseller found: %s\n", reseller.Username)
 
-	orders, err := uc.orderRepo.GetOrdersByReseller(ctx, resellerID)
+	// Get sold products directly from product collection
+	soldProducts, err := uc.prodRepo.GetSoldProductsByReseller(ctx, resellerID)
 	if err != nil {
+		fmt.Printf("❌ Error getting sold products: %v\n", err)
 		return nil, err
 	}
+	fmt.Printf("🛍️ Found %d sold products\n", len(soldProducts))
 
-	totalItemsSold := 0
+	// Find best selling item
 	bestSelling := 0.0
-	for _, order := range orders {
-		if order.Status == "completed" {
-			if len(order.ProductIDs) > 0 {
-				totalItemsSold += len(order.ProductIDs)
-			}
-			if order.BundleID != "" {
-				b, err := uc.bundleRepo.GetBundleByID(ctx, order.BundleID)
-				if err == nil && b != nil {
-					totalItemsSold += b.Quantity
-				}
-			}
+	for _, product := range soldProducts {
+		if product.Price > bestSelling {
+			bestSelling = product.Price
+			fmt.Printf("💰 New best selling item found: %s with price %.2f\n", product.Title, product.Price)
 		}
 	}
-	for _, b := range bundles {
-		if b.Price > bestSelling {
-			bestSelling = b.Price
-		}
-	}
+	fmt.Printf("💰 Best selling item price: %.2f\n", bestSelling)
 
-	return &order.ResellerMetrics{
+	metrics := &order.ResellerMetrics{
 		TotalBoughtBundles: len(bundles),
-		TotalItemsSold:     totalItemsSold,
-		Rating:             userData.TrustScore,
+		TotalItemsSold:     len(soldProducts),
+		Rating:             reseller.TrustScore,
 		BestSelling:        bestSelling,
 		BoughtBundles:      bundles,
-	}, nil
+	}
+
+	fmt.Printf("✅ Final metrics: %+v\n", metrics)
+	return metrics, nil
 }
 
 func (uc *orderUseCaseImpl) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, error) {
@@ -273,6 +280,12 @@ func (uc *orderUseCaseImpl) GetOrderByID(ctx context.Context, orderID string) (*
 }
 
 func (uc *orderUseCaseImpl) PurchaseProduct(ctx context.Context, productID, consumerID string, totalPrice float64) (*order.Order, *payment.Payment, error) {
+	// Get product details to get reseller ID
+	prod, err := uc.prodRepo.GetProductByID(ctx, productID)
+	if err != nil {
+		return nil, nil, fmt.Errorf("failed to get product details: %w", err)
+	}
+
 	// Calculate platform fee and net amount
 	platformFee := totalPrice * 0.02
 	netAmount := totalPrice - platformFee
@@ -280,7 +293,7 @@ func (uc *orderUseCaseImpl) PurchaseProduct(ctx context.Context, productID, cons
 	// Create order
 	order := &order.Order{
 		ID:          primitive.NewObjectID().Hex(),
-		ResellerID:  "", // Will be set by cart checkout
+		ResellerID:  prod.ResellerID.Hex(),
 		SupplierID:  "", // Not needed for product orders
 		BundleID:    "", // Not needed for product orders
 		ConsumerID:  consumerID,
@@ -298,7 +311,7 @@ func (uc *orderUseCaseImpl) PurchaseProduct(ctx context.Context, productID, cons
 	// Create payment record
 	payment := &payment.Payment{
 		FromUserID:    consumerID,
-		ToUserID:      "", // Will be set by cart checkout
+		ToUserID:      prod.ResellerID.Hex(),
 		Amount:        totalPrice,
 		PlatformFee:   platformFee,
 		SellerEarning: netAmount,

@@ -8,6 +8,7 @@ import (
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/payment"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/user"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/warehouse"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
 )
 
 type OrderUseCase interface {
@@ -23,4 +24,6 @@ type orderUseCaseImpl struct {
 	warehouseRepo warehouse.Repository
 	paymentRepo   payment.Repository
 	userRepo      user.Repository
+	prodRepo      product.Repository
 }
+

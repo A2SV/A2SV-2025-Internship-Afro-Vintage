@@ -5,6 +5,7 @@ import (
     "github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/order"
     "github.com/Zeamanuel-Admasu/afro-vintage-backend/models/common"
     "github.com/gin-gonic/gin"
+    "fmt"
 )
 
 type SupplierController struct {
@@ -43,28 +44,44 @@ func (c *SupplierController) GetDashboardMetrics(ctx *gin.Context) {
 }
 
 func (c *SupplierController) GetResellerMetrics(ctx *gin.Context) {
+	fmt.Println("🔍 Starting GetResellerMetrics request")
+	
 	resellerID, exists := ctx.Get("userID")
 	if !exists {
+		fmt.Println("❌ No user ID found in context")
 		ctx.JSON(http.StatusUnauthorized, common.APIResponse{
 			Success: false,
-			Message: "Unauthorized",
+			Message: "Unauthorized: user ID not found in context",
 		})
 		return
 	}
 
 	resellerIDStr, ok := resellerID.(string)
 	if !ok || resellerIDStr == "" {
+		fmt.Println("❌ Invalid user ID in context")
 		ctx.JSON(http.StatusUnauthorized, common.APIResponse{
 			Success: false,
-			Message: "invalid or empty user ID in context",
+			Message: "Unauthorized: invalid or empty user ID in context",
 		})
 		return
 	}
 
+	fmt.Printf("👤 Processing metrics for reseller: %s\n", resellerIDStr)
 	metrics, err := c.orderUseCase.GetResellerMetrics(ctx, resellerIDStr)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		fmt.Printf("❌ Error getting metrics: %v\n", err)
+		ctx.JSON(http.StatusInternalServerError, common.APIResponse{
+			Success: false,
+			Message: "Failed to get reseller metrics",
+			
+		})
 		return
 	}
-	ctx.JSON(http.StatusOK, metrics)
+
+	fmt.Println("✅ Successfully retrieved metrics")
+	ctx.JSON(http.StatusOK, common.APIResponse{
+		Success: true,
+		Message: "Reseller metrics retrieved successfully",
+		Data:    metrics,
+	})
 }

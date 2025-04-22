@@ -86,6 +86,14 @@ func (m *MockProductRepository) GetProductsByBundleID(ctx context.Context, bundl
 	return args.Get(0).([]*product.Product), args.Error(1)
 }
 
+func (m *MockProductRepository) GetSoldProductsByReseller(ctx context.Context, resellerID string) ([]*product.Product, error) {
+	args := m.Called(ctx, resellerID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*product.Product), args.Error(1)
+}
+
 type MockPaymentRepository struct {
 	mock.Mock
 }

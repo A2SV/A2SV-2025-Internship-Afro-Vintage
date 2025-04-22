@@ -10,4 +10,5 @@ type Repository interface {
 	DeleteProduct(ctx context.Context, id string) error
 	UpdateProduct(ctx context.Context, id string, updates map[string]interface{}) error
 	GetProductsByBundleID(ctx context.Context, bundleID string) ([]*Product, error)
+	GetSoldProductsByReseller(ctx context.Context, resellerID string) ([]*Product, error)
 }
