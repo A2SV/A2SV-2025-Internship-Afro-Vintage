@@ -11,4 +11,5 @@ type Usecase interface {
 	ListAvailableBundles(ctx context.Context) ([]*Bundle, error)
 	DecreaseRemainingItemCount(ctx context.Context, bundleID string) error
 	GetBundlePublicByID(ctx context.Context, bundleID string) (*Bundle, error)
+	GetBundleByTitle(ctx context.Context, title string) (*Bundle, error)
 }

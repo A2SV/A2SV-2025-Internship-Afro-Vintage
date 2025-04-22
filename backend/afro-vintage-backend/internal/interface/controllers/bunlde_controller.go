@@ -490,3 +490,46 @@ func (c *BundleController) GetBundleDetail(ctx *gin.Context) {
 		Data:    response,
 	})
 }
+
+func (c *BundleController) GetBundleByTitle(ctx *gin.Context) {
+	title := ctx.Param("title")
+	if title == "" {
+		ctx.JSON(http.StatusBadRequest, common.APIResponse{
+			Success: false,
+			Message: "title parameter is required",
+		})
+		return
+	}
+
+	bundle, err := c.bundleUsecase.GetBundleByTitle(ctx, title)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, common.APIResponse{
+			Success: false,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	resp := models.BundleResponse{
+		ID:                 bundle.ID,
+		Title:              bundle.Title,
+		SampleImage:        bundle.SampleImage,
+		Quantity:           bundle.Quantity,
+		Grade:              bundle.Grade,
+		Description:        bundle.Description,
+		SizeRange:          bundle.SizeRange,
+		Type:               bundle.Type,
+		Price:              bundle.Price,
+		Status:             bundle.Status,
+		EstimatedBreakdown: bundle.EstimatedBreakdown,
+		DeclaredRating:     bundle.DeclaredRating,
+		SortingLevel:       string(bundle.SortingLevel),
+		CreatedAt:          bundle.CreatedAt,
+	}
+
+	ctx.JSON(http.StatusOK, common.APIResponse{
+		Success: true,
+		Message: "Bundle retrieved successfully",
+		Data:    resp,
+	})
+}

@@ -294,17 +294,17 @@ type MockProductRepo struct {
 	mock.Mock
 }
 
+func (m *MockProductRepo) AddProduct(ctx context.Context, p *product.Product) error {
+	args := m.Called(ctx, p)
+	return args.Error(0)
+}
+
 func (m *MockProductRepo) GetProductByID(ctx context.Context, id string) (*product.Product, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*product.Product), args.Error(1)
-}
-
-func (m *MockProductRepo) AddProduct(ctx context.Context, p *product.Product) error {
-	args := m.Called(ctx, p)
-	return args.Error(0)
 }
 
 func (m *MockProductRepo) ListProducts(ctx context.Context) ([]*product.Product, error) {
@@ -315,8 +315,8 @@ func (m *MockProductRepo) ListProducts(ctx context.Context) ([]*product.Product,
 	return args.Get(0).([]*product.Product), args.Error(1)
 }
 
-func (m *MockProductRepo) UpdateProduct(ctx context.Context, id string, updates map[string]interface{}) error {
-	args := m.Called(ctx, id, updates)
+func (m *MockProductRepo) UpdateProduct(ctx context.Context, id string, updatedData map[string]interface{}) error {
+	args := m.Called(ctx, id, updatedData)
 	return args.Error(0)
 }
 
@@ -341,7 +341,7 @@ func (m *MockProductRepo) GetSoldProductsByReseller(ctx context.Context, reselle
 	return args.Get(0).([]*product.Product), args.Error(1)
 }
 
-func (m *MockProductRepo) ListAvailableProducts(ctx context.Context, page int, limit int) ([]*product.Product, error) {
+func (m *MockProductRepo) ListAvailableProducts(ctx context.Context, page, limit int) ([]*product.Product, error) {
 	args := m.Called(ctx, page, limit)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -349,7 +349,7 @@ func (m *MockProductRepo) ListAvailableProducts(ctx context.Context, page int, l
 	return args.Get(0).([]*product.Product), args.Error(1)
 }
 
-func (m *MockProductRepo) ListProductsByReseller(ctx context.Context, resellerID string, page int, limit int) ([]*product.Product, error) {
+func (m *MockProductRepo) ListProductsByReseller(ctx context.Context, resellerID string, page, limit int) ([]*product.Product, error) {
 	args := m.Called(ctx, resellerID, page, limit)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -359,15 +359,25 @@ func (m *MockProductRepo) ListProductsByReseller(ctx context.Context, resellerID
 
 // Test Cases
 func TestNewOrderUsecase(t *testing.T) {
-	bundleRepo := new(MockBundleRepo)
-	orderRepo := new(MockOrderRepo)
-	warehouseRepo := new(MockWarehouseRepo)
-	paymentRepo := new(MockPaymentRepo)
-	userRepo := new(MockUserRepo)
-	productRepo := new(MockProductRepo)
+	// Arrange
+	orderRepo := &MockOrderRepo{}
+	bundleRepo := &MockBundleRepo{}
+	warehouseRepo := &MockWarehouseRepo{}
+	paymentRepo := &MockPaymentRepo{}
+	userRepo := &MockUserRepo{}
+	productRepo := &MockProductRepo{}
 
-	uc := NewOrderUsecase(bundleRepo, orderRepo, warehouseRepo, paymentRepo, userRepo, productRepo)
+	// Act
+	uc := NewOrderUsecase(orderRepo, bundleRepo, warehouseRepo, paymentRepo, userRepo, productRepo)
+
+	// Assert
 	assert.NotNil(t, uc)
+	assert.Equal(t, orderRepo, uc.orderRepo)
+	assert.Equal(t, bundleRepo, uc.bundleRepo)
+	assert.Equal(t, warehouseRepo, uc.warehouseRepo)
+	assert.Equal(t, paymentRepo, uc.paymentRepo)
+	assert.Equal(t, userRepo, uc.userRepo)
+	assert.Equal(t, productRepo, uc.prodRepo)
 }
 
 func TestPurchaseBundle(t *testing.T) {
@@ -725,15 +735,15 @@ func TestGetSoldBundleHistory(t *testing.T) {
 
 func TestPurchaseProduct(t *testing.T) {
 	// Arrange
-	bundleRepo := new(MockBundleRepo)
-	orderRepo := new(MockOrderRepo)
-	warehouseRepo := new(MockWarehouseRepo)
-	paymentRepo := new(MockPaymentRepo)
-	userRepo := new(MockUserRepo)
-	productRepo := new(MockProductRepo)
-
-	uc := NewOrderUsecase(bundleRepo, orderRepo, warehouseRepo, paymentRepo, userRepo, productRepo)
 	ctx := context.Background()
+	orderRepo := &MockOrderRepo{}
+	bundleRepo := &MockBundleRepo{}
+	warehouseRepo := &MockWarehouseRepo{}
+	paymentRepo := &MockPaymentRepo{}
+	userRepo := &MockUserRepo{}
+	productRepo := &MockProductRepo{}
+
+	uc := NewOrderUsecase(orderRepo, bundleRepo, warehouseRepo, paymentRepo, userRepo, productRepo)
 	productID := "test-product-id"
 	userID := "test-user-id"
 	price := 100.0

@@ -18,5 +18,5 @@ func RegisterBundleRoutes(r *gin.Engine, ctrl *controllers.BundleController, jwt
 	bundleGroup.PUT("/:id", middlewares.AuthorizeRoles("supplier"), ctrl.UpdateBundle)
 	bundleGroup.GET("/available", middlewares.AuthorizeRoles("reseller", "supplier"), ctrl.ListAvailableBundles)
 	bundleGroup.GET("/detail/:id", middlewares.AuthorizeRoles("reseller", "supplier"), ctrl.GetBundleDetail)
-
+	bundleGroup.GET("/title/:title", middlewares.AuthorizeRoles("reseller", "supplier"), ctrl.GetBundleByTitle)
 }

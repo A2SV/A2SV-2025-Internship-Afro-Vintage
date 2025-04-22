@@ -88,6 +88,14 @@ func (m *MockBundleRepository) GetBundleByID(ctx context.Context, id string) (*b
 	return args.Get(0).(*bundle.Bundle), args.Error(1)
 }
 
+func (m *MockBundleRepository) GetBundleByTitle(ctx context.Context, title string) (*bundle.Bundle, error) {
+	args := m.Called(ctx, title)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*bundle.Bundle), args.Error(1)
+}
+
 func (m *MockBundleRepository) ListBundles(ctx context.Context, supplierID string) ([]*bundle.Bundle, error) {
 	args := m.Called(ctx, supplierID)
 	return args.Get(0).([]*bundle.Bundle), args.Error(1)

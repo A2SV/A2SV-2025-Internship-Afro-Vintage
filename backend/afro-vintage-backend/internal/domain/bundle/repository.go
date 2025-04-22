@@ -14,4 +14,5 @@ type Repository interface {
 	UpdateBundle(ctx context.Context, id string, updatedData map[string]interface{}) error // Added
 	DecreaseBundleQuantity(ctx context.Context, bundleID string) error
 	CountBundles(ctx context.Context) (int, error)
+	GetBundleByTitle(ctx context.Context, title string) (*Bundle, error)
 }

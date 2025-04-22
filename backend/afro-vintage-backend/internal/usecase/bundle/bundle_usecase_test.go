@@ -84,6 +84,14 @@ func (m *MockRepository) DecreaseBundleQuantity(ctx context.Context, bundleID st
 	return args.Error(0)
 }
 
+func (m *MockRepository) GetBundleByTitle(ctx context.Context, title string) (*bundle.Bundle, error) {
+	args := m.Called(ctx, title)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*bundle.Bundle), args.Error(1)
+}
+
 // Helper function to create a test bundle
 func createTestBundle(supplierID string) *bundle.Bundle {
 	return &bundle.Bundle{

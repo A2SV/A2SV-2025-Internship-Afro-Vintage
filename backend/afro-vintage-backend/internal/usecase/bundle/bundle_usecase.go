@@ -3,6 +3,7 @@ package bundle
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/bundle"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -109,4 +110,17 @@ func (u *bundleUsecase) DecreaseRemainingItemCount(ctx context.Context, bundleID
 }
 func (u *bundleUsecase) GetBundlePublicByID(ctx context.Context, bundleID string) (*bundle.Bundle, error) {
 	return u.bundleRepo.GetBundleByID(ctx, bundleID)
+}
+
+func (u *bundleUsecase) GetBundleByTitle(ctx context.Context, title string) (*bundle.Bundle, error) {
+	if title == "" {
+		return nil, errors.New("title cannot be empty")
+	}
+
+	bundle, err := u.bundleRepo.GetBundleByTitle(ctx, title)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get bundle by title: %w", err)
+	}
+
+	return bundle, nil
 }

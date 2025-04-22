@@ -174,3 +174,15 @@ func (r *BundleRepository) CountBundles(ctx context.Context) (int, error) {
 	count, err := r.collection.CountDocuments(ctx, bson.M{})
 	return int(count), err
 }
+
+func (r *BundleRepository) GetBundleByTitle(ctx context.Context, title string) (*bundle.Bundle, error) {
+	var bundle bundle.Bundle
+	err := r.collection.FindOne(ctx, bson.M{"title": title}).Decode(&bundle)
+	if err == mongo.ErrNoDocuments {
+		return nil, errors.New("bundle not found")
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &bundle, nil
+}

@@ -62,6 +62,14 @@ func (m *MockBundleUsecase) DecreaseRemainingItemCount(ctx context.Context, bund
 	return args.Error(0)
 }
 
+func (m *MockBundleUsecase) GetBundleByTitle(ctx context.Context, title string) (*bundle.Bundle, error) {
+	args := m.Called(ctx, title)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*bundle.Bundle), args.Error(1)
+}
+
 type BundleControllerTestSuite struct {
 	suite.Suite
 	controller    *BundleController
