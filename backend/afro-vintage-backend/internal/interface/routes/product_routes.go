@@ -5,6 +5,7 @@ import (
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/trust"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/interface/controllers"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/interface/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
@@ -17,13 +18,15 @@ func RegisterProductRoutes(
 	productUC product.Usecase,
 ) {
 	products := r.Group("/products")
+	products.Use(middlewares.AuthMiddleware(jwtSvc))
+
 	{
-		products.POST("", productCtrl.Create)
+		products.POST("", middlewares.AuthorizeRoles("reseller"), productCtrl.Create)
 		products.GET("", productCtrl.ListAvailable)
 		products.GET("/title/:title", productCtrl.GetByTitle) 
 		products.GET("/:id", productCtrl.GetByID)
-		products.PUT("/:id", productCtrl.Update)
-		products.DELETE("/:id", productCtrl.Delete)
-		products.POST("/:id/reviews", reviewCtrl.SubmitReview)
+		products.PUT("/:id", middlewares.AuthorizeRoles("reseller"), productCtrl.Update)
+		products.DELETE("/:id", middlewares.AuthorizeRoles("reseller"), productCtrl.Delete)
+		products.POST("/:id/reviews", middlewares.AuthorizeRoles("consumer"), reviewCtrl.SubmitReview)
 	}
 }
