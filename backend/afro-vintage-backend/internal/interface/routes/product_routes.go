@@ -23,6 +23,7 @@ func RegisterProductRoutes(
 	{
 		products.POST("", middlewares.AuthorizeRoles("reseller"), productCtrl.Create)
 		products.GET("", productCtrl.ListAvailable)
+		products.GET("/title/:title", productCtrl.GetByTitle) 
 		products.GET("/:id", productCtrl.GetByID)
 		products.PUT("/:id", middlewares.AuthorizeRoles("reseller"), productCtrl.Update)
 		products.DELETE("/:id", middlewares.AuthorizeRoles("reseller"), productCtrl.Delete)

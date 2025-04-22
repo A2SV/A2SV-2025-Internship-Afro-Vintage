@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/warehouse"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type ProductController struct {
@@ -26,13 +28,13 @@ func NewProductController(
 	prodUC product.Usecase,
 	trustUC trust.Usecase,
 	bundleUC bundle.Usecase,
-	warehouseRepo warehouse.Repository, // ✅ new param
+	warehouseRepo warehouse.Repository,
 ) *ProductController {
 	return &ProductController{
 		Usecase:       prodUC,
 		TrustUsecase:  trustUC,
 		BundleUsecase: bundleUC,
-		WarehouseRepo: warehouseRepo, // ✅ assign it
+		WarehouseRepo: warehouseRepo,
 	}
 }
 
@@ -61,7 +63,6 @@ func (h *ProductController) Create(c *gin.Context) {
 		return
 	}
 
-	// ✅ 1. Verify reseller has received the bundle
 	owns, err := h.WarehouseRepo.HasResellerReceivedBundle(c.Request.Context(), userIDStr, p.BundleID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "warehouse check failed"})
@@ -72,41 +73,35 @@ func (h *ProductController) Create(c *gin.Context) {
 		return
 	}
 
-	// ✅ 2. Fetch bundle details (for trust and supplier ID)
 	b, err := h.BundleUsecase.GetBundlePublicByID(c.Request.Context(), p.BundleID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid bundle ID"})
 		return
 	}
 
-	// ✅ 3. Prevent unpacking if bundle is fully used
 	if b.RemainingItemCount <= 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "bundle is fully unpacked"})
 		return
 	}
 
-	// ✅ 4. Assign product fields
 	p.ResellerID = resellerID
 	p.SupplierID = b.SupplierID
 	p.ID = p.GenerateID()
 	p.Status = "available"
 
-	// ✅ 5. Save product
 	if err := h.Usecase.AddProduct(c.Request.Context(), &p); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	// ✅ 6. Decrease bundle's remaining item count
 	if err := h.BundleUsecase.DecreaseRemainingItemCount(c.Request.Context(), p.BundleID); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to decrease bundle quantity"})
 		return
 	}
 
-	// ✅ 7. Trigger supplier trust score update
 	if h.TrustUsecase != nil && p.SupplierID != "" {
 		go h.TrustUsecase.UpdateSupplierTrustScoreOnNewRating(
-			context.Background(), // ✅ use fresh background context
+			context.Background(),
 			p.SupplierID,
 			float64(b.DeclaredRating),
 			p.Rating,
@@ -144,9 +139,38 @@ func (h *ProductController) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, prod)
 }
 
+func (h *ProductController) GetByTitle(c *gin.Context) {
+	title := c.Param("title")
+	if title == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "title cannot be empty"})
+		return
+	}
+
+	prod, err := h.Usecase.GetProductByTitle(c.Request.Context(), title)
+	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "product not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to retrieve product"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, prod)
+}
+
 func (h *ProductController) ListAvailable(c *gin.Context) {
-	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
-	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
+	if err != nil || page < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid page number"})
+		return
+	}
+
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	if err != nil || limit < 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid limit"})
+		return
+	}
 
 	products, err := h.Usecase.ListAvailableProducts(c.Request.Context(), page, limit)
 	if err != nil {

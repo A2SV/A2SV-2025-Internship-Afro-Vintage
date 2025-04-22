@@ -60,6 +60,11 @@ type MockProductUsecase struct {
 	mock.Mock
 }
 
+// GetProductByTitle implements product.Usecase.
+func (m *MockProductUsecase) GetProductByTitle(ctx context.Context, title string) (*product.Product, error) {
+	panic("unimplemented")
+}
+
 func (m *MockProductUsecase) GetProductByID(ctx context.Context, id string) (*product.Product, error) {
 	args := m.Called(ctx, id)
 	if args.Get(0) == nil {
