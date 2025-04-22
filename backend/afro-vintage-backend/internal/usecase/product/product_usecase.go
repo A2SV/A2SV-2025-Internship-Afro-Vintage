@@ -52,6 +52,13 @@ func (uc *productUsecase) GetProductByID(ctx context.Context, id string) (*produ
 	return uc.repo.GetProductByID(ctx, id)
 }
 
+func (uc *productUsecase) GetProductByTitle(ctx context.Context, title string) (*product.Product, error) {
+	if title == "" {
+		return nil, errors.New("title cannot be empty")
+	}
+	return uc.repo.GetProductByTitle(ctx, title)
+}
+
 func (uc *productUsecase) ListProductsByReseller(ctx context.Context, resellerID string, page, limit int) ([]*product.Product, error) {
 	return uc.repo.ListProductsByReseller(ctx, resellerID, page, limit)
 }
