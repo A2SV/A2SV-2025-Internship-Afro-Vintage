@@ -1,5 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 :root {
   --background: #ffffff;
@@ -23,12 +23,12 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Poppins', sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 /* Add background pattern to the hero section */
 .hero-section {
-  background-image: url('/pattern.png');
+  background-image: url("/pattern.png");
   background-repeat: repeat;
   background-size: 1000px 1000px;
 }
