@@ -18,6 +18,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 var (
@@ -36,6 +37,15 @@ type ProductControllerTestSuite struct {
 
 type MockProductUseCase struct {
 	mock.Mock
+}
+
+// GetProductByTitle implements product.Usecase.
+func (m *MockProductUseCase) GetProductByTitle(ctx context.Context, title string) (*product.Product, error) {
+	args := m.Called(ctx, title)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*product.Product), args.Error(1)
 }
 
 func (m *MockProductUseCase) AddProduct(ctx context.Context, p *product.Product) error {
@@ -428,4 +438,46 @@ func (suite *ProductControllerTestSuite) TestDelete_Success() {
 	// Assert
 	assert.Equal(suite.T(), http.StatusOK, w.Code)
 	suite.productUseCase.AssertExpectations(suite.T())
+}
+
+func (suite *ProductControllerTestSuite) TestGetByTitle_Success() {
+	expectedProduct := &product.Product{Title: "Test Product"}
+	suite.productUseCase.On("GetProductByTitle", mock.Anything, "Test Product").
+		Return(expectedProduct, nil)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{gin.Param{Key: "title", Value: "Test Product"}}
+	c.Request = httptest.NewRequest("GET", "/products/title/Test Product", nil)
+
+	suite.controller.GetByTitle(c)
+
+	assert.Equal(suite.T(), http.StatusOK, w.Code)
+	suite.productUseCase.AssertExpectations(suite.T())
+}
+
+func (suite *ProductControllerTestSuite) TestGetByTitle_NotFound() {
+	suite.productUseCase.On("GetProductByTitle", mock.Anything, "Nonexistent Product").
+		Return(nil, mongo.ErrNoDocuments)
+
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{gin.Param{Key: "title", Value: "Nonexistent Product"}}
+	c.Request = httptest.NewRequest("GET", "/products/title/Nonexistent Product", nil)
+
+	suite.controller.GetByTitle(c)
+
+	assert.Equal(suite.T(), http.StatusNotFound, w.Code)
+	suite.productUseCase.AssertExpectations(suite.T())
+}
+
+func (suite *ProductControllerTestSuite) TestGetByTitle_EmptyTitle() {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Params = gin.Params{gin.Param{Key: "title", Value: ""}}
+	c.Request = httptest.NewRequest("GET", "/products/title/", nil)
+
+	suite.controller.GetByTitle(c)
+
+	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 }

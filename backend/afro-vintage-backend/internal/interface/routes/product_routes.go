@@ -20,6 +20,7 @@ func RegisterProductRoutes(
 	{
 		products.POST("", productCtrl.Create)
 		products.GET("", productCtrl.ListAvailable)
+		products.GET("/title/:title", productCtrl.GetByTitle) 
 		products.GET("/:id", productCtrl.GetByID)
 		products.PUT("/:id", productCtrl.Update)
 		products.DELETE("/:id", productCtrl.Delete)

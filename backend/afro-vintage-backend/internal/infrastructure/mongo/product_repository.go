@@ -68,12 +68,24 @@ func (r *mongoProductRepository) ListProductsByReseller(ctx context.Context, res
 	return products, nil
 }
 
+func (r *mongoProductRepository) GetProductByTitle(ctx context.Context, title string) (*product.Product, error) {
+	var p product.Product
+	err := r.collection.FindOne(ctx, bson.M{"title": title}).Decode(&p)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, fmt.Errorf("product not found: %w", err)
+		}
+		return nil, fmt.Errorf("failed to find product: %w", err)
+	}
+	return &p, nil
+}
+
 func (r *mongoProductRepository) ListAvailableProducts(ctx context.Context, page, limit int) ([]*product.Product, error) {
 	var products []*product.Product
 	skip := (page - 1) * limit
 	opts := options.Find().SetSkip(int64(skip)).SetLimit(int64(limit))
 
-	cursor, err := r.collection.Find(ctx, bson.M{}, opts)
+	cursor, err := r.collection.Find(ctx, bson.M{"status": "available"}, opts)
 	if err != nil {
 		return nil, fmt.Errorf("database query failed: %w", err)
 	}

@@ -16,6 +16,11 @@ type MockRepository struct {
 	mock.Mock
 }
 
+// GetProductByTitle implements product.Repository.
+func (m *MockRepository) GetProductByTitle(ctx context.Context, title string) (*product.Product, error) {
+	panic("unimplemented")
+}
+
 func (m *MockRepository) AddProduct(ctx context.Context, p *product.Product) error {
 	args := m.Called(ctx, p)
 	return args.Error(0)
