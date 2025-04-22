@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ItemPreview, Item } from '@/types/marketplace';
-import { fetchMarketplaceItems } from '@/lib/api/marketplace';
+import { marketplaceApi } from '@/lib/api/marketplace';
 import ItemCard from '@/components/marketplace/ItemCard';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -44,15 +44,12 @@ export default function MarketplacePage({
     try {
       setLoading(true);
       setCurrentFilters(filters);
-      const response = await fetchMarketplaceItems({ 
+      const response = await marketplaceApi.getProducts({ 
         page, 
         limit: 12,
-        search: filters.search,
-        category: filters.category,
-        size: filters.size,
         minPrice: filters.priceRange.min,
         maxPrice: filters.priceRange.max,
-        grade: filters.grade
+        type: filters.category[0] // Use first category as type
       });
       setItems(response.items);
       setTotalPages(Math.ceil(response.total / 12));
