@@ -1,21 +1,41 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Item } from '@/types/marketplace';
+import { cartApi } from '@/lib/api/cart';
 
 interface CartContextType {
   items: Item[];
-  addToCart: (item: Item) => { success: boolean; message: string };
-  removeFromCart: (itemId: string) => void;
+  addToCart: (item: Item) => Promise<{ success: boolean; message: string }>;
+  removeFromCart: (itemId: string) => Promise<{ success: boolean; message: string }>;
   isInCart: (itemId: string) => boolean;
+  checkout: () => Promise<{ success: boolean; message: string; data?: any }>;
+  loading: boolean;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addToCart = (item: Item) => {
+  // Load cart items on mount
+  useEffect(() => {
+    loadCartItems();
+  }, []);
+
+  const loadCartItems = async () => {
+    try {
+      const items = await cartApi.getCartItems();
+      setCartItems(items);
+    } catch (error) {
+      console.error('Error loading cart items:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const addToCart = async (item: Item) => {
     if (cartItems.some(cartItem => cartItem.id === item.id)) {
       return { 
         success: false, 
@@ -23,19 +43,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
       };
     }
 
-    setCartItems(prev => [...prev, item]);
-    return { 
-      success: true, 
-      message: 'Item added to cart successfully' 
-    };
+    const result = await cartApi.addToCart(item.id);
+    if (result.success) {
+      setCartItems(prev => [...prev, item]);
+    }
+    return result;
   };
 
-  const removeFromCart = (itemId: string) => {
-    setCartItems(prev => prev.filter(item => item.id !== itemId));
+  const removeFromCart = async (itemId: string) => {
+    const result = await cartApi.removeFromCart(itemId);
+    if (result.success) {
+      setCartItems(prev => prev.filter(item => item.id !== itemId));
+    }
+    return result;
   };
 
   const isInCart = (itemId: string) => {
     return cartItems.some(item => item.id === itemId);
+  };
+
+  const checkout = async () => {
+    const result = await cartApi.checkout();
+    if (result.success) {
+      setCartItems([]); // Clear cart after successful checkout
+    }
+    return result;
   };
 
   return (
@@ -43,7 +75,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       items: cartItems, 
       addToCart, 
       removeFromCart, 
-      isInCart 
+      isInCart,
+      checkout,
+      loading
     }}>
       {children}
     </CartContext.Provider>
