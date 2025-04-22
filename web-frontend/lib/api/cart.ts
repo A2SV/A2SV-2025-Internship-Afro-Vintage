@@ -2,8 +2,14 @@ import { Item } from '@/types/marketplace';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
-export const cartService = {
-  async addToCart(listingId: string): Promise<{ success: boolean; message: string }> {
+export interface CartResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+}
+
+export const cartApi = {
+  async addToCart(listingId: string): Promise<CartResponse> {
     try {
       const response = await fetch(`${API_URL}/api/cart/items`, {
         method: 'POST',
@@ -51,7 +57,7 @@ export const cartService = {
     }
   },
 
-  async removeFromCart(listingId: string): Promise<{ success: boolean; message: string }> {
+  async removeFromCart(listingId: string): Promise<CartResponse> {
     try {
       const response = await fetch(`${API_URL}/api/cart/items/${listingId}`, {
         method: 'DELETE',
@@ -71,7 +77,7 @@ export const cartService = {
     }
   },
 
-  async checkout(): Promise<{ success: boolean; message: string; data?: any }> {
+  async checkout(): Promise<CartResponse> {
     try {
       const response = await fetch(`${API_URL}/api/checkout`, {
         method: 'POST',

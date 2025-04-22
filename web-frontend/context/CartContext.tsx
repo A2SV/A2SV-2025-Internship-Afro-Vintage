@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Item } from '@/types/marketplace';
-import { cartService } from '@/services/cartService';
+import { cartApi } from '@/lib/api/cart';
 
 interface CartContextType {
   items: Item[];
@@ -26,7 +26,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const loadCartItems = async () => {
     try {
-      const items = await cartService.getCartItems();
+      const items = await cartApi.getCartItems();
       setCartItems(items);
     } catch (error) {
       console.error('Error loading cart items:', error);
@@ -43,7 +43,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       };
     }
 
-    const result = await cartService.addToCart(item.id);
+    const result = await cartApi.addToCart(item.id);
     if (result.success) {
       setCartItems(prev => [...prev, item]);
     }
@@ -51,7 +51,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const removeFromCart = async (itemId: string) => {
-    const result = await cartService.removeFromCart(itemId);
+    const result = await cartApi.removeFromCart(itemId);
     if (result.success) {
       setCartItems(prev => prev.filter(item => item.id !== itemId));
     }
@@ -63,7 +63,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const checkout = async () => {
-    const result = await cartService.checkout();
+    const result = await cartApi.checkout();
     if (result.success) {
       setCartItems([]); // Clear cart after successful checkout
     }
