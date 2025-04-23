@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Package, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Package, Clock, CheckCircle2, XCircle, Star } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import ReviewForm from '../reviews/ReviewForm';
 
 type OrderStatus = 'PENDING_DELIVERY' | 'DELIVERED' | 'FAILED';
 
@@ -13,6 +14,7 @@ interface Order {
     id: string;
     name: string;
     price: number;
+    hasReview?: boolean;
   }>;
   total: number;
   status: OrderStatus;
@@ -23,6 +25,8 @@ interface Order {
 export default function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<{ id: string; name: string } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -50,6 +54,35 @@ export default function OrderHistory() {
       console.error('Error fetching orders:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReviewSubmit = async (rating: number, comment: string) => {
+    if (!selectedItem) return;
+
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          itemId: selectedItem.id,
+          rating,
+          comment,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to submit review');
+      }
+
+      // Refresh orders to update review status
+      await fetchOrders();
+    } catch (error) {
+      throw error;
     }
   };
 
@@ -128,9 +161,23 @@ export default function OrderHistory() {
 
             <div className="space-y-2 mb-4">
               {order.items.map((item) => (
-                <div key={item.id} className="flex justify-between">
+                <div key={item.id} className="flex justify-between items-center">
                   <span>{item.name}</span>
-                  <span>${item.price.toLocaleString()}</span>
+                  <div className="flex items-center gap-2">
+                    <span>${item.price.toLocaleString()}</span>
+                    {order.status === 'DELIVERED' && !item.hasReview && (
+                      <button
+                        onClick={() => {
+                          setSelectedItem({ id: item.id, name: item.name });
+                          setShowReviewForm(true);
+                        }}
+                        className="text-teal-600 hover:text-teal-700 flex items-center gap-1"
+                      >
+                        <Star className="w-4 h-4" />
+                        <span className="text-sm">Review</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -149,6 +196,18 @@ export default function OrderHistory() {
           </div>
         ))}
       </div>
+
+      {showReviewForm && selectedItem && (
+        <ReviewForm
+          itemId={selectedItem.id}
+          itemName={selectedItem.name}
+          onClose={() => {
+            setShowReviewForm(false);
+            setSelectedItem(null);
+          }}
+          onSubmit={handleReviewSubmit}
+        />
+      )}
     </div>
   );
 } 

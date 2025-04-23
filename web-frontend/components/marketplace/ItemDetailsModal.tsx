@@ -19,8 +19,8 @@ export default function ItemDetailsModal({ item, onClose, isOpen }: ItemDetailsM
 
   if (!isOpen) return null;
 
-  const handleAddToCart = () => {
-    const result = addToCart(item);
+  const handleAddToCart = async () => {
+    const result = await addToCart(item);
     if (result.success) {
       setTimeout(onClose, 1500);
     }
