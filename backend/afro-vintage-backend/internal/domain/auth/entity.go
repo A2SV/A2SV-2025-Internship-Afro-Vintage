@@ -11,3 +11,9 @@ type TokenClaims struct {
 	Role   string
 	Expiry int64
 }
+type LoginResult struct {
+	Token    string `json:"token"`
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Role     string `json:"role"`
+}

@@ -31,7 +31,7 @@ func NewOrderUsecase(bRepo bundle.Repository, oRepo order.Repository, wRepo ware
 	}
 }
 
-func simulateStripePayment(total float64) (string, error) {
+func simulateStripePayment(_ float64) (string, error) {
 	time.Sleep(500 * time.Millisecond)
 	return fmt.Sprintf("ch_%d", rand.Intn(1000000)), nil
 }

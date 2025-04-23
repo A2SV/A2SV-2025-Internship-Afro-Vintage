@@ -24,13 +24,20 @@ func (a *AuthController) Register(c *gin.Context) {
 		return
 	}
 
-	token, err := a.authUC.Register(c.Request.Context(), newUser)
+	result, err := a.authUC.Register(c.Request.Context(), newUser)
 	if err != nil {
 		c.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"token": token})
+	c.JSON(http.StatusCreated, gin.H{
+		"token": result.Token,
+		"user": gin.H{
+			"id":       result.ID,
+			"username": result.Username,
+			"role":     result.Role,
+		},
+	})
 }
 
 // POST /auth/login
@@ -41,11 +48,18 @@ func (a *AuthController) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := a.authUC.Login(c.Request.Context(), creds)
+	result, err := a.authUC.Login(c.Request.Context(), creds)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	c.JSON(http.StatusOK, gin.H{
+		"token": result.Token,
+		"user": gin.H{
+			"id":       result.ID,
+			"username": result.Username,
+			"role":     result.Role,
+		},
+	})
 }
