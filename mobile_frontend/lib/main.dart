@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_frontend/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mobile_frontend/features/auth/presentation/pages/signin.dart';
+import 'package:mobile_frontend/features/auth/presentation/pages/landing_page.dart';
+import 'package:mobile_frontend/features/auth/presentation/pages/role.dart';
+import 'package:mobile_frontend/features/auth/presentation/pages/signup.dart';
 import 'package:mobile_frontend/features/consumer/orders/presentation/pages/order_detail.dart';
 import 'package:mobile_frontend/features/consumer/reviews/presentation/pages/reviews.dart';
 import 'package:mobile_frontend/features/consumer/checkout/presentation/pages/add_address.dart';
@@ -7,9 +13,17 @@ import 'package:mobile_frontend/features/consumer/orders/presentation/pages/all_
 import 'package:mobile_frontend/features/consumer/checkout/presentation/pages/checkout.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/presentation/pages/consumer_market_place.dart';
 import 'package:mobile_frontend/features/consumer/product_detail/presentation/pages/product_detail.dart';
+import 'package:mobile_frontend/injection_container.dart';
+import 'injection_container.dart' as di;
 
-void main() {
-  runApp(const MyApp());
+Future<void> main() async {
+  await di.init();
+  runApp(
+    BlocProvider(
+      create: (context) => sl<AuthBloc>(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -29,30 +43,28 @@ class MyApp extends StatelessWidget {
           tertiary: const Color(0xFF00A3A3),
         ),
         fontFamily: 'Poppins',
-        navigationBarTheme: NavigationBarThemeData(
-          indicatorColor: Colors.transparent,
-          labelTextStyle: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.selected)) {
-              return const TextStyle(
-                color: Color(0xFF008080),
-              );
-            }
-            return const TextStyle(color: Colors.grey);
-          }),
-          iconTheme: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.selected)) {
-              return const IconThemeData(
-                color: Color(0xFF008080),
-              ); // selected icon
-            }
-            return const IconThemeData(color: Colors.grey);
-          }),
-        ),
         useMaterial3: true,
       ),
       initialRoute: '/',
+      onGenerateRoute: (settings) {
+        if (settings.name == '/role') {
+          final args = settings.arguments as Map<String, String>;
+          return MaterialPageRoute(
+            builder: (context) => RoleSelectionPage(
+              username: args['username']!,
+              email: args['email']!,
+              password: args['password']!,
+            ),
+          );
+        }
+        // Add other dynamic routes here if needed
+        return null;
+      },
       routes: {
-        '/': (context) => const ConsumerMarketPlace(),
+        '/': (context) => const LandingPage(),
+        '/signup': (context) => const SignupPage(),
+        '/signin': (context) => const SigninPage(),
+        '/consumermarketplace': (context) => const ConsumerMarketPlace(),
         '/allorder': (context) => const AllOrders(),
         '/addreview': (context) => const AddReview(),
         '/reviews': (context) => const Reviews(),

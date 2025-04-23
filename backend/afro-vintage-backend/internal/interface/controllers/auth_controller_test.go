@@ -21,14 +21,18 @@ type MockAuthUsecase struct {
 	mock.Mock
 }
 
-func (m *MockAuthUsecase) Register(ctx context.Context, user user.User) (string, error) {
+func (m *MockAuthUsecase) Register(ctx context.Context, user user.User) (*auth.LoginResult, error) {
 	args := m.Called(ctx, user)
-	return args.String(0), args.Error(1)
+	result, _ := args.Get(0).(*auth.LoginResult)
+	return result, args.Error(1)
 }
 
-func (m *MockAuthUsecase) Login(ctx context.Context, creds auth.LoginCredentials) (string, error) {
+func (m *MockAuthUsecase) Login(ctx context.Context, creds auth.LoginCredentials) (*auth.LoginResult, error) {
 	args := m.Called(ctx, creds)
-	return args.String(0), args.Error(1)
+
+	// Return a typed pointer for LoginResult
+	result, _ := args.Get(0).(*auth.LoginResult)
+	return result, args.Error(1)
 }
 
 type AuthControllerTestSuite struct {
@@ -122,9 +126,13 @@ func (suite *AuthControllerTestSuite) TestLogin_Success() {
 		Username: "test@example.com",
 		Password: "password123",
 	}
-	token := "test-token"
-
-	suite.mockUC.On("Login", mock.Anything, creds).Return(token, nil)
+	loginResult := &auth.LoginResult{
+		Token:    "test-token",
+		ID:       "user-id-123",
+		Username: "test@example.com",
+		Role:     "consumer",
+	}
+	suite.mockUC.On("Login", mock.Anything, creds).Return(loginResult, nil)
 
 	// Execute
 	jsonData, _ := json.Marshal(creds)
@@ -135,11 +143,14 @@ func (suite *AuthControllerTestSuite) TestLogin_Success() {
 	suite.router.ServeHTTP(w, req)
 
 	// Assert
-	assert.Equal(suite.T(), http.StatusOK, w.Code)
-	var response map[string]string
+	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Equal(suite.T(), token, response["token"])
-	suite.mockUC.AssertExpectations(suite.T())
+
+	assert.Equal(suite.T(), loginResult.Token, response["token"])
+	user := response["user"].(map[string]interface{})
+	assert.Equal(suite.T(), loginResult.ID, user["id"])
+	assert.Equal(suite.T(), loginResult.Username, user["username"])
+	assert.Equal(suite.T(), loginResult.Role, user["role"])
 }
 
 func (suite *AuthControllerTestSuite) TestLogin_InvalidRequest() {
@@ -165,7 +176,7 @@ func (suite *AuthControllerTestSuite) TestLogin_Unauthorized() {
 	}
 	errorMsg := "invalid username or password"
 
-	suite.mockUC.On("Login", mock.Anything, creds).Return("", errors.New(errorMsg))
+	suite.mockUC.On("Login", mock.Anything, creds).Return((*auth.LoginResult)(nil), errors.New(errorMsg))
 
 	// Execute
 	jsonData, _ := json.Marshal(creds)

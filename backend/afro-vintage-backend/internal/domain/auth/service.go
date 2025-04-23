@@ -17,6 +17,6 @@ type JWTService interface {
 	ParseToken(token string) (*jwt.Token, jwt.MapClaims, error)
 }
 type AuthUsecase interface {
-	Login(ctx context.Context, creds LoginCredentials) (string, error)
-	Register(ctx context.Context, user user.User) (string, error)
+	Login(ctx context.Context, creds LoginCredentials) (*LoginResult, error)
+	Register(ctx context.Context, user user.User) (*LoginResult, error)
 }
