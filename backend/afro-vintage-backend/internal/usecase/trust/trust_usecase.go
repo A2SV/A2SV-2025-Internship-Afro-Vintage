@@ -113,8 +113,21 @@ func (uc *trustUsecase) UpdateResellerTrustScoreOnNewRating(
 
 	fmt.Println("✅ Reseller Found:", reseller.ID)
 
-	// Step 2: Calculate absolute difference
-	diff := math.Abs(productRating - declaredRating)
+	// Reset trust data if it's the first rating or if the previous calculation was on a different scale
+	if reseller.TrustRatedCount == 0 || reseller.TrustTotalError > 5 {
+		fmt.Println("🔄 Resetting trust data for new calculation method")
+		reseller.TrustTotalError = 0
+		reseller.TrustRatedCount = 0
+		reseller.TrustScore = 100
+	}
+
+	// Normalize both ratings to 0-5 scale
+	normalizedDeclaredRating := (declaredRating / 20.0) // Convert from 0-100 to 0-5 scale
+	normalizedProductRating := productRating // Already on 0-5 scale
+
+	// Step 2: Calculate absolute difference on normalized scale
+	diff := math.Abs(normalizedProductRating - normalizedDeclaredRating)
+	fmt.Println("📊 Rating Difference:", diff)
 
 	// Step 3: Update cumulative error and count
 	newTotalError := reseller.TrustTotalError + diff
