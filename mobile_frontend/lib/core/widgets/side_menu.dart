@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SideMenu extends StatelessWidget {
   const SideMenu({super.key});
@@ -97,7 +98,7 @@ class SideMenu extends StatelessWidget {
               style: TextStyle(color: Color(0xFF8C8787)),
             ),
             onTap: () {
-              Navigator.pushNamed(context, '/');
+              Navigator.pushNamed(context, '/consumermarketplace');
             },
           ),
           ListTile(
@@ -176,7 +177,13 @@ class SideMenu extends StatelessWidget {
               "Log Out",
               style: TextStyle(color: Color(0xFF8C8787)),
             ),
-            onTap: () {},
+            onTap: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('auth_token');
+
+              Navigator.pushNamedAndRemoveUntil(
+                  context, '/signin', (route) => false);
+            },
           )
         ],
       ),
