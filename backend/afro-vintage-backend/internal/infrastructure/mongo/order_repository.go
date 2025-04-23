@@ -2,6 +2,7 @@ package mongo
 
 import (
     "context"
+    "fmt"
     "github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/order"
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/mongo"
@@ -23,9 +24,15 @@ func (r *mongoOrderRepository) CreateOrder(ctx context.Context, o *order.Order) 
 }
 
 func (r *mongoOrderRepository) GetOrdersByConsumer(ctx context.Context, consumerID string) ([]*order.Order, error) {
+    fmt.Printf("🔍 Querying orders for consumer: %s\n", consumerID)
+    
     var orders []*order.Order
-    cursor, err := r.collection.Find(ctx, bson.M{"consumer_id": consumerID})
+    filter := bson.M{"consumerid": consumerID}
+    fmt.Printf("🔍 Using filter: %+v\n", filter)
+    
+    cursor, err := r.collection.Find(ctx, filter)
     if err != nil {
+        fmt.Printf("❌ Error querying orders: %v\n", err)
         return nil, err
     }
     defer cursor.Close(ctx)
@@ -33,15 +40,18 @@ func (r *mongoOrderRepository) GetOrdersByConsumer(ctx context.Context, consumer
     for cursor.Next(ctx) {
         var o order.Order
         if err := cursor.Decode(&o); err != nil {
+            fmt.Printf("❌ Error decoding order: %v\n", err)
             return nil, err
         }
         orders = append(orders, &o)
     }
 
     if err := cursor.Err(); err != nil {
+        fmt.Printf("❌ Cursor error: %v\n", err)
         return nil, err
     }
 
+    fmt.Printf("✅ Found %d orders for consumer %s\n", len(orders), consumerID)
     return orders, nil
 }
 

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"sort"
 	"strconv"
@@ -21,27 +22,34 @@ func NewConsumerController(orderRepo order.Repository) *ConsumerController {
 }
 
 func (c *ConsumerController) GetOrderHistory(ctx *gin.Context) {
+	// Get user ID from context
 	userID, exists := ctx.Get("userID")
 	if !exists {
-		ctx.JSON(http.StatusUnauthorized, common.APIResponse{
-			Success: false,
-			Message: "Unauthorized",
-		})
+		fmt.Printf("❌ User ID not found in context\n")
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
 	}
 
-	status := ctx.Query("status")
+	// Get query parameters
 	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(ctx.DefaultQuery("limit", "10"))
+	status := ctx.Query("status")
 
-	orders, err := c.orderRepo.GetOrdersByConsumer(ctx, userID.(string)) // Fetch orders by consumer ID
+	fmt.Printf("🔍 Fetching order history - UserID: %s, Page: %d, Limit: %d, Status: %s\n", 
+		userID.(string), page, limit, status)
+
+	// Get orders from use case
+	orders, err := c.orderRepo.GetOrdersByConsumer(ctx, userID.(string))
 	if err != nil {
+		fmt.Printf("❌ Error fetching orders: %v\n", err)
 		ctx.JSON(http.StatusInternalServerError, common.APIResponse{
 			Success: false,
 			Message: "Failed to fetch orders",
 		})
 		return
 	}
+
+	fmt.Printf("✅ Found %d orders\n", len(orders))
 
 	// Simulate delivery status
 	for i := range orders {
@@ -85,14 +93,14 @@ func (c *ConsumerController) GetOrderHistory(ctx *gin.Context) {
 	for _, o := range paginatedOrders {
 		itemTitle := ""
 		if len(o.ProductIDs) > 0 {
-			itemTitle = o.ProductIDs[0] // Use the first product ID if available
+			itemTitle = o.ProductIDs[0]
 		}
 
 		response = append(response, map[string]interface{}{
 			"orderId":               o.ID,
 			"itemTitle":             itemTitle,
 			"price":                 o.TotalPrice,
-			"imageUrl":              "https://example.com/image.jpg", // Placeholder
+			"imageUrl":              "https://example.com/image.jpg",
 			"status":                o.Status,
 			"purchaseDate":          o.CreatedAt,
 			"estimatedDeliveryTime": "3 minutes",
