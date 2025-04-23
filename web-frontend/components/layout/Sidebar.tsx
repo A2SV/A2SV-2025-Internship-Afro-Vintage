@@ -19,7 +19,7 @@ const Sidebar = () => {
   const navItems = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Market place', href: '/consumer/marketplace', icon: ShoppingBag },
-    { name: 'Orders', href: '/orders', icon: ShoppingCart },
+    { name: 'Orders', href: '/consumer/orders', icon: ShoppingCart },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

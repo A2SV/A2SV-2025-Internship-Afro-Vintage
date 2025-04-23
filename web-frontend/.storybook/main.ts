@@ -29,5 +29,9 @@ const config: StorybookConfig = {
     }
     return config;
   },
+  env: (config) => ({
+    ...config,
+    NEXT_PUBLIC_STORYBOOK: 'true',
+  }),
 };
 export default config;
