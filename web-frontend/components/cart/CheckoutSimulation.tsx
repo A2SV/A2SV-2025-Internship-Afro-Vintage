@@ -4,6 +4,7 @@ import React from 'react';
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 import { Loader2 } from 'lucide-react';
+import OrderConfirmation from './OrderConfirmation';
 
 type CheckoutSimulationProps = {
   onClose: () => void;
@@ -11,9 +12,11 @@ type CheckoutSimulationProps = {
 };
 
 export default function CheckoutSimulation({ onClose, total }: CheckoutSimulationProps) {
-  const { checkout } = useCart();
+  const { checkout, items } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [orderId, setOrderId] = useState<string | null>(null);
 
   const handleCheckout = async () => {
     setIsProcessing(true);
@@ -22,10 +25,8 @@ export default function CheckoutSimulation({ onClose, total }: CheckoutSimulatio
     try {
       const result = await checkout();
       if (result.success) {
-        // Show success message and close after 3 seconds
-        setTimeout(() => {
-          onClose();
-        }, 3000);
+        setOrderId(result.data?.order_id || 'N/A');
+        setShowConfirmation(true);
       } else {
         setError(result.message);
       }
@@ -38,6 +39,17 @@ export default function CheckoutSimulation({ onClose, total }: CheckoutSimulatio
 
   const platformFee = total * 0.02;
   const totalWithFee = total + platformFee;
+
+  if (showConfirmation && orderId) {
+    return (
+      <OrderConfirmation
+        orderId={orderId}
+        items={items}
+        total={totalWithFee}
+        onClose={onClose}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
