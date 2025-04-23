@@ -81,8 +81,8 @@ func (uc *orderUseCaseImpl) PurchaseBundle(ctx context.Context, bundleID, resell
 		SupplierID:  b.SupplierID,
 		TotalPrice:  b.Price,
 		PlatformFee: fee,
-		Status:      order.OrderStatusProcessing,
-		CreatedAt:   time.Now().Add(-5 * time.Minute).Format(time.RFC3339),
+		Status:      order.OrderStatusCompleted,
+		CreatedAt:   time.Now().Format(time.RFC3339),
 	}
 	if err := uc.orderRepo.CreateOrder(ctx, order); err != nil {
 		return nil, nil, nil, err
@@ -97,7 +97,7 @@ func (uc *orderUseCaseImpl) PurchaseBundle(ctx context.Context, bundleID, resell
 		Status:        "Paid",
 		ReferenceID:   b.ID,
 		Type:          payment.B2B,
-		CreatedAt:     time.Now().Add(-5 * time.Minute).Format(time.RFC3339),
+		CreatedAt:     time.Now().Format(time.RFC3339),
 	}
 	if err := uc.paymentRepo.RecordPayment(ctx, payment); err != nil {
 		return nil, nil, nil, err
@@ -122,10 +122,6 @@ func (uc *orderUseCaseImpl) PurchaseBundle(ctx context.Context, bundleID, resell
 		CreatedAt:          time.Now().Format(time.RFC3339),
 	}
 	if err := uc.warehouseRepo.AddItem(ctx, warehouseItem); err != nil {
-		return nil, nil, nil, err
-	}
-
-	if err := uc.orderRepo.UpdateOrderStatus(ctx, order.ID, "completed"); err != nil {
 		return nil, nil, nil, err
 	}
 
@@ -301,7 +297,7 @@ func (uc *orderUseCaseImpl) PurchaseProduct(ctx context.Context, productID, cons
 		ProductIDs:  []string{productID},
 		TotalPrice:  totalPrice,
 		PlatformFee: platformFee,
-		Status:      order.OrderStatusProcessing,
+		Status:      order.OrderStatusCompleted,
 		CreatedAt:   time.Now().Format(time.RFC3339),
 	}
 
