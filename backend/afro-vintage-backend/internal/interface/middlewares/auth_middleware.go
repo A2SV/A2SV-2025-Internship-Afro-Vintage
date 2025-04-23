@@ -4,8 +4,10 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/auth"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -66,4 +68,15 @@ func AuthorizeRoles(allowedRoles ...string) gin.HandlerFunc {
 
 		c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Access denied: insufficient role"})
 	}
+}
+func CORSMiddleware() gin.HandlerFunc {
+	config := cors.Config{
+		AllowOrigins:     []string{"*"}, // or list allowed frontend URLs
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}
+	return cors.New(config)
 }

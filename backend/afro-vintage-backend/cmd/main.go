@@ -8,6 +8,7 @@ import (
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/infrastructure/mongo"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/interface/controllers"
+	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/interface/middlewares"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/interface/routes"
 
 	authusecase "github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/usecase/auth"
@@ -82,7 +83,7 @@ func main() {
 
 	// Init Gin Engine and Routes
 	r := gin.Default()
-
+	r.Use(middlewares.CORSMiddleware())
 	routes.RegisterAuthRoutes(r, authCtrl)
 	routes.RegisterProductRoutes(r, productCtrl, jwtSvc, reviewCtrl, trustUC, productUC)
 	routes.RegisterAdminRoutes(r, adminCtrl, jwtSvc)
