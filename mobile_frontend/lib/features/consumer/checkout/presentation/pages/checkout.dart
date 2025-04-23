@@ -74,7 +74,7 @@ class _CheckoutState extends State<Checkout> {
                   ),
                 ),
                 onPressed: () {
-                  Navigator.pushNamed(context, '/');
+                  Navigator.pushNamed(context, '/consumermarketplace');
                 },
                 child: const Text('BACK TO HOME'),
               ),
