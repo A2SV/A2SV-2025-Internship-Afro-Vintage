@@ -119,6 +119,7 @@ func (uc *orderUseCaseImpl) PurchaseBundle(ctx context.Context, bundleID, resell
 		Quantity:           b.Quantity,
 		SortingLevel:       string(b.SortingLevel),
 		SampleImage:        b.SampleImage,
+		CreatedAt:          time.Now().Format(time.RFC3339),
 	}
 	if err := uc.warehouseRepo.AddItem(ctx, warehouseItem); err != nil {
 		return nil, nil, nil, err

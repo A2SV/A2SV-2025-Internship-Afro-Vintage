@@ -7,11 +7,11 @@ type WarehouseItem struct {
 	ProductID          string `bson:"product_id"`
 	Status             string `bson:"status"` // listed, skipped, pending
 	CreatedAt          string `bson:"created_at"`
-	DeclaredRating     int
-	RemainingItemCount int
-	Grade              string
-	Type               string
-	Quantity           int
-	SortingLevel       string
-	SampleImage        string
+	DeclaredRating     int    `bson:"declared_rating"`
+	RemainingItemCount int    `bson:"remaining_item_count"`
+	Grade              string `bson:"grade"`
+	Type               string `bson:"type"`
+	Quantity           int    `bson:"quantity"`
+	SortingLevel       string `bson:"sorting_level"`
+	SampleImage        string `bson:"sample_image"`
 }
