@@ -5,22 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Package, Clock, CheckCircle2, XCircle, Star } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import ReviewForm from '../reviews/ReviewForm';
-
-type OrderStatus = 'PENDING_DELIVERY' | 'DELIVERED' | 'FAILED';
-
-interface Order {
-  id: string;
-  items: Array<{
-    id: string;
-    name: string;
-    price: number;
-    hasReview?: boolean;
-  }>;
-  total: number;
-  status: OrderStatus;
-  createdAt: string;
-  estimatedDeliveryTime?: string;
-}
+import { Order, PaymentStatus } from '@/types/orders';
 
 export default function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -86,7 +71,7 @@ export default function OrderHistory() {
     }
   };
 
-  const getStatusIcon = (status: OrderStatus) => {
+  const getStatusIcon = (status: Order['status']) => {
     switch (status) {
       case 'PENDING_DELIVERY':
         return <Clock className="w-5 h-5 text-amber-600" />;
@@ -96,6 +81,31 @@ export default function OrderHistory() {
         return <XCircle className="w-5 h-5 text-red-600" />;
       default:
         return <Package className="w-5 h-5 text-gray-600" />;
+    }
+  };
+
+  const getPaymentStatusBadge = (status: PaymentStatus) => {
+    const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
+    
+    switch (status) {
+      case 'PAID':
+        return (
+          <span className={`${baseClasses} bg-green-100 text-green-800`}>
+            Paid
+          </span>
+        );
+      case 'PENDING':
+        return (
+          <span className={`${baseClasses} bg-amber-100 text-amber-800`}>
+            Pending
+          </span>
+        );
+      case 'FAILED':
+        return (
+          <span className={`${baseClasses} bg-red-100 text-red-800`}>
+            Failed
+          </span>
+        );
     }
   };
 
@@ -154,8 +164,11 @@ export default function OrderHistory() {
                 {getStatusIcon(order.status)}
                 <span className="font-medium">Order #{order.id}</span>
               </div>
-              <div className="text-sm text-gray-500">
-                {new Date(order.createdAt).toLocaleDateString()}
+              <div className="flex items-center gap-2">
+                {getPaymentStatusBadge(order.paymentStatus)}
+                <div className="text-sm text-gray-500">
+                  {new Date(order.createdAt).toLocaleDateString()}
+                </div>
               </div>
             </div>
 
