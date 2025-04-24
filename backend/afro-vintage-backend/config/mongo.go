@@ -3,7 +3,6 @@ package config
 import (
 	"context"
 	"log"
-	"os" // Added to read environment variables
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -13,10 +12,7 @@ import (
 // ConnectMongo connects to the Mongo database using URI and DB name
 func ConnectMongo(uri string, dbName string) *mongo.Database {
 	if uri == "" {
-		uri = os.Getenv("MONGODB_ATLAS_URI")
-		if uri == "" {
-			log.Fatal("MongoDB URI is not provided")
-		}
+		log.Fatal("MongoDB URI is not provided") // Removed os.Getenv redundancy
 	}
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
