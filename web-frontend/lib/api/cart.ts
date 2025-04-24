@@ -1,6 +1,6 @@
 import { Item } from '@/types/marketplace';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://2kps99nm-8080.uks1.devtunnels.ms';
 
 export interface CartResponse {
   success: boolean;
