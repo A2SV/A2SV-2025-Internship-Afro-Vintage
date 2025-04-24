@@ -13,7 +13,7 @@ type AppConfig struct {
 
 func LoadAppConfig() AppConfig {
 	return AppConfig{
-		DBURI:     GetEnv("MONGO_URI", ""), 
+		DBURI:     GetEnv("MONGO_URI", "mongodb://localhost:27017"),
 		DBName:    GetEnv("DB_NAME", "afro_vintage"),
 		JWTSecret: GetEnv("JWT_SECRET", "fallback-secret"),
 	}
