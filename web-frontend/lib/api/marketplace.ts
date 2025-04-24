@@ -1,6 +1,6 @@
 import { ItemPreview, MarketplaceFilters, MarketplaceResponse } from '@/types/marketplace';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://2kps99nm-8080.uks1.devtunnels.ms';
 
 export const marketplaceApi = {
   async getProducts(filters: MarketplaceFilters): Promise<MarketplaceResponse> {
@@ -59,6 +59,9 @@ export const marketplaceApi = {
         category: data.type,
         size: data.size,
         grade: data.grade,
+        resellerId: data.sellerId,
+        resellerName: data.sellerName,
+        status: data.status,
       };
     } catch (error) {
       console.error('Error fetching product:', error);

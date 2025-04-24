@@ -9,6 +9,8 @@ export interface ItemPreview {
   description: string;
   category: string;
   grade: string;
+  rating?: number;
+  size?: string;
 }
 
 export interface MarketplaceResponse {
