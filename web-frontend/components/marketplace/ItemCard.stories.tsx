@@ -20,9 +20,12 @@ export const Default: Story = {
       title: 'Nike Sportswear Club Fleece',
       price: 99,
       thumbnailUrl: 'images/item-card-image.png',
-      condition: 'New',
-      rating: 4.8,
-      status: 'available'
+      resellerId: 'reseller1',
+      resellerName: 'Vintage Finds Co.',
+      status: 'available',
+      description: 'Classic fleece jacket for everyday wear',
+      category: 'Jackets',
+      grade: 'A'
     }
   }
 };
@@ -34,9 +37,12 @@ export const SoldItem: Story = {
       title: 'Trail Running Jacket Nike Windrunner',
       price: 99,
       thumbnailUrl: 'images/item-card-image.png',
-      condition: 'Like New',
-      rating: 4.9,
-      status: 'sold'
+      resellerId: 'reseller2',
+      resellerName: 'Premium Vintage',
+      status: 'sold',
+      description: 'Lightweight running jacket with wind protection',
+      category: 'Jackets',
+      grade: 'B'
     }
   }
 };
@@ -48,9 +54,12 @@ export const LongTitle: Story = {
       title: 'Nike Sportswear Club Fleece Limited Edition Winter Collection 2024',
       price: 149,
       thumbnailUrl: 'images/item-card-image.png',
-      condition: 'New',
-      rating: 5.0,
-      status: 'available'
+      resellerId: 'reseller3',
+      resellerName: 'Classic Styles',
+      status: 'available',
+      description: 'Limited edition winter collection fleece',
+      category: 'Jackets',
+      grade: 'A+'
     }
   }
 }; 

@@ -294,6 +294,13 @@ type MockProductRepo struct {
 	mock.Mock
 }
 
+func (m *MockProductRepo) GetProductByTitle(ctx context.Context, title string) (*product.Product, error) {
+	args := m.Called(ctx, title)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*product.Product), args.Error(1)
+}
 func (m *MockProductRepo) AddProduct(ctx context.Context, p *product.Product) error {
 	args := m.Called(ctx, p)
 	return args.Error(0)
@@ -356,6 +363,13 @@ func (m *MockProductRepo) ListProductsByReseller(ctx context.Context, resellerID
 	}
 	return args.Get(0).([]*product.Product), args.Error(1)
 }
+func (m *MockBundleRepo) GetBundleByTitle(ctx context.Context, title string) (*bundle.Bundle, error) {
+	args := m.Called(ctx, title)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*bundle.Bundle), args.Error(1)
+}
 
 // Test Cases
 func TestNewOrderUsecase(t *testing.T) {
@@ -368,7 +382,14 @@ func TestNewOrderUsecase(t *testing.T) {
 	productRepo := &MockProductRepo{}
 
 	// Act
-	uc := NewOrderUsecase(orderRepo, bundleRepo, warehouseRepo, paymentRepo, userRepo, productRepo)
+	uc := NewOrderUsecase(
+		bundleRepo,    // bundle.Repository
+		orderRepo,     // order.Repository
+		warehouseRepo, // warehouse.Repository
+		paymentRepo,   // payment.Repository
+		userRepo,      // user.Repository
+		productRepo,   // product.Repository
+	)
 
 	// Assert
 	assert.NotNil(t, uc)
@@ -743,7 +764,15 @@ func TestPurchaseProduct(t *testing.T) {
 	userRepo := &MockUserRepo{}
 	productRepo := &MockProductRepo{}
 
-	uc := NewOrderUsecase(orderRepo, bundleRepo, warehouseRepo, paymentRepo, userRepo, productRepo)
+	uc := NewOrderUsecase(
+		bundleRepo,    // bundle.Repository
+		orderRepo,     // order.Repository
+		warehouseRepo, // warehouse.Repository
+		paymentRepo,   // payment.Repository
+		userRepo,      // user.Repository
+		productRepo,   // product.Repository
+	)
+
 	productID := "test-product-id"
 	userID := "test-user-id"
 	price := 100.0

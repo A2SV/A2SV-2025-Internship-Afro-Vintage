@@ -3,6 +3,7 @@ package reviewusecase
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/order"
@@ -23,26 +24,49 @@ func NewReviewUsecase(reviewRepo review.Repository, orderRepo order.Repository) 
 }
 
 func (u *reviewUsecase) SubmitReview(ctx context.Context, r *review.Review) error {
+	fmt.Printf("🔍 Starting review submission process\n")
+	fmt.Printf("📝 Review details: %+v\n", r)
+
 	// Check if the order exists and is delivered
+	fmt.Printf("🔍 Checking order status for ID: %s\n", r.OrderID)
 	order, err := u.orderRepo.GetOrderByID(ctx, r.OrderID)
-	if err != nil || order == nil {
+	if err != nil {
+		fmt.Printf("❌ Error fetching order: %v\n", err)
+		return errors.New("order not found: " + err.Error())
+	}
+	if order == nil {
+		fmt.Printf("❌ Order not found\n")
 		return errors.New("order not found")
 	}
-	if order.Status != "Delivered" { 
+	fmt.Printf("✅ Found order: %+v\n", order)
+
+	if order.Status != "completed" {
+		fmt.Printf("❌ Order not delivered. Current status: %s\n", order.Status)
 		return errors.New("cannot review before delivery")
 	}
 
 	// Check if the user already reviewed this product
+	fmt.Printf("🔍 Checking for existing review by user %s for product %s\n", r.UserID, r.ProductID)
 	existingReview, err := u.reviewRepo.GetReviewByUserAndProduct(ctx, r.UserID, r.ProductID)
 	if err != nil {
+		fmt.Printf("❌ Error checking existing review: %v\n", err)
 		return err
 	}
 	if existingReview != nil {
+		fmt.Printf("❌ User already reviewed this product\n")
 		return errors.New("you already reviewed this item")
 	}
 
 	// Save the review
 	r.ID = uuid.NewString()
 	r.CreatedAt = time.Now().Format(time.RFC3339)
-	return u.reviewRepo.CreateReview(ctx, r)
+	fmt.Printf("📝 Saving review with ID: %s\n", r.ID)
+	
+	if err := u.reviewRepo.CreateReview(ctx, r); err != nil {
+		fmt.Printf("❌ Error saving review: %v\n", err)
+		return err
+	}
+
+	fmt.Printf("✅ Review saved successfully\n")
+	return nil
 }

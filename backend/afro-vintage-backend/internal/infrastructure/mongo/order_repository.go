@@ -57,7 +57,17 @@ func (r *mongoOrderRepository) GetOrdersByConsumer(ctx context.Context, consumer
 
 func (r *mongoOrderRepository) GetOrderByID(ctx context.Context, orderID string) (*order.Order, error) {
     var o order.Order
+    // First try to find by _id
     err := r.collection.FindOne(ctx, bson.M{"_id": orderID}).Decode(&o)
+    if err == nil {
+        return &o, nil
+    }
+    if err != mongo.ErrNoDocuments {
+        return nil, err
+    }
+    
+    // If not found by _id, try to find by id field
+    err = r.collection.FindOne(ctx, bson.M{"id": orderID}).Decode(&o)
     if err != nil {
         if err == mongo.ErrNoDocuments {
             return nil, nil

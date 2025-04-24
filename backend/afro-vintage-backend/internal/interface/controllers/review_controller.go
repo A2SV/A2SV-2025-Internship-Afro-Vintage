@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/product"
@@ -26,24 +27,33 @@ func NewReviewController(usecase review.Usecase, trustUsecase trust.Usecase, pro
 }
 
 func (ctrl *ReviewController) SubmitReview(c *gin.Context) {
+	fmt.Printf("🔍 Starting review submission\n")
+	
 	var req models.CreateReviewRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
+		fmt.Printf("❌ Invalid request body: %v\n", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request: " + err.Error()})
 		return
 	}
+	fmt.Printf("📝 Review request: %+v\n", req)
 
 	userID := c.GetString("userID")
 	if userID == "" {
+		fmt.Printf("❌ No user ID found in context\n")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return
 	}
+	fmt.Printf("👤 User ID from context: %s\n", userID)
 
 	// Get the product to get the reseller ID and current rating
+	fmt.Printf("🔍 Fetching product details for ID: %s\n", req.ProductID)
 	product, err := ctrl.productUsecase.GetProductByID(c.Request.Context(), req.ProductID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "product not found"})
+		fmt.Printf("❌ Error fetching product: %v\n", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "product not found: " + err.Error()})
 		return
 	}
+	fmt.Printf("✅ Found product: %+v\n", product)
 
 	r := &review.Review{
 		OrderID:   req.OrderID,
@@ -52,14 +62,17 @@ func (ctrl *ReviewController) SubmitReview(c *gin.Context) {
 		Rating:    req.Rating,
 		Comment:   req.Comment,
 	}
+	fmt.Printf("📝 Creating review: %+v\n", r)
 
 	if err := ctrl.usecase.SubmitReview(c.Request.Context(), r); err != nil {
+		fmt.Printf("❌ Error submitting review: %v\n", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Update reseller trust score
 	if ctrl.trustUsecase != nil {
+		fmt.Printf("📊 Updating trust score for reseller: %s\n", product.ResellerID.Hex())
 		go ctrl.trustUsecase.UpdateResellerTrustScoreOnNewRating(
 			context.Background(),
 			product.ResellerID.Hex(),
@@ -68,5 +81,6 @@ func (ctrl *ReviewController) SubmitReview(c *gin.Context) {
 		)
 	}
 
+	fmt.Printf("✅ Review submitted successfully\n")
 	c.JSON(http.StatusCreated, gin.H{"message": "review submitted"})
 }

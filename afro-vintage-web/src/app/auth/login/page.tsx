@@ -1,6 +1,40 @@
+"use client";
+
 import { FaGoogle, FaFacebook } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { loginUser } from "@/utils/api";
 
 export default function SignIn() {
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("authToken");
+    if (token) {
+      router.push("/dashboard");
+    }
+  }, [router]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    try {
+      const { token } = await loginUser(username, password);
+      if (token) {
+        sessionStorage.setItem("authToken", token);
+        router.push("/dashboard");
+      } else {
+        setError("Login failed. Please try again.");
+      }
+    } catch (err) {
+      setError("Invalid username or password. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen flex bg-white">
       {/* Left Section */}
@@ -17,19 +51,20 @@ export default function SignIn() {
         <div className="mb-8">
           <img src="/AfroV.svg" alt="Afro Vintage Logo" className="w-32 h-32" />
         </div>
-        {/* <h1 className="text-3xl font-bold text-teal-700 mb-6">SIGN IN</h1> */}
-        <form className="w-full max-w-sm">
+        <form className="w-full max-w-sm" onSubmit={handleLogin}>
           <div className="mb-4">
             <label
               className="block text-gray-700 text-sm font-bold mb-2"
-              htmlFor="email"
+              htmlFor="username"
             >
-              Email
+              Username
             </label>
             <input
-              id="email"
-              type="email"
-              placeholder="Yourname@gmail.com"
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="Your username"
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-teal-700"
             />
           </div>
@@ -43,10 +78,13 @@ export default function SignIn() {
             <input
               id="password"
               type="password"
-              placeholder="Yourpassword"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Your password"
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-teal-700"
             />
           </div>
+          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
           <button
             type="submit"
             className="w-full bg-teal-700 text-white py-2 rounded hover:bg-teal-800"
