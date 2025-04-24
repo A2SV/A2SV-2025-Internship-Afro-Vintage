@@ -1,36 +1,57 @@
 import { ItemPreview, MarketplaceFilters, MarketplaceResponse } from '@/types/marketplace';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://2kps99nm-8080.uks1.devtunnels.ms';
+const API_URL = 'https://2kps99nm-8080.uks1.devtunnels.ms';
 
 export const marketplaceApi = {
   async getProducts(filters: MarketplaceFilters): Promise<MarketplaceResponse> {
     try {
-      const response = await fetch(`${API_URL}/products?` + new URLSearchParams({
+      console.log('Fetching products with URL:', API_URL);
+      const queryParams = new URLSearchParams({
         page: filters.page?.toString() || '1',
         limit: filters.limit?.toString() || '10',
-        ...(filters.minPrice !== undefined && { minPrice: filters.minPrice.toString() }),
-        ...(filters.maxPrice !== undefined && { maxPrice: filters.maxPrice.toString() }),
-        ...(filters.type && { type: filters.type })
-      }));
+      });
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const response = await fetch(`${API_URL}/products?${queryParams}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch items');
+        const errorData = await response.json().catch(() => null);
+        console.error('Server response:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData
+        });
+        throw new Error(errorData?.error || 'Failed to fetch items');
       }
 
       const data = await response.json();
+      console.log('Received data:', data);
+
+      // Handle both array response and object response with products field
+      const products = Array.isArray(data) ? data : (data.products || []);
+
       return {
-        items: data.map((item: any) => ({
-          id: item.id,
+        items: products.map((item: any) => ({
+          id: item.id || item._id,
           title: item.title,
           price: item.price,
-          thumbnailUrl: item.photo,
-          rating: item.rating,
-          description: item.description,
-          category: item.type,
-          size: item.size,
-          grade: item.grade,
+          thumbnailUrl: item.photo || item.imageURL,
+          rating: item.rating || 0,
+          description: item.description || '',
+          category: item.type || 'Unknown',
+          size: item.size || '',
+          grade: item.grade || '',
         })),
-        total: data.length,
+        total: products.length,
         page: filters.page || 1,
         limit: filters.limit || 10
       };
@@ -42,7 +63,17 @@ export const marketplaceApi = {
 
   async getProductById(id: string): Promise<ItemPreview> {
     try {
-      const response = await fetch(`${API_URL}/products/${id}`);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      const response = await fetch(`${API_URL}/products/${id}`, {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error('Failed to fetch product');
@@ -50,15 +81,15 @@ export const marketplaceApi = {
 
       const data = await response.json();
       return {
-        id: data.id,
+        id: data.id || data._id,
         title: data.title,
         price: data.price,
-        thumbnailUrl: data.photo,
-        rating: data.rating,
-        description: data.description,
-        category: data.type,
-        size: data.size,
-        grade: data.grade,
+        thumbnailUrl: data.photo || data.imageURL,
+        rating: data.rating || 0,
+        description: data.description || '',
+        category: data.type || 'Unknown',
+        size: data.size || '',
+        grade: data.grade || '',
         resellerId: data.sellerId,
         resellerName: data.sellerName,
         status: data.status,
@@ -71,10 +102,20 @@ export const marketplaceApi = {
 
   async getProductsByReseller(resellerId: string, page: number = 1, limit: number = 10): Promise<ItemPreview[]> {
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
       const response = await fetch(`${API_URL}/products/reseller/${resellerId}?` + new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
-      }));
+      }), {
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error('Failed to fetch reseller products');
@@ -82,17 +123,17 @@ export const marketplaceApi = {
 
       const data = await response.json();
       return data.map((item: any) => ({
-        id: item.id,
+        id: item.id || item._id,
         title: item.title,
         price: item.price,
-        imageUrl: item.photo,
-        grade: item.grade,
-        size: item.size,
+        imageUrl: item.photo || item.imageURL,
+        grade: item.grade || '',
+        size: item.size || '',
         status: item.status,
         sellerId: item.sellerId,
-        rating: item.rating,
-        description: item.description,
-        type: item.type,
+        rating: item.rating || 0,
+        description: item.description || '',
+        type: item.type || 'Unknown',
         bundleId: item.bundleId,
       }));
     } catch (error) {
