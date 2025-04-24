@@ -5,6 +5,8 @@ import 'package:mobile_frontend/features/auth/presentation/pages/signin.dart';
 import 'package:mobile_frontend/features/auth/presentation/pages/landing_page.dart';
 import 'package:mobile_frontend/features/auth/presentation/pages/role.dart';
 import 'package:mobile_frontend/features/auth/presentation/pages/signup.dart';
+import 'package:mobile_frontend/features/consumer/cart/presentation/bloc/cart_bloc.dart';
+import 'package:mobile_frontend/features/consumer/marketplace/presentation/bloc/product_bloc.dart';
 import 'package:mobile_frontend/features/consumer/orders/presentation/pages/order_detail.dart';
 import 'package:mobile_frontend/features/consumer/reviews/presentation/pages/reviews.dart';
 import 'package:mobile_frontend/features/consumer/checkout/presentation/pages/add_address.dart';
@@ -19,8 +21,12 @@ import 'injection_container.dart' as di;
 Future<void> main() async {
   await di.init();
   runApp(
-    BlocProvider(
-      create: (context) => sl<AuthBloc>(),
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(create: (context) => sl<AuthBloc>()),
+        BlocProvider<ProductBloc>(create: (context) => sl<ProductBloc>()),
+        BlocProvider<CartBloc>(create: (context) => sl<CartBloc>()),
+      ],
       child: const MyApp(),
     ),
   );
@@ -57,7 +63,6 @@ class MyApp extends StatelessWidget {
             ),
           );
         }
-        // Add other dynamic routes here if needed
         return null;
       },
       routes: {

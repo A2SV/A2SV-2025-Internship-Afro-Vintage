@@ -13,9 +13,7 @@ class AuthResponse {
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
       token: json['token'],
-      user: json['user'] != null
-          ? UserResponse.fromJson(json['user'])
-          : null, // Handle optional user
+      user: json['user'] != null ? UserResponse.fromJson(json['user']) : null,
     );
   }
 }
