@@ -12,7 +12,7 @@ import {
   LogOut,
   Bell,
 } from "lucide-react";
-import "./globals.css";
+import "../globals.css";
 
 export const metadata = {
   title: "Afro Vintage",
@@ -40,42 +40,42 @@ export default function RootLayout({
             </div>
             <nav className="space-y-4">
               <Link
-                href="/dashboard"
+                href="/supplier/dashboard"
                 className="flex items-center gap-4 text-black hover:text-gray-700 text-3xl"
               >
                 <LayoutDashboard className="w-12 h-12" />
                 Dashboard
               </Link>
               <Link
-                href="/addbundles"
+                href="/supplier/addbundles"
                 className="flex items-center gap-4 text-black hover:text-gray-700 text-3xl"
               >
                 <Plus className="w-12 h-12" />
                 Add Bundle
               </Link>
               <Link
-                href="/supplierOrder"
+                href="/supplier/supplierOrder"
                 className="flex items-center gap-4 text-black hover:text-gray-700 text-3xl"
               >
                 <ShoppingCart className="w-12 h-12" />
                 Orders
               </Link>
               <Link
-                href="/SupplierviewBundles"
+                href="/supplier/SupplierviewBundles"
                 className="flex items-center gap-4 text-black hover:text-gray-700 text-3xl"
               >
                 <Boxes className="w-12 h-12" />
                 View Bundles
               </Link>
               <Link
-                href="/review"
+                href="/supplier/review"
                 className="flex items-center gap-4 text-black hover:text-gray-700 text-3xl"
               >
                 <Star className="w-12 h-12" />
                 Reviews
               </Link>
               <Link
-                href="/settings"
+                href="#"
                 className="flex items-center gap-4 text-black hover:text-gray-700 text-3xl"
               >
                 <Settings className="w-12 h-12" />
