@@ -84,6 +84,12 @@ func main() {
 	// Init Gin Engine and Routes
 	r := gin.Default()
 	r.Use(middlewares.CORSMiddleware())
+
+	// Add a health check endpoint
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "OK"})
+	})
+
 	routes.RegisterAuthRoutes(r, authCtrl)
 	routes.RegisterProductRoutes(r, productCtrl, jwtSvc, reviewCtrl, trustUC, productUC)
 	routes.RegisterAdminRoutes(r, adminCtrl, jwtSvc)
