@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"sort"
 	"time"
@@ -227,19 +228,28 @@ func (uc *orderUseCaseImpl) GetResellerMetrics(ctx context.Context, resellerID s
 	return metrics, nil
 }
 
-func (uc *orderUseCaseImpl) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, error) {
+func (uc *orderUseCaseImpl) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, map[string]string, error) {
+	log.Printf("Getting sold bundle history for supplier: %s", supplierID)
 	orders, err := uc.orderRepo.GetOrdersBySupplier(ctx, supplierID)
 	if err != nil {
-		return nil, err
+		log.Printf("Error getting orders: %v", err)
+		return nil, nil, err
 	}
 
-	var soldBundleOrders []*order.Order
+	userNames := make(map[string]string)
 	for _, order := range orders {
-		if order.BundleID != "" && len(order.ProductIDs) == 0 {
-			soldBundleOrders = append(soldBundleOrders, order)
+		if order.ResellerID != "" {
+			user, err := uc.userRepo.GetByID(ctx, order.ResellerID)
+			if err != nil {
+				log.Printf("Error getting user name for ID %s: %v", order.ResellerID, err)
+				continue
+			}
+			userNames[order.ResellerID] = user.Username
 		}
 	}
-	return soldBundleOrders, nil
+
+	log.Printf("Found %d orders for supplier %s", len(orders), supplierID)
+	return orders, userNames, nil
 }
 
 func (uc *orderUseCaseImpl) GetAdminDashboardMetrics(ctx context.Context) (*admin.Metrics, error) {
@@ -324,3 +334,31 @@ func (uc *orderUseCaseImpl) PurchaseProduct(ctx context.Context, productID, cons
 
 	return order, payment, nil
 }
+func (uc *orderUseCaseImpl) GetOrdersByReseller(ctx context.Context, resellerID string) ([]*order.Order, map[string]string, error) {
+	orders, err := uc.orderRepo.GetOrdersByReseller(ctx, resellerID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	userNames := make(map[string]string)
+	for _, order := range orders {
+		if len(order.ProductIDs) > 0 { // Sold order
+			if order.ConsumerID != "" {
+				user, err := uc.userRepo.GetByID(ctx, order.ConsumerID)
+				if err == nil && user != nil {
+					userNames[order.ConsumerID] = user.Username
+				}
+			}
+		} else if order.BundleID != "" { // Bought order
+			if order.SupplierID != "" {
+				user, err := uc.userRepo.GetByID(ctx, order.SupplierID)
+				if err == nil && user != nil {
+					userNames[order.SupplierID] = user.Username
+				}
+			}
+		}
+	}
+
+	return orders, userNames, nil
+}
+

@@ -31,11 +31,13 @@ class ProductDataSourceImpl implements ProductDataSource {
           'Authorization': 'Bearer $token',
         },
       );
-      // print("DataSource: Response received: ${response.statusCode}");
+      // print("DataSource: Response  received: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        // print("Reached $responseData");
+        for (var product in responseData) {
+          // print("Product image_url: ${product['image_url']}");
+        }
         return (responseData as List)
             .map((product) => ProductModel.fromJson(product))
             .toList();

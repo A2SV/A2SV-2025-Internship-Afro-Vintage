@@ -6,7 +6,7 @@ class ProductModel extends Product {
     required super.id,
     required super.title,
     required super.price,
-    required super.photo,
+    required super.image_url,
     required super.size,
     required super.status,
     required super.seller_id,
@@ -24,7 +24,7 @@ class ProductModel extends Product {
       price: json['price'] != null
           ? double.tryParse(json['price'].toString()) ?? 0.0
           : 0.0,
-      photo: json['photo']?.toString() ?? '',
+      image_url: json['image_url']?.toString() ?? '',
       size: json['size'] ?? 'Unknown',
       status: json['status'] ?? 'Unavailable',
       seller_id: json['seller_id']?.toString() ?? '',
@@ -42,7 +42,7 @@ class ProductModel extends Product {
       "id": id,
       "title": title,
       "price": price,
-      "photo": photo,
+      "image_url": image_url,
       "grade": grade,
       "size": size,
       "status": status,

@@ -75,11 +75,10 @@ class CartDataSourceImpl implements CartDataSource {
 
   Future<List<Cart>> fetchCart() async {
     try {
-      // print("DataSource: Starting getProducts");
       final prefs = await SharedPreferences.getInstance();
-      // print("DataSource: SharedPreferences initialized");
       final token = prefs.getString('auth_token') ?? '';
       print("DataSource: Token retrieved: $token");
+
       final response = await client.get(
         Uri.parse("$_baseUrl/api/cart"),
         headers: {
@@ -87,11 +86,15 @@ class CartDataSourceImpl implements CartDataSource {
           'Authorization': 'Bearer $token',
         },
       );
-      // print("DataSource: Response received: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        // print("Reached  Cart $responseData");
+
+        // Handle null or empty response
+        if (responseData == null || responseData.isEmpty) {
+          return []; // Return an empty list if the cart is empty
+        }
+
         return (responseData as List)
             .map((cart) => CartModel.fromJson(cart))
             .toList();
@@ -101,7 +104,7 @@ class CartDataSourceImpl implements CartDataSource {
         throw Exception('Failed to fetch cart items');
       }
     } catch (e) {
-      print("Error in fetchcart: $e");
+      print("Error in fetchCart: $e");
       rethrow;
     }
   }

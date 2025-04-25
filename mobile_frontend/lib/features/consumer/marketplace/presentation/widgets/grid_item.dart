@@ -29,11 +29,12 @@ class GridItem extends StatelessWidget {
               itemCount: products.length,
               itemBuilder: (context, index) {
                 final product = products[index];
+                // print("Product mf $product");
                 return ItemCard(
                   title: product.title,
                   itemPrice: '\$${product.price}',
                   rating: product.rating,
-                  imageUrl: product.photo,
+                  imageUrl: product.image_url,
                   id: product.id,
                   // onCartToggle: onCartToggle,
                 );

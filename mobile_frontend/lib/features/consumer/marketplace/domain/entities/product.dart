@@ -4,7 +4,7 @@ class Product extends Equatable {
   final String id;
   final String title;
   final double price;
-  final String photo;
+  final String image_url;
   final String? grade;
   final String size;
   final String status;
@@ -18,7 +18,7 @@ class Product extends Equatable {
       {required this.id,
       required this.title,
       required this.price,
-      required this.photo,
+      required this.image_url,
       required this.size,
       required this.status,
       required this.seller_id,
@@ -32,7 +32,7 @@ class Product extends Equatable {
         id,
         title,
         price,
-        photo,
+        image_url,
         grade,
         size,
         status,
