@@ -1,34 +1,31 @@
-version: "3.8"
+version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     ports:
       - "8080:8080"
     environment:
-      - MONGO_URI=mongodb://mongo:27017
-      - DB_NAME=afro_vintage
-      - JWT_SECRET=fallback-secret
-      - DEBUG=true 
+      - MONGODB_URI=mongodb://mongodb:27017
+      - REDIS_URI=redis://redis:6379
     depends_on:
-      - mongo
+      - mongodb
+      - redis
 
-  mongo:
-    image: mongo:5.0
-    container_name: mongo
+  mongodb:
+    image: mongo:latest
     ports:
       - "27017:27017"
     volumes:
-      - mongo_data:/data/db
-    environment:
-      - MONGO_INITDB_DATABASE=afro_vintage 
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      - mongodb_data:/data/db
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 
 volumes:
-  mongo_data:
+  mongodb_data:
+  redis_data:

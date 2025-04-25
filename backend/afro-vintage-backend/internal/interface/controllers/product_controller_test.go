@@ -449,6 +449,7 @@ func (suite *ProductControllerTestSuite) TestDelete_Success() {
 }
 
 func (suite *ProductControllerTestSuite) TestGetByTitle_Success() {
+	// Setup
 	expectedProduct := &product.Product{Title: "Test Product"}
 	suite.productUseCase.On("GetProductByTitle", mock.Anything, "Test Product").
 		Return(expectedProduct, nil)
@@ -456,7 +457,7 @@ func (suite *ProductControllerTestSuite) TestGetByTitle_Success() {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Params = gin.Params{gin.Param{Key: "title", Value: "Test Product"}}
-	c.Request = httptest.NewRequest("GET", "/products/title/Test Product", nil)
+	c.Request = httptest.NewRequest("GET", "/products/title/Test%20Product", nil) // Properly encode the title
 
 	suite.controller.GetByTitle(c)
 
@@ -471,7 +472,7 @@ func (suite *ProductControllerTestSuite) TestGetByTitle_NotFound() {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Params = gin.Params{gin.Param{Key: "title", Value: "Nonexistent Product"}}
-	c.Request = httptest.NewRequest("GET", "/products/title/Nonexistent Product", nil)
+	c.Request = httptest.NewRequest("GET", "/products/title/Nonexistent%20Product", nil)
 
 	suite.controller.GetByTitle(c)
 

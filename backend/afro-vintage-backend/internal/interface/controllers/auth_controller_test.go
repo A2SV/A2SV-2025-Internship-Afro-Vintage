@@ -57,9 +57,14 @@ func (suite *AuthControllerTestSuite) TestRegister_Success() {
 		Password: "password123",
 		Role:     string(user.RoleConsumer),
 	}
-	token := "test-token"
+	loginResult := &auth.LoginResult{
+		Token:    "test-token",
+		ID:       "user-id-123",
+		Username: "test@example.com",
+		Role:     "consumer",
+	}
 
-	suite.mockUC.On("Register", mock.Anything, newUser).Return(token, nil)
+	suite.mockUC.On("Register", mock.Anything, newUser).Return(loginResult, nil)
 
 	// Execute
 	jsonData, _ := json.Marshal(newUser)
@@ -71,9 +76,13 @@ func (suite *AuthControllerTestSuite) TestRegister_Success() {
 
 	// Assert
 	assert.Equal(suite.T(), http.StatusCreated, w.Code)
-	var response map[string]string
+	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Equal(suite.T(), token, response["token"])
+	assert.Equal(suite.T(), loginResult.Token, response["token"])
+	user := response["user"].(map[string]interface{})
+	assert.Equal(suite.T(), loginResult.ID, user["id"])
+	assert.Equal(suite.T(), loginResult.Username, user["username"])
+	assert.Equal(suite.T(), loginResult.Role, user["role"])
 	suite.mockUC.AssertExpectations(suite.T())
 }
 
