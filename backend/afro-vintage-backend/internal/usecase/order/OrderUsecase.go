@@ -238,13 +238,13 @@ func (uc *orderUseCaseImpl) GetSoldBundleHistory(ctx context.Context, supplierID
 
 	userNames := make(map[string]string)
 	for _, order := range orders {
-		if order.ConsumerID != "" {
-			user, err := uc.userRepo.GetByID(ctx, order.ConsumerID)
+		if order.ResellerID != "" {
+			user, err := uc.userRepo.GetByID(ctx, order.ResellerID)
 			if err != nil {
-				log.Printf("Error getting user name for ID %s: %v", order.ConsumerID, err)
+				log.Printf("Error getting user name for ID %s: %v", order.ResellerID, err)
 				continue
 			}
-			userNames[order.ConsumerID] = user.Name
+			userNames[order.ResellerID] = user.Username
 		}
 	}
 

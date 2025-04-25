@@ -94,11 +94,18 @@ func (c *OrderController) GetSoldBundleHistory(ctx *gin.Context) {
 		return
 	}
 
+	var formattedOrders []map[string]interface{}
+	for _, order := range orders {
+		formattedOrders = append(formattedOrders, map[string]interface{}{
+			"order": order,
+			"resellerUsername": userNames[order.ResellerID],
+		})
+	}
+
 	ctx.JSON(http.StatusOK, common.APIResponse{
 		Success: true,
 		Data: gin.H{
-			"orders": orders,
-			"userNames": userNames,
+			"orders": formattedOrders,
 		},
 	})
 }
