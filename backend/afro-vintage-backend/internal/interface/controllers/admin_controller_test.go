@@ -77,7 +77,10 @@ func (m *AdminMockOrderUsecase) GetOrderByID(ctx context.Context, orderID string
 
 func (m *AdminMockOrderUsecase) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, error) {
 	args := m.Called(ctx, supplierID)
-	return nil, args.Error(1)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).([]*order.Order), args.Error(1)
 }
 
 func (m *AdminMockOrderUsecase) GetAdminDashboardMetrics(ctx context.Context) (*admin.Metrics, error) {

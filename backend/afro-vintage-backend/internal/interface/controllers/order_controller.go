@@ -4,16 +4,16 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/order"
+	OrderUsecase "github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/usecase/order"
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/models/common"
 	"github.com/gin-gonic/gin"
 )
 
 type OrderController struct {
-	orderUseCase order.Usecase
+	orderUseCase OrderUsecase.OrderUseCase
 }
 
-func NewOrderController(orderUseCase order.Usecase) *OrderController {
+func NewOrderController(orderUseCase OrderUsecase.OrderUseCase) *OrderController {
 	return &OrderController{orderUseCase: orderUseCase}
 }
 
@@ -85,7 +85,7 @@ func (c *OrderController) GetSoldBundleHistory(ctx *gin.Context) {
 		return
 	}
 
-	orders, err := c.orderUseCase.GetSoldBundleHistory(ctx, supplierIDStr)
+	orders, userNames, err := c.orderUseCase.GetSoldBundleHistory(ctx, supplierIDStr)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, common.APIResponse{
 			Success: false,
@@ -96,6 +96,64 @@ func (c *OrderController) GetSoldBundleHistory(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, common.APIResponse{
 		Success: true,
-		Data:    orders,
+		Data: gin.H{
+			"orders": orders,
+			"userNames": userNames,
+		},
+	})
+}
+
+func (c *OrderController) GetOrdersByReseller(ctx *gin.Context) {
+	resellerID, exists := ctx.Get("userID")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, common.APIResponse{
+			Success: false,
+			Message: "user ID not found in context",
+		})
+		return
+	}
+
+	resellerIDStr, ok := resellerID.(string)
+	if !ok || resellerIDStr == "" {
+		ctx.JSON(http.StatusUnauthorized, common.APIResponse{
+			Success: false,
+			Message: "invalid user ID format",
+		})
+		return
+	}
+
+	orders, userNames, err := c.orderUseCase.GetOrdersByReseller(ctx, resellerIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, common.APIResponse{
+			Success: false,
+			Message: fmt.Sprintf("failed to get reseller orders: %v", err),
+		})
+		return
+	}
+
+	// Separate orders into sold and bought
+	var soldOrders []map[string]interface{}
+	var boughtOrders []map[string]interface{}
+
+	for _, order := range orders {
+		if len(order.ProductIDs) > 0 { // Sold order
+			soldOrders = append(soldOrders, map[string]interface{}{
+				"order":        order,
+				"consumerName": userNames[order.ConsumerID],
+			})
+		} else if order.BundleID != "" { // Bought order
+			boughtOrders = append(boughtOrders, map[string]interface{}{
+				"order":      order,
+				"supplierName": userNames[order.SupplierID],
+			})
+		}
+	}
+
+	ctx.JSON(http.StatusOK, common.APIResponse{
+		Success: true,
+		Data: gin.H{
+			"sold":   soldOrders,
+			"bought": boughtOrders,
+		},
 	})
 }

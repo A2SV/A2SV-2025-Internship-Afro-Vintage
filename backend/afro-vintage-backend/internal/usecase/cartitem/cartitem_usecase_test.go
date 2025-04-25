@@ -195,6 +195,30 @@ func (m *MockOrderUsecase) GetOrderByID(ctx context.Context, orderID string) (*o
 	return args.Get(0).(*order.Order), args.Error(1)
 }
 
+func (m *MockOrderUsecase) GetOrdersByReseller(ctx context.Context, resellerID string) ([]*order.Order, map[string]string, error) {
+	args := m.Called(ctx, resellerID)
+	if args.Get(0) == nil {
+		return nil, nil, args.Error(2)
+	}
+	return args.Get(0).([]*order.Order), args.Get(1).(map[string]string), args.Error(2)
+}
+
+func (m *MockOrderUsecase) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, map[string]string, error) {
+	args := m.Called(ctx, supplierID)
+	if args.Get(0) == nil {
+		return nil, nil, args.Error(2)
+	}
+	return args.Get(0).([]*order.Order), args.Get(1).(map[string]string), args.Error(2)
+}
+
+func (m *MockOrderUsecase) GetResellerMetrics(ctx context.Context, resellerID string) (*order.ResellerMetrics, error) {
+	args := m.Called(ctx, resellerID)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+	return args.Get(0).(*order.ResellerMetrics), args.Error(1)
+}
+
 // --- Test Suite ---
 
 type CartItemUsecaseTestSuite struct {

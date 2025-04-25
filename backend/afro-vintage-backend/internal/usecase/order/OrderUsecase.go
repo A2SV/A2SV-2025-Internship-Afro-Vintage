@@ -228,18 +228,7 @@ func (uc *orderUseCaseImpl) GetResellerMetrics(ctx context.Context, resellerID s
 }
 
 func (uc *orderUseCaseImpl) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, error) {
-	orders, err := uc.orderRepo.GetOrdersBySupplier(ctx, supplierID)
-	if err != nil {
-		return nil, err
-	}
-
-	var soldBundleOrders []*order.Order
-	for _, order := range orders {
-		if order.BundleID != "" && len(order.ProductIDs) == 0 {
-			soldBundleOrders = append(soldBundleOrders, order)
-		}
-	}
-	return soldBundleOrders, nil
+	return uc.orderRepo.GetOrdersBySupplier(ctx, supplierID)
 }
 
 func (uc *orderUseCaseImpl) GetAdminDashboardMetrics(ctx context.Context) (*admin.Metrics, error) {
@@ -324,3 +313,31 @@ func (uc *orderUseCaseImpl) PurchaseProduct(ctx context.Context, productID, cons
 
 	return order, payment, nil
 }
+func (uc *orderUseCaseImpl) GetOrdersByReseller(ctx context.Context, resellerID string) ([]*order.Order, map[string]string, error) {
+	orders, err := uc.orderRepo.GetOrdersByReseller(ctx, resellerID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	userNames := make(map[string]string)
+	for _, order := range orders {
+		if len(order.ProductIDs) > 0 { // Sold order
+			if order.ConsumerID != "" {
+				user, err := uc.userRepo.GetByID(ctx, order.ConsumerID)
+				if err == nil && user != nil {
+					userNames[order.ConsumerID] = user.Username
+				}
+			}
+		} else if order.BundleID != "" { // Bought order
+			if order.SupplierID != "" {
+				user, err := uc.userRepo.GetByID(ctx, order.SupplierID)
+				if err == nil && user != nil {
+					userNames[order.SupplierID] = user.Username
+				}
+			}
+		}
+	}
+
+	return orders, userNames, nil
+}
+
