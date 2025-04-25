@@ -62,19 +62,36 @@ func (m *MockOrderUseCase) GetResellerMetrics(ctx context.Context, resellerID st
 	return args.Get(0).(*order.ResellerMetrics), args.Error(1)
 }
 
-func (m *MockOrderUseCase) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, error) {
+func (m *MockOrderUseCase) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, map[string]string, error) {
 	args := m.Called(ctx, supplierID)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return nil, nil, args.Error(2)
 	}
-	return args.Get(0).([]*order.Order), args.Error(1)
+	return args.Get(0).([]*order.Order), args.Get(1).(map[string]string), args.Error(2)
 }
+
+func (m *MockOrderUseCase) GetOrdersByReseller(ctx context.Context, resellerID string) ([]*order.Order, map[string]string, error) {
+	args := m.Called(ctx, resellerID)
+	if args.Get(0) == nil {
+		return nil, nil, args.Error(2)
+	}
+	return args.Get(0).([]*order.Order), args.Get(1).(map[string]string), args.Error(2)
+}
+
 func (m *MockOrderUseCase) GetAdminDashboardMetrics(ctx context.Context) (*admin.Metrics, error) {
 	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*admin.Metrics), args.Error(1)
+}
+
+func (m *MockOrderUseCase) PurchaseProduct(ctx context.Context, productID, consumerID string, totalPrice float64) (*order.Order, *payment.Payment, error) {
+	args := m.Called(ctx, productID, consumerID, totalPrice)
+	if args.Get(0) == nil {
+		return nil, nil, args.Error(2)
+	}
+	return args.Get(0).(*order.Order), args.Get(1).(*payment.Payment), args.Error(2)
 }
 
 func (suite *OrderControllerTestSuite) SetupTest() {

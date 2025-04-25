@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { authApi } from '@/lib/api/auth';
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { authApi } from "@/lib/api/auth";
 
 interface LoginData {
   username: string;
@@ -13,14 +13,14 @@ interface LoginData {
 
 const getRoleBasedRedirect = (role: string) => {
   switch (role.toLowerCase()) {
-    case 'consumer':
-      return '/consumer/marketplace';
-    case 'supplier':
-      return '/supplier/dashboard';
-    case 'reseller':
-      return '/reseller/dashboard';
+    case "consumer":
+      return "/consumer/marketplace";
+    case "supplier":
+      return "../supplier";
+    case "reseller":
+      return "/reseller/dashboard";
     default:
-      return '/dashboard';
+      return "/dashboard";
   }
 };
 
@@ -28,15 +28,15 @@ export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState<LoginData>({
-    username: '',
-    password: '',
+    username: "",
+    password: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     setLoading(true);
     setError(null);
 
@@ -48,15 +48,17 @@ export default function LoginForm() {
 
       if (response.token) {
         // Store token
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
-        
+        localStorage.setItem("token", response.token);
+        localStorage.setItem("user", JSON.stringify(response.user));
+
         // Redirect based on role
-        const returnUrl = searchParams.get('returnUrl') || getRoleBasedRedirect(response.user.role);
+        const returnUrl =
+          searchParams.get("returnUrl") ||
+          getRoleBasedRedirect(response.user.role);
         router.push(returnUrl);
       }
     } catch (err) {
-      setError('Invalid username or password');
+      setError("Invalid username or password");
     } finally {
       setLoading(false);
     }
@@ -124,13 +126,16 @@ export default function LoginForm() {
               disabled={loading}
               className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg text-sm font-medium text-white bg-[#006D5B] hover:bg-[#005446] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#006D5B] disabled:opacity-50"
             >
-              {loading ? 'Please wait...' : 'Sign in'}
+              {loading ? "Please wait..." : "Sign in"}
             </button>
 
             <div className="text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link href="/signup" className="text-[#006D5B] hover:text-[#005446]">
+                Don't have an account?{" "}
+                <Link
+                  href="/signup"
+                  className="text-[#006D5B] hover:text-[#005446]"
+                >
                   Sign up
                 </Link>
               </p>
@@ -142,7 +147,9 @@ export default function LoginForm() {
                   <div className="w-full border-t border-gray-300"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or Sign in with</span>
+                  <span className="px-2 bg-white text-gray-500">
+                    Or Sign in with
+                  </span>
                 </div>
               </div>
 
@@ -193,4 +200,4 @@ export default function LoginForm() {
       </div>
     </div>
   );
-} 
+}

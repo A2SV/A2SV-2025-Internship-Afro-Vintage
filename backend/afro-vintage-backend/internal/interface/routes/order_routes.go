@@ -14,4 +14,6 @@ func RegisterOrderRoutes(r *gin.Engine, order_ctrl *controllers.OrderController,
 	consumerGroup.POST("", middlewares.AuthorizeRoles("reseller"), order_ctrl.PurchaseBundle)
 	consumerGroup.POST("/:id", middlewares.AuthorizeRoles("reseller", "consumer"), order_ctrl.GetOrderByID)
 	consumerGroup.GET("/history", middlewares.AuthorizeRoles("reseller", "consumer"), consumer_ctrl.GetOrderHistory)
+	consumerGroup.GET("/supplier/history", middlewares.AuthorizeRoles("supplier"), order_ctrl.GetSoldBundleHistory)
+	consumerGroup.GET("/reseller/history", middlewares.AuthorizeRoles("reseller"), order_ctrl.GetOrdersByReseller)
 }

@@ -734,18 +734,21 @@ func TestGetSoldBundleHistory(t *testing.T) {
 			mockOrderRepo.On("GetOrdersBySupplier", ctx, tt.supplierID).Return(tt.mockOrders, tt.mockError)
 
 			// Act
-			orders, err := useCase.GetSoldBundleHistory(ctx, tt.supplierID)
+			orders, userNames, err := useCase.GetSoldBundleHistory(ctx, tt.supplierID)
 
 			// Assert
 			if tt.expectError {
 				assert.Error(t, err)
 				assert.Nil(t, orders)
+				assert.Nil(t, userNames)
 			} else {
 				assert.NoError(t, err)
 				if tt.expectedCount == 0 {
 					assert.Empty(t, orders)
+					assert.Empty(t, userNames)
 				} else {
 					assert.NotNil(t, orders)
+					assert.NotNil(t, userNames)
 					assert.Len(t, orders, tt.expectedCount)
 				}
 			}
