@@ -135,7 +135,7 @@ func (suite *WarehouseControllerTestSuite) TestGetWarehouseItems_EmptyUserID() {
 func (suite *WarehouseControllerTestSuite) TestGetWarehouseItems_UseCaseError() {
 	// Setup
 	suite.usecase.On("GetWarehouseItems", mock.Anything, "reseller123").
-		Return(nil, assert.AnError)
+		Return([]*models.WarehouseItemResponse{}, assert.AnError) // Return an empty slice instead of nil
 
 	// Create test request
 	w := httptest.NewRecorder()
