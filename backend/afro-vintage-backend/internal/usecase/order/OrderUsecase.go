@@ -362,3 +362,41 @@ func (uc *orderUseCaseImpl) GetOrdersByReseller(ctx context.Context, resellerID 
 	return orders, userNames, nil
 }
 
+func (uc *orderUseCaseImpl) GetOrdersByConsumer(ctx context.Context, consumerID string) ([]*order.Order, map[string]string, map[string]string, error) {
+	fmt.Printf("🔍 Getting orders for consumer: %s\n", consumerID)
+	
+	orders, err := uc.orderRepo.GetOrdersByConsumer(ctx, consumerID)
+	if err != nil {
+		fmt.Printf("❌ Error getting consumer orders: %v\n", err)
+		return nil, nil, nil, fmt.Errorf("failed to get consumer orders: %w", err)
+	}
+
+	userNames := make(map[string]string)
+	productNames := make(map[string]string)
+
+	// Get unique product IDs
+	productIDs := make(map[string]bool)
+	for _, order := range orders {
+		if order.ResellerID != "" {
+			user, err := uc.userRepo.GetByID(ctx, order.ResellerID)
+			if err == nil && user != nil {
+				userNames[order.ResellerID] = user.Username
+			}
+		}
+		for _, productID := range order.ProductIDs {
+			productIDs[productID] = true
+		}
+	}
+
+	// Get product names
+	for productID := range productIDs {
+		product, err := uc.prodRepo.GetProductByID(ctx, productID)
+		if err == nil && product != nil {
+			productNames[productID] = product.Title
+		}
+	}
+
+	fmt.Printf("✅ Found %d orders for consumer\n", len(orders))
+	return orders, userNames, productNames, nil
+}
+

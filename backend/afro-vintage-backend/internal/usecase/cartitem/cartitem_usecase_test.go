@@ -219,6 +219,14 @@ func (m *MockOrderUsecase) GetResellerMetrics(ctx context.Context, resellerID st
 	return args.Get(0).(*order.ResellerMetrics), args.Error(1)
 }
 
+func (m *MockOrderUsecase) GetOrdersByConsumer(ctx context.Context, consumerID string) ([]*order.Order, map[string]string, map[string]string, error) {
+	args := m.Called(ctx, consumerID)
+	if args.Get(0) == nil {
+		return nil, nil, nil, args.Error(3)
+	}
+	return args.Get(0).([]*order.Order), args.Get(1).(map[string]string), args.Get(2).(map[string]string), args.Error(3)
+}
+
 // --- Test Suite ---
 
 type CartItemUsecaseTestSuite struct {
