@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_frontend/features/consumer/cart/presentation/bloc/cart_event.dart';
 import 'package:mobile_frontend/features/consumer/cart/presentation/bloc/cart_state.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/domain/entities/product.dart';
+import 'package:mobile_frontend/features/consumer/product_detail/presentation/pages/product_detail.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 
 class ItemCard extends StatefulWidget {
@@ -55,7 +56,12 @@ class _ItemCardState extends State<ItemCard> {
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.pushNamed(context, '/productdetail');
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ProductDetailPage(
+                            product: widget.product,
+                          )));
             },
             child: SizedBox(
               width: 300,
@@ -66,9 +72,14 @@ class _ItemCardState extends State<ItemCard> {
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20)),
                     ),
-                    child: Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20)),
                       child: widget.product.image_url != null
                           ? Image.network(
                               widget.product.image_url,
