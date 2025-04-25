@@ -472,7 +472,7 @@ func (suite *ProductControllerTestSuite) TestGetByTitle_NotFound() {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Params = gin.Params{gin.Param{Key: "title", Value: "Nonexistent Product"}}
-	c.Request = httptest.NewRequest("GET", "/products/title/Nonexistent Product", nil)
+	c.Request = httptest.NewRequest("GET", "/products/title/Nonexistent%20Product", nil)
 
 	suite.controller.GetByTitle(c)
 

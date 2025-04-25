@@ -12,10 +12,7 @@ require (
 	golang.org/x/crypto v0.36.0
 )
 
-require (
-	github.com/kr/text v0.2.0 // indirect
-	go.mongodb.org/mongo-driver/v2 v2.2.0 // indirect
-)
+require github.com/kr/text v0.2.0 // indirect
 
 require (
 	github.com/bytedance/sonic v1.13.2 // indirect

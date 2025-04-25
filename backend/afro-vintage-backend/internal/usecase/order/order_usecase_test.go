@@ -14,6 +14,7 @@ import (
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/warehouse"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -371,37 +372,77 @@ func (m *MockBundleRepo) GetBundleByTitle(ctx context.Context, title string) (*b
 	return args.Get(0).(*bundle.Bundle), args.Error(1)
 }
 
-// Test Cases
-func TestNewOrderUsecase(t *testing.T) {
-	// Arrange
-	orderRepo := &MockOrderRepo{}
-	bundleRepo := &MockBundleRepo{}
-	warehouseRepo := &MockWarehouseRepo{}
-	paymentRepo := &MockPaymentRepo{}
-	userRepo := &MockUserRepo{}
-	productRepo := &MockProductRepo{}
+// OrderUsecaseTestSuite is the test suite for order usecase
+type OrderUsecaseTestSuite struct {
+	suite.Suite
+	ctx           context.Context
+	bundleRepo    *MockBundleRepo
+	orderRepo     *MockOrderRepo
+	warehouseRepo *MockWarehouseRepo
+	paymentRepo   *MockPaymentRepo
+	userRepo      *MockUserRepo
+	productRepo   *MockProductRepo
+	useCase       *orderUseCaseImpl
+}
 
+// SetupTest runs before each test
+func (suite *OrderUsecaseTestSuite) SetupTest() {
+	suite.ctx = context.Background()
+	suite.bundleRepo = new(MockBundleRepo)
+	suite.orderRepo = new(MockOrderRepo)
+	suite.warehouseRepo = new(MockWarehouseRepo)
+	suite.paymentRepo = new(MockPaymentRepo)
+	suite.userRepo = new(MockUserRepo)
+	suite.productRepo = new(MockProductRepo)
+	suite.useCase = NewOrderUsecase(
+		suite.bundleRepo,
+		suite.orderRepo,
+		suite.warehouseRepo,
+		suite.paymentRepo,
+		suite.userRepo,
+		suite.productRepo,
+	)
+}
+
+// TearDownTest runs after each test
+func (suite *OrderUsecaseTestSuite) TearDownTest() {
+	suite.bundleRepo.AssertExpectations(suite.T())
+	suite.orderRepo.AssertExpectations(suite.T())
+	suite.warehouseRepo.AssertExpectations(suite.T())
+	suite.paymentRepo.AssertExpectations(suite.T())
+	suite.userRepo.AssertExpectations(suite.T())
+	suite.productRepo.AssertExpectations(suite.T())
+}
+
+// TestOrderUsecaseTestSuite runs all the tests in the suite
+func TestOrderUsecaseTestSuite(t *testing.T) {
+	suite.Run(t, new(OrderUsecaseTestSuite))
+}
+
+// TestNewOrderUsecase tests the constructor
+func (suite *OrderUsecaseTestSuite) TestNewOrderUsecase() {
 	// Act
 	uc := NewOrderUsecase(
-		bundleRepo,    // bundle.Repository
-		orderRepo,     // order.Repository
-		warehouseRepo, // warehouse.Repository
-		paymentRepo,   // payment.Repository
-		userRepo,      // user.Repository
-		productRepo,   // product.Repository
+		suite.bundleRepo,
+		suite.orderRepo,
+		suite.warehouseRepo,
+		suite.paymentRepo,
+		suite.userRepo,
+		suite.productRepo,
 	)
 
 	// Assert
-	assert.NotNil(t, uc)
-	assert.Equal(t, orderRepo, uc.orderRepo)
-	assert.Equal(t, bundleRepo, uc.bundleRepo)
-	assert.Equal(t, warehouseRepo, uc.warehouseRepo)
-	assert.Equal(t, paymentRepo, uc.paymentRepo)
-	assert.Equal(t, userRepo, uc.userRepo)
-	assert.Equal(t, productRepo, uc.prodRepo)
+	assert.NotNil(suite.T(), uc)
+	assert.Equal(suite.T(), suite.orderRepo, uc.orderRepo)
+	assert.Equal(suite.T(), suite.bundleRepo, uc.bundleRepo)
+	assert.Equal(suite.T(), suite.warehouseRepo, uc.warehouseRepo)
+	assert.Equal(suite.T(), suite.paymentRepo, uc.paymentRepo)
+	assert.Equal(suite.T(), suite.userRepo, uc.userRepo)
+	assert.Equal(suite.T(), suite.productRepo, uc.prodRepo)
 }
 
-func TestPurchaseBundle(t *testing.T) {
+// TestPurchaseBundle tests the PurchaseBundle method
+func (suite *OrderUsecaseTestSuite) TestPurchaseBundle() {
 	tests := []struct {
 		name         string
 		bundleID     string
@@ -450,55 +491,41 @@ func TestPurchaseBundle(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Arrange
-			mockBundleRepo := new(MockBundleRepo)
-			mockOrderRepo := new(MockOrderRepo)
-			mockWarehouseRepo := new(MockWarehouseRepo)
-			mockPaymentRepo := new(MockPaymentRepo)
-			mockUserRepo := new(MockUserRepo)
-			productRepo := new(MockProductRepo)
-			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo, productRepo)
-			ctx := context.Background()
-
-			mockBundleRepo.On("GetBundleByID", ctx, tt.bundleID).Return(tt.mockBundle, tt.mockError)
+		suite.Run(tt.name, func() {
+			suite.bundleRepo.On("GetBundleByID", suite.ctx, tt.bundleID).Return(tt.mockBundle, tt.mockError)
 			if tt.mockBundle != nil {
-				mockBundleRepo.On("ListAvailableBundles", ctx).Return([]*bundle.Bundle{tt.mockBundle}, nil)
+				suite.bundleRepo.On("ListAvailableBundles", suite.ctx).Return([]*bundle.Bundle{tt.mockBundle}, nil)
 			}
 
 			if !tt.expectError {
-				mockOrderRepo.On("CreateOrder", ctx, mock.AnythingOfType("*order.Order")).Return(nil)
-				mockPaymentRepo.On("RecordPayment", ctx, mock.AnythingOfType("*payment.Payment")).Return(nil)
-				mockBundleRepo.On("MarkAsPurchased", ctx, tt.bundleID, tt.resellerID).Return(nil)
-				mockWarehouseRepo.On("AddItem", ctx, mock.AnythingOfType("*warehouse.WarehouseItem")).Return(nil)
-				mockOrderRepo.On("UpdateOrderStatus", ctx, mock.AnythingOfType("string"), order.OrderStatus("completed")).Return(nil)
+				suite.orderRepo.On("CreateOrder", suite.ctx, mock.AnythingOfType("*order.Order")).Return(nil)
+				suite.paymentRepo.On("RecordPayment", suite.ctx, mock.AnythingOfType("*payment.Payment")).Return(nil)
+				suite.bundleRepo.On("MarkAsPurchased", suite.ctx, tt.bundleID, tt.resellerID).Return(nil)
+				suite.warehouseRepo.On("AddItem", suite.ctx, mock.AnythingOfType("*warehouse.WarehouseItem")).Return(nil)
 			}
 
 			// Act
-			order, payment, warehouseItem, err := useCase.PurchaseBundle(ctx, tt.bundleID, tt.resellerID)
+			order, payment, warehouseItem, err := suite.useCase.PurchaseBundle(suite.ctx, tt.bundleID, tt.resellerID)
 
 			// Assert
 			if tt.expectError {
-				assert.Error(t, err)
-				assert.Contains(t, err.Error(), tt.errorMessage)
-				assert.Nil(t, order)
-				assert.Nil(t, payment)
-				assert.Nil(t, warehouseItem)
+				assert.Error(suite.T(), err)
+				assert.Contains(suite.T(), err.Error(), tt.errorMessage)
+				assert.Nil(suite.T(), order)
+				assert.Nil(suite.T(), payment)
+				assert.Nil(suite.T(), warehouseItem)
 			} else {
-				assert.NoError(t, err)
-				assert.NotNil(t, order)
-				assert.NotNil(t, payment)
-				assert.NotNil(t, warehouseItem)
+				assert.NoError(suite.T(), err)
+				assert.NotNil(suite.T(), order)
+				assert.NotNil(suite.T(), payment)
+				assert.NotNil(suite.T(), warehouseItem)
 			}
-			mockBundleRepo.AssertExpectations(t)
-			mockOrderRepo.AssertExpectations(t)
-			mockWarehouseRepo.AssertExpectations(t)
-			mockPaymentRepo.AssertExpectations(t)
 		})
 	}
 }
 
-func TestGetDashboardMetrics(t *testing.T) {
+// TestGetDashboardMetrics tests the GetDashboardMetrics method
+func (suite *OrderUsecaseTestSuite) TestGetDashboardMetrics() {
 	tests := []struct {
 		name           string
 		supplierID     string
@@ -577,44 +604,33 @@ func TestGetDashboardMetrics(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Arrange
-			mockBundleRepo := new(MockBundleRepo)
-			mockOrderRepo := new(MockOrderRepo)
-			mockWarehouseRepo := new(MockWarehouseRepo)
-			mockPaymentRepo := new(MockPaymentRepo)
-			mockUserRepo := new(MockUserRepo)
-			productRepo := new(MockProductRepo)
-			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo, productRepo)
-			ctx := context.Background()
-
-			mockBundleRepo.On("ListBundles", ctx, tt.supplierID).Return(tt.mockBundles, tt.mockError)
+		suite.Run(tt.name, func() {
+			suite.bundleRepo.On("ListBundles", suite.ctx, tt.supplierID).Return(tt.mockBundles, tt.mockError)
 			if tt.mockUser != nil {
-				mockUserRepo.On("GetByID", ctx, tt.supplierID).Return(tt.mockUser, nil)
+				suite.userRepo.On("GetByID", suite.ctx, tt.supplierID).Return(tt.mockUser, nil)
 			}
 
 			// Act
-			metrics, err := useCase.GetDashboardMetrics(ctx, tt.supplierID)
+			metrics, err := suite.useCase.GetDashboardMetrics(suite.ctx, tt.supplierID)
 
 			// Assert
 			if tt.expectError {
-				assert.Error(t, err)
-				assert.Nil(t, metrics)
+				assert.Error(suite.T(), err)
+				assert.Nil(suite.T(), metrics)
 			} else {
-				assert.NoError(t, err)
-				assert.NotNil(t, metrics)
-				assert.Equal(t, tt.expectedSales, metrics.TotalSales)
-				assert.Equal(t, tt.expectedCounts, metrics.PerformanceMetrics)
-				assert.Equal(t, tt.expectedRating, metrics.Rating)
-				assert.Equal(t, tt.expectedBest, metrics.BestSelling)
+				assert.NoError(suite.T(), err)
+				assert.NotNil(suite.T(), metrics)
+				assert.Equal(suite.T(), tt.expectedSales, metrics.TotalSales)
+				assert.Equal(suite.T(), tt.expectedCounts, metrics.PerformanceMetrics)
+				assert.Equal(suite.T(), tt.expectedRating, metrics.Rating)
+				assert.Equal(suite.T(), tt.expectedBest, metrics.BestSelling)
 			}
-			mockBundleRepo.AssertExpectations(t)
-			mockUserRepo.AssertExpectations(t)
 		})
 	}
 }
 
-func TestGetOrderByID(t *testing.T) {
+// TestGetOrderByID tests the GetOrderByID method
+func (suite *OrderUsecaseTestSuite) TestGetOrderByID() {
 	tests := []struct {
 		name        string
 		orderID     string
@@ -643,37 +659,27 @@ func TestGetOrderByID(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Arrange
-			mockBundleRepo := new(MockBundleRepo)
-			mockOrderRepo := new(MockOrderRepo)
-			mockWarehouseRepo := new(MockWarehouseRepo)
-			mockPaymentRepo := new(MockPaymentRepo)
-			mockUserRepo := new(MockUserRepo)
-			productRepo := new(MockProductRepo)
-			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo, productRepo)
-			ctx := context.Background()
-
-			mockOrderRepo.On("GetOrderByID", ctx, tt.orderID).Return(tt.mockOrder, tt.mockError)
+		suite.Run(tt.name, func() {
+			suite.orderRepo.On("GetOrderByID", suite.ctx, tt.orderID).Return(tt.mockOrder, tt.mockError)
 
 			// Act
-			order, err := useCase.GetOrderByID(ctx, tt.orderID)
+			order, err := suite.useCase.GetOrderByID(suite.ctx, tt.orderID)
 
 			// Assert
 			if tt.expectError {
-				assert.Error(t, err)
-				assert.Nil(t, order)
+				assert.Error(suite.T(), err)
+				assert.Nil(suite.T(), order)
 			} else {
-				assert.NoError(t, err)
-				assert.NotNil(t, order)
-				assert.Equal(t, tt.mockOrder.ID, order.ID)
+				assert.NoError(suite.T(), err)
+				assert.NotNil(suite.T(), order)
+				assert.Equal(suite.T(), tt.mockOrder.ID, order.ID)
 			}
-			mockOrderRepo.AssertExpectations(t)
 		})
 	}
 }
 
-func TestGetSoldBundleHistory(t *testing.T) {
+// TestGetSoldBundleHistory tests the GetSoldBundleHistory method
+func (suite *OrderUsecaseTestSuite) TestGetSoldBundleHistory() {
 	tests := []struct {
 		name          string
 		supplierID    string
@@ -720,59 +726,31 @@ func TestGetSoldBundleHistory(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			// Arrange
-			mockBundleRepo := new(MockBundleRepo)
-			mockOrderRepo := new(MockOrderRepo)
-			mockWarehouseRepo := new(MockWarehouseRepo)
-			mockPaymentRepo := new(MockPaymentRepo)
-			mockUserRepo := new(MockUserRepo)
-			productRepo := new(MockProductRepo)
-			useCase := NewOrderUsecase(mockBundleRepo, mockOrderRepo, mockWarehouseRepo, mockPaymentRepo, mockUserRepo, productRepo)
-			ctx := context.Background()
-
-			mockOrderRepo.On("GetOrdersBySupplier", ctx, tt.supplierID).Return(tt.mockOrders, tt.mockError)
+		suite.Run(tt.name, func() {
+			suite.orderRepo.On("GetOrdersBySupplier", suite.ctx, tt.supplierID).Return(tt.mockOrders, tt.mockError)
 
 			// Act
-			orders, err := useCase.GetSoldBundleHistory(ctx, tt.supplierID)
+			orders, err := suite.useCase.GetSoldBundleHistory(suite.ctx, tt.supplierID)
 
 			// Assert
 			if tt.expectError {
-				assert.Error(t, err)
-				assert.Nil(t, orders)
+				assert.Error(suite.T(), err)
+				assert.Nil(suite.T(), orders)
 			} else {
-				assert.NoError(t, err)
+				assert.NoError(suite.T(), err)
 				if tt.expectedCount == 0 {
-					assert.Empty(t, orders)
+					assert.Empty(suite.T(), orders)
 				} else {
-					assert.NotNil(t, orders)
-					assert.Len(t, orders, tt.expectedCount)
+					assert.NotNil(suite.T(), orders)
+					assert.Len(suite.T(), orders, tt.expectedCount)
 				}
 			}
-			mockOrderRepo.AssertExpectations(t)
 		})
 	}
 }
 
-func TestPurchaseProduct(t *testing.T) {
-	// Arrange
-	ctx := context.Background()
-	orderRepo := &MockOrderRepo{}
-	bundleRepo := &MockBundleRepo{}
-	warehouseRepo := &MockWarehouseRepo{}
-	paymentRepo := &MockPaymentRepo{}
-	userRepo := &MockUserRepo{}
-	productRepo := &MockProductRepo{}
-
-	uc := NewOrderUsecase(
-		bundleRepo,    // bundle.Repository
-		orderRepo,     // order.Repository
-		warehouseRepo, // warehouse.Repository
-		paymentRepo,   // payment.Repository
-		userRepo,      // user.Repository
-		productRepo,   // product.Repository
-	)
-
+// TestPurchaseProduct tests the PurchaseProduct method
+func (suite *OrderUsecaseTestSuite) TestPurchaseProduct() {
 	productID := "test-product-id"
 	userID := "test-user-id"
 	price := 100.0
@@ -785,53 +763,40 @@ func TestPurchaseProduct(t *testing.T) {
 		ResellerID: resellerObjID,
 		Price:      price,
 	}
-	productRepo.On("GetProductByID", ctx, productID).Return(mockProduct, nil)
+	suite.productRepo.On("GetProductByID", suite.ctx, productID).Return(mockProduct, nil)
 
 	// Mock order creation
-	orderRepo.On("CreateOrder", ctx, mock.Anything).Return(nil)
+	suite.orderRepo.On("CreateOrder", suite.ctx, mock.AnythingOfType("*order.Order")).Return(nil)
 
-	// Mock payment creation
-	paymentRepo.On("CreatePayment", ctx, mock.Anything).Return(nil)
+	// Mock payment recording
+	suite.paymentRepo.On("RecordPayment", suite.ctx, mock.AnythingOfType("*payment.Payment")).Return(nil)
 
 	// Act
-	order, payment, err := uc.PurchaseProduct(ctx, productID, userID, price)
+	order, payment, err := suite.useCase.PurchaseProduct(suite.ctx, productID, userID, price)
 
 	// Assert
-	assert.NoError(t, err)
-	assert.NotNil(t, order)
-	assert.NotNil(t, payment)
-
-	productRepo.AssertExpectations(t)
-	orderRepo.AssertExpectations(t)
-	paymentRepo.AssertExpectations(t)
+	assert.NoError(suite.T(), err)
+	assert.NotNil(suite.T(), order)
+	assert.NotNil(suite.T(), payment)
 }
 
-func TestPurchaseProduct_ProductNotFound(t *testing.T) {
-	// Arrange
-	bundleRepo := new(MockBundleRepo)
-	orderRepo := new(MockOrderRepo)
-	warehouseRepo := new(MockWarehouseRepo)
-	paymentRepo := new(MockPaymentRepo)
-	userRepo := new(MockUserRepo)
-	productRepo := new(MockProductRepo)
-
-	uc := NewOrderUsecase(bundleRepo, orderRepo, warehouseRepo, paymentRepo, userRepo, productRepo)
-	ctx := context.Background()
+// TestPurchaseProduct_ProductNotFound tests the PurchaseProduct method when product is not found
+func (suite *OrderUsecaseTestSuite) TestPurchaseProduct_ProductNotFound() {
 	productID := "test-product-id"
 	userID := "test-user-id"
 	price := 100.0
 
 	// Mock product not found
-	productRepo.On("GetProductByID", ctx, productID).Return(nil, errors.New("product not found"))
+	suite.productRepo.On("GetProductByID", suite.ctx, productID).Return(nil, errors.New("product not found"))
+
+	// No need to mock other calls since the test should fail before reaching them
 
 	// Act
-	order, payment, err := uc.PurchaseProduct(ctx, productID, userID, price)
+	order, payment, err := suite.useCase.PurchaseProduct(suite.ctx, productID, userID, price)
 
 	// Assert
-	assert.Error(t, err)
-	assert.Nil(t, order)
-	assert.Nil(t, payment)
-	assert.Contains(t, err.Error(), "product not found")
-
-	productRepo.AssertExpectations(t)
+	assert.Error(suite.T(), err)
+	assert.Nil(suite.T(), order)
+	assert.Nil(suite.T(), payment)
+	assert.Contains(suite.T(), err.Error(), "product not found")
 }
