@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_frontend/core/widgets/bottom_nav_bar.dart';
 import 'package:mobile_frontend/core/widgets/common_app_bar.dart';
 import 'package:mobile_frontend/core/widgets/search_market.dart';
 import 'package:mobile_frontend/core/widgets/side_menu.dart';
+import 'package:mobile_frontend/features/consumer/marketplace/presentation/bloc/product_bloc.dart';
+import 'package:mobile_frontend/features/consumer/marketplace/presentation/bloc/product_event.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/presentation/widgets/grid_item.dart';
 import '../../../cart/presentation/pages/cart_page.dart';
 
@@ -15,6 +18,13 @@ class ConsumerMarketPlace extends StatefulWidget {
 
 class _ConsumerMarketPlaceState extends State<ConsumerMarketPlace> {
   final List<String> _cartItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Dispatch the GetProductsEvent to fetch products
+    context.read<ProductBloc>().add(GetProductsEvent());
+  }
 
   void _toggleCart(String item) {
     setState(() {
@@ -35,7 +45,6 @@ class _ConsumerMarketPlaceState extends State<ConsumerMarketPlace> {
       ),
       builder: (context) {
         return CartBottomSheet(
-          cartItems: _cartItems,
           onCartToggle: _toggleCart,
         );
       },

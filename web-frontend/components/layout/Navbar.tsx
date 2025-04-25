@@ -2,8 +2,8 @@
 
 import { ChevronDown, Filter } from 'lucide-react';
 import Image from 'next/image';
-import { useSession } from 'next-auth/react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import CartView from '../cart/CartView';
 
@@ -11,11 +11,32 @@ type NavbarProps = {
   onFilterClick: () => void;
 };
 
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  role: string;
+}
+
 const Navbar = ({ onFilterClick }: NavbarProps) => {
-  const { data: session } = useSession();
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { items } = useCart();
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
+
+  const handleSignOut = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    router.push('/login');
+  };
 
   return (
     <>
@@ -70,7 +91,7 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
                   <Image
-                    src={session?.user?.image || '/images/default-avatar.png'}
+                    src="/images/default-avatar.png"
                     alt="Profile"
                     width={32}
                     height={32}
@@ -80,10 +101,10 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
                 <div className="flex items-center">
                   <div>
                     <div className="text-sm font-semibold text-teal-600">
-                      {session?.user?.name || 'Guest'}
+                      {user?.username || 'Guest'}
                     </div>
                     <div className="text-xs text-teal-600">
-                      {session?.user?.role || 'Loading...'}
+                      {user?.role || 'Loading...'}
                     </div>
                   </div>
                   <ChevronDown className="h-4 w-4 ml-2 text-gray-400" />
@@ -100,7 +121,7 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
                     Profile Settings
                   </button>
                   <button
-                    onClick={() => {/* Add logout action */}}
+                    onClick={handleSignOut}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
                   >
                     Sign Out

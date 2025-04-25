@@ -30,7 +30,6 @@ class _SignupPageState extends State<SignupPage> {
 
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
-      // Navigate to the role selection page and pass user data
       Navigator.push(
         context,
         MaterialPageRoute(

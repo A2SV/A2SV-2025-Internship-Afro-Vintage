@@ -1,8 +1,14 @@
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { CartProvider } from '@/context/CartContext';
 import './globals.css';
+import { Providers } from '@/components/providers/Providers';
 
 const inter = Inter({ subsets: ['latin'] });
+
+export const metadata: Metadata = {
+  title: 'Afro Vintage',
+  description: 'Your marketplace for authentic African vintage items',
+};
 
 export default function RootLayout({
   children,
@@ -12,9 +18,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <CartProvider>
+        <Providers>
           {children}
-        </CartProvider>
+        </Providers>
       </body>
     </html>
   );

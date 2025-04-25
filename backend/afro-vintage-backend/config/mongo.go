@@ -11,6 +11,10 @@ import (
 
 // ConnectMongo connects to the Mongo database using URI and DB name
 func ConnectMongo(uri string, dbName string) *mongo.Database {
+	if uri == "" {
+		log.Fatal("MongoDB URI is not provided") // Removed os.Getenv redundancy
+	}
+
 	client, err := mongo.NewClient(options.Client().ApplyURI(uri))
 	if err != nil {
 		log.Fatal("Failed to create Mongo client:", err)
