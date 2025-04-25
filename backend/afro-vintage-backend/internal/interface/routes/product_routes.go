@@ -30,4 +30,11 @@ func RegisterProductRoutes(
 		products.DELETE("/:id", middlewares.AuthorizeRoles("reseller"), productCtrl.Delete)
 		products.POST("/:id/reviews", middlewares.AuthorizeRoles("consumer"), reviewCtrl.SubmitReview)
 	}
+
+	// Separate reviews group
+	reviews := r.Group("/reviews")
+	reviews.Use(middlewares.AuthMiddleware(jwtSvc))
+	{
+		reviews.GET("/reseller/:id", reviewCtrl.GetResellerReviews)
+	}
 }

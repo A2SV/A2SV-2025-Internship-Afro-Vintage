@@ -70,3 +70,16 @@ func (u *reviewUsecase) SubmitReview(ctx context.Context, r *review.Review) erro
 	fmt.Printf("✅ Review saved successfully\n")
 	return nil
 }
+
+func (u *reviewUsecase) GetResellerReviews(ctx context.Context, resellerID string) ([]*review.Review, error) {
+	fmt.Printf("🔍 Fetching reviews for reseller: %s\n", resellerID)
+	
+	reviews, err := u.reviewRepo.GetReviewsByReseller(ctx, resellerID)
+	if err != nil {
+		fmt.Printf("❌ Error fetching reseller reviews: %v\n", err)
+		return nil, fmt.Errorf("failed to fetch reseller reviews: %w", err)
+	}
+
+	fmt.Printf("✅ Found %d reviews for reseller\n", len(reviews))
+	return reviews, nil
+}
