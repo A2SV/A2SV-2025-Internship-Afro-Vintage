@@ -3,6 +3,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_frontend/features/consumer/cart/presentation/bloc/cart_bloc.dart';
 import 'package:mobile_frontend/features/consumer/cart/presentation/bloc/cart_event.dart';
 import 'package:mobile_frontend/features/consumer/cart/presentation/bloc/cart_state.dart';
+import 'package:mobile_frontend/features/consumer/checkout/domain/entities/checkout.dart';
+import 'package:mobile_frontend/features/consumer/checkout/presentation/bloc/checkout_bloc.dart';
+import 'package:mobile_frontend/features/consumer/checkout/presentation/bloc/checkout_event.dart';
+import 'package:mobile_frontend/features/consumer/checkout/presentation/bloc/checkout_state.dart';
+import 'package:mobile_frontend/features/consumer/checkout/presentation/pages/checkout_page.dart';
+import 'package:mobile_frontend/features/consumer/core/widgets/button.dart';
 
 class CartBottomSheet extends StatelessWidget {
   final Function(String) onCartToggle;
@@ -20,94 +26,76 @@ class CartBottomSheet extends StatelessWidget {
     // Dispatch FetchCartEvent when the widget is built
     context.read<CartBloc>().add(FetchCartEvent());
 
-    return BlocBuilder<CartBloc, CartState>(
-      builder: (context, state) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          height:
-              MediaQuery.of(context).size.height * 0.6, // Bottom sheet height
-          child: state is Loading
-              ? const Center(
-                  child: CircularProgressIndicator()) // Loading indicator
-              : state is Success && state.data is List
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Your Cart',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: (state.data as List).isEmpty
-                              ? const Center(child: Text('Your cart is empty'))
-                              : ListView.builder(
-                                  itemCount: (state.data as List).length,
-                                  itemBuilder: (context, index) {
-                                    final cartItems = state.data as List;
-                                    return CartCard(
-                                      cartName: cartItems[index].title,
-                                      onCartToggle: onCartToggle,
-                                      price: cartItems[index].price,
-                                      imageURL: cartItems[index].imageURL,
-                                      id: cartItems[index].listing_id,
-                                    );
-                                  },
-                                ),
-                        ),
-                        const SizedBox(height: 24),
-                        Material(
-                          elevation: 5,
-                          borderRadius: BorderRadius.circular(50),
-                          child: Container(
-                            padding: const EdgeInsets.all(13),
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(50),
-                              color: Colors.white,
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  "\$ 1,999.99",
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).primaryColor,
-                                  ),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 24, vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.secondary,
-                                  ),
-                                  onPressed: () {
-                                    Navigator.pushNamed(context, '/addaddress');
-                                  },
-                                  child: const Text(
-                                    "Buy Now",
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        )
-                      ],
-                    )
-                  : state is Error
-                      ? Center(
-                          child: Text('Failed to load cart: ${state.message}'),
-                        )
-                      : const Center(child: Text('Your cart is empty')),
-        );
+    return BlocListener<CheckoutBloc, CheckoutState>(
+      listener: (context, state) {
+        if (state is CheckoutSuccess) {
+          // Show the payment success dialog
+          _showPaymentSuccessDialog(context, state.data);
+        } else if (state is CheckoutError) {
+          // Show an error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.message)),
+          );
+        }
       },
+      child: BlocBuilder<CartBloc, CartState>(
+        builder: (context, state) {
+          return Container(
+            padding: const EdgeInsets.all(16),
+            height:
+                MediaQuery.of(context).size.height * 0.6, // Bottom sheet height
+            child: state is Loading
+                ? const Center(
+                    child: CircularProgressIndicator()) // Loading indicator
+                : state is Success && state.data is List
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Your Cart',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: (state.data as List).isEmpty
+                                ? const Center(
+                                    child: Text('Your cart is empty'))
+                                : ListView.builder(
+                                    itemCount: (state.data as List).length,
+                                    itemBuilder: (context, index) {
+                                      final cartItems = state.data as List;
+                                      return CartCard(
+                                        cartName: cartItems[index].title,
+                                        onCartToggle: onCartToggle,
+                                        price: cartItems[index].price,
+                                        imageURL: cartItems[index].imageURL,
+                                        id: cartItems[index].listing_id,
+                                      );
+                                    },
+                                  ),
+                          ),
+                          const SizedBox(height: 24),
+                          if ((state.data as List).isNotEmpty)
+                            PrimaryButton(
+                              label: 'Buy Now',
+                              onPressed: () {
+                                context
+                                    .read<CheckoutBloc>()
+                                    .add(PerformCheckoutEvent());
+                              },
+                            )
+                        ],
+                      )
+                    : state is Error
+                        ? Center(
+                            child:
+                                Text('Failed to load cart: ${state.message}'),
+                          )
+                        : const Center(child: Text('Your cart is empty')),
+          );
+        },
+      ),
     );
   }
 }
@@ -135,9 +123,6 @@ class CartCard extends StatefulWidget {
 class _CartCardState extends State<CartCard> {
   bool _isInCart = false;
   void _removeFromCart() {
-    // Dispatch the RemoveFromCartEvent
-
-    // print("WTFFFFFFFFFFFFF: ${widget.id}");
     context
         .read<CartBloc>()
         .add(RemoveFromCartEvent(productId: widget.id.toString()));
@@ -215,4 +200,62 @@ class _CartCardState extends State<CartCard> {
       ),
     );
   }
+}
+
+void _showPaymentSuccessDialog(BuildContext context, Checkout checkoutData) {
+  final Color secondary = Theme.of(context).colorScheme.secondary;
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.check_circle_outline,
+              color: secondary,
+              size: 60,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'PAYMENT SUCCESS',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Your payment was successful',
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+              ),
+              onPressed: () {
+                Navigator.pop(context); // Close the dialog
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CheckoutPage(
+                        checkoutData:
+                            checkoutData // Convert checkoutData to Map<String, dynamic>
+                        ),
+                  ),
+                );
+              },
+              child: const Text('GO TO CHECKOUT'),
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }

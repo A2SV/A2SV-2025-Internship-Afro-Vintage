@@ -13,6 +13,11 @@ import 'package:mobile_frontend/features/consumer/cart/domain/usecases/add_to_ca
 import 'package:mobile_frontend/features/consumer/cart/domain/usecases/fetch_cart.dart';
 import 'package:mobile_frontend/features/consumer/cart/domain/usecases/remove_from_cart.dart';
 import 'package:mobile_frontend/features/consumer/cart/presentation/bloc/cart_bloc.dart';
+import 'package:mobile_frontend/features/consumer/checkout/data/datasources/checkout_data_source.dart';
+import 'package:mobile_frontend/features/consumer/checkout/data/repositories/checkout_repository_impl.dart';
+import 'package:mobile_frontend/features/consumer/checkout/domain/repositories/checkout_repository.dart';
+import 'package:mobile_frontend/features/consumer/checkout/domain/usecases/checkout.dart';
+import 'package:mobile_frontend/features/consumer/checkout/presentation/bloc/checkout_bloc.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/data/datasources/product_data_source.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/data/repositories/product_repository_impl.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/domain/repositories/product_repository.dart';
@@ -37,6 +42,9 @@ Future<void> init() async {
         fetchCartUseCase: sl(),
         removeFromCartUseCase: sl()),
   );
+
+  sl.registerFactory(() => CheckoutBloc(performCheckoutUseCase: sl()));
+
   // Use cases
   sl.registerLazySingleton(() => SignupUseCase(repository: sl()));
   sl.registerLazySingleton(() => SigninUseCase(repository: sl()));
@@ -44,6 +52,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => AddToCartUseCase(repository: sl()));
   sl.registerLazySingleton(() => FetchCartUseCase(repository: sl()));
   sl.registerLazySingleton(() => RemoveFromCartUseCase(repository: sl()));
+  sl.registerLazySingleton(() => CheckoutUseCase(repository: sl()));
   // repository
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(authDataSource: sl()),
@@ -54,6 +63,10 @@ Future<void> init() async {
 
   sl.registerLazySingleton<CartRepository>(
     () => CartRepositoryImpl(cartDataSource: sl()),
+  );
+
+  sl.registerLazySingleton<CheckoutRepository>(
+    () => CheckoutRepositoryImpl(checkoutDataSource: sl()),
   );
 
   // Data sources
@@ -68,6 +81,9 @@ Future<void> init() async {
     () => CartDataSourceImpl(client: sl()),
   );
 
+  sl.registerLazySingleton<CheckoutDataSource>(
+    () => CheckoutDataSourceImpl(client: sl()),
+  );
   //! Core
 
   //! External

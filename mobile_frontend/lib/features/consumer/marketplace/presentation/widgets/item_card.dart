@@ -33,9 +33,13 @@ class _ItemCardState extends State<ItemCard> {
     });
 
     final cartBloc = context.read<CartBloc>();
-    print('CartBloc is accessible: $cartBloc');
-    print("widgetId ${widget.id}");
-    context.read<CartBloc>().add(AddToCartEvent(productId: widget.id));
+    if (_isInCart) {
+      // Add to cart
+      cartBloc.add(AddToCartEvent(productId: widget.id));
+    } else {
+      // Remove from cart
+      cartBloc.add(RemoveFromCartEvent(productId: widget.id));
+    }
   }
 
   @override
@@ -75,11 +79,27 @@ class _ItemCardState extends State<ItemCard> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Center(
-                      child: Image.asset(
-                        "assets/images/cloth_3.png",
-                        width: 300,
-                        height: 200,
-                      ),
+                      child: widget.imageUrl != null
+                          ? Image.network(
+                              widget.imageUrl!,
+                              width: 300,
+                              height: 200,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  "assets/images/cloth_3.png",
+                                  width: 300,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                );
+                              },
+                            )
+                          : Image.asset(
+                              "assets/images/cloth_3.png",
+                              width: 300,
+                              height: 200,
+                              fit: BoxFit.cover,
+                            ),
                     ),
                   ),
                   const SizedBox(height: 8),
