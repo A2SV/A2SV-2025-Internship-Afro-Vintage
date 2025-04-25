@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"sort"
 	"time"
@@ -227,8 +228,28 @@ func (uc *orderUseCaseImpl) GetResellerMetrics(ctx context.Context, resellerID s
 	return metrics, nil
 }
 
-func (uc *orderUseCaseImpl) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, error) {
-	return uc.orderRepo.GetOrdersBySupplier(ctx, supplierID)
+func (uc *orderUseCaseImpl) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, map[string]string, error) {
+	log.Printf("Getting sold bundle history for supplier: %s", supplierID)
+	orders, err := uc.orderRepo.GetOrdersBySupplier(ctx, supplierID)
+	if err != nil {
+		log.Printf("Error getting orders: %v", err)
+		return nil, nil, err
+	}
+
+	userNames := make(map[string]string)
+	for _, order := range orders {
+		if order.ConsumerID != "" {
+			user, err := uc.userRepo.GetByID(ctx, order.ConsumerID)
+			if err != nil {
+				log.Printf("Error getting user name for ID %s: %v", order.ConsumerID, err)
+				continue
+			}
+			userNames[order.ConsumerID] = user.Name
+		}
+	}
+
+	log.Printf("Found %d orders for supplier %s", len(orders), supplierID)
+	return orders, userNames, nil
 }
 
 func (uc *orderUseCaseImpl) GetAdminDashboardMetrics(ctx context.Context) (*admin.Metrics, error) {
