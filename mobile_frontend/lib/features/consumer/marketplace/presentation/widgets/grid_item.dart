@@ -31,13 +31,12 @@ class GridItem extends StatelessWidget {
                 final product = products[index];
                 // print("Product mf $product");
                 return ItemCard(
-                  title: product.title,
-                  itemPrice: '\$${product.price}',
-                  rating: product.rating,
-                  imageUrl: product.image_url,
-                  id: product.id,
-                  // onCartToggle: onCartToggle,
-                );
+                    // title: product.title,
+                    // itemPrice: '\$${product.price}',
+                    // rating: product.rating,
+                    // imageUrl: product.image_url,
+                    // id: product.id,
+                    product: product);
               },
             ),
           );
