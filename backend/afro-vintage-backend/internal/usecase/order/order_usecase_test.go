@@ -729,23 +729,22 @@ func (suite *OrderUsecaseTestSuite) TestGetSoldBundleHistory() {
 		suite.Run(tt.name, func() {
 			suite.orderRepo.On("GetOrdersBySupplier", suite.ctx, tt.supplierID).Return(tt.mockOrders, tt.mockError)
 
-
-			orders, err := suite.useCase.GetSoldBundleHistory(suite.ctx, tt.supplierID)
+			orders, userNames, err := suite.useCase.GetSoldBundleHistory(suite.ctx, tt.supplierID)
 
 			// Assert
 			if tt.expectError {
 				assert.Error(suite.T(), err)
 				assert.Nil(suite.T(), orders)
-
+				assert.Nil(suite.T(), userNames)
 			} else {
 				assert.NoError(suite.T(), err)
 				if tt.expectedCount == 0 {
-
 					assert.Empty(suite.T(), orders)
+					assert.Empty(suite.T(), userNames)
 				} else {
 					assert.NotNil(suite.T(), orders)
+					assert.NotNil(suite.T(), userNames)
 					assert.Len(suite.T(), orders, tt.expectedCount)
-
 				}
 			}
 		})
