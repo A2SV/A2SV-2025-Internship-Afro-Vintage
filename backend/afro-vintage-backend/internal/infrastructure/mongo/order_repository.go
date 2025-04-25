@@ -91,9 +91,15 @@ func (r *mongoOrderRepository) DeleteOrder(ctx context.Context, orderID string) 
 }
 
 func (r *mongoOrderRepository) GetOrdersBySupplier(ctx context.Context, supplierID string) ([]*order.Order, error) {
+    fmt.Printf("🔍 Querying orders for supplier: %s\n", supplierID)
+    
     var orders []*order.Order
-    cursor, err := r.collection.Find(ctx, bson.M{"supplier_id": supplierID})
+    filter := bson.M{"supplierid": supplierID}
+    fmt.Printf("🔍 Using filter: %+v\n", filter)
+    
+    cursor, err := r.collection.Find(ctx, filter)
     if err != nil {
+        fmt.Printf("❌ Error querying orders: %v\n", err)
         return nil, err
     }
     defer cursor.Close(ctx)
@@ -101,15 +107,18 @@ func (r *mongoOrderRepository) GetOrdersBySupplier(ctx context.Context, supplier
     for cursor.Next(ctx) {
         var o order.Order
         if err := cursor.Decode(&o); err != nil {
+            fmt.Printf("❌ Error decoding order: %v\n", err)
             return nil, err
         }
         orders = append(orders, &o)
     }
 
     if err := cursor.Err(); err != nil {
+        fmt.Printf("❌ Cursor error: %v\n", err)
         return nil, err
     }
 
+    fmt.Printf("✅ Found %d orders for supplier %s\n", len(orders), supplierID)
     return orders, nil
 }
 

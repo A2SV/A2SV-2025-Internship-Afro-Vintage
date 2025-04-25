@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/order"
@@ -63,4 +64,38 @@ func (c *OrderController) GetOrderByID(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, order)
+}
+
+func (c *OrderController) GetSoldBundleHistory(ctx *gin.Context) {
+	supplierID, exists := ctx.Get("userID")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, common.APIResponse{
+			Success: false,
+			Message: "user ID not found in context",
+		})
+		return
+	}
+
+	supplierIDStr, ok := supplierID.(string)
+	if !ok || supplierIDStr == "" {
+		ctx.JSON(http.StatusUnauthorized, common.APIResponse{
+			Success: false,
+			Message: "invalid user ID format",
+		})
+		return
+	}
+
+	orders, err := c.orderUseCase.GetSoldBundleHistory(ctx, supplierIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, common.APIResponse{
+			Success: false,
+			Message: fmt.Sprintf("failed to get sold bundle history: %v", err),
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, common.APIResponse{
+		Success: true,
+		Data:    orders,
+	})
 }
