@@ -59,7 +59,7 @@ func (u *reviewUsecase) SubmitReview(ctx context.Context, r *review.Review) erro
 
 	// Save the review
 	r.ID = uuid.NewString()
-	r.CreatedAt = time.Now().Format(time.RFC3339)
+	r.CreatedAt = time.Now()
 	fmt.Printf("📝 Saving review with ID: %s\n", r.ID)
 	
 	if err := u.reviewRepo.CreateReview(ctx, r); err != nil {
