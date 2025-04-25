@@ -8,6 +8,7 @@ import 'package:mobile_frontend/features/auth/presentation/pages/signup.dart';
 import 'package:mobile_frontend/features/consumer/cart/presentation/bloc/cart_bloc.dart';
 import 'package:mobile_frontend/features/consumer/checkout/domain/entities/checkout.dart';
 import 'package:mobile_frontend/features/consumer/checkout/presentation/bloc/checkout_bloc.dart';
+import 'package:mobile_frontend/features/consumer/marketplace/domain/entities/product.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/presentation/bloc/product_bloc.dart';
 import 'package:mobile_frontend/features/consumer/orders/presentation/pages/order_detail.dart';
 import 'package:mobile_frontend/features/consumer/reviews/presentation/pages/reviews.dart';
@@ -76,7 +77,8 @@ class MyApp extends StatelessWidget {
         '/allorder': (context) => const AllOrders(),
         '/addreview': (context) => const AddReview(),
         '/reviews': (context) => const Reviews(),
-        '/productdetail': (context) => const ProductDetailPage(),
+        '/productdetail': (context) => ProductDetailPage(
+            product: ModalRoute.of(context)!.settings.arguments as Product),
         '/addaddress': (context) => const AddAddress(),
         '/checkout': (context) => CheckoutPage(
             checkoutData:

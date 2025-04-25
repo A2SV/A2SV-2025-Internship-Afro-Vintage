@@ -2,23 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_frontend/features/consumer/cart/presentation/bloc/cart_event.dart';
 import 'package:mobile_frontend/features/consumer/cart/presentation/bloc/cart_state.dart';
+import 'package:mobile_frontend/features/consumer/marketplace/domain/entities/product.dart';
+import 'package:mobile_frontend/features/consumer/product_detail/presentation/pages/product_detail.dart';
 import '../../../cart/presentation/bloc/cart_bloc.dart';
 
 class ItemCard extends StatefulWidget {
-  final String id; // Product ID
-  final String title;
-  final String itemPrice;
-  final double rating;
-  final String? imageUrl;
+  final Product product;
 
-  const ItemCard({
-    super.key,
-    required this.id,
-    required this.title,
-    required this.itemPrice,
-    required this.rating,
-    required this.imageUrl,
-  });
+  const ItemCard({super.key, required this.product});
 
   @override
   State<ItemCard> createState() => _ItemCardState();
@@ -35,10 +26,10 @@ class _ItemCardState extends State<ItemCard> {
     final cartBloc = context.read<CartBloc>();
     if (_isInCart) {
       // Add to cart
-      cartBloc.add(AddToCartEvent(productId: widget.id));
+      cartBloc.add(AddToCartEvent(productId: widget.product.id));
     } else {
       // Remove from cart
-      cartBloc.add(RemoveFromCartEvent(productId: widget.id));
+      cartBloc.add(RemoveFromCartEvent(productId: widget.product.id));
     }
   }
 
@@ -65,7 +56,12 @@ class _ItemCardState extends State<ItemCard> {
         children: [
           GestureDetector(
             onTap: () {
-              Navigator.pushNamed(context, '/productdetail');
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ProductDetailPage(
+                            product: widget.product,
+                          )));
             },
             child: SizedBox(
               width: 300,
@@ -76,12 +72,17 @@ class _ItemCardState extends State<ItemCard> {
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20)),
                     ),
-                    child: Center(
-                      child: widget.imageUrl != null
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20),
+                          topRight: Radius.circular(20)),
+                      child: widget.product.image_url != null
                           ? Image.network(
-                              widget.imageUrl!,
+                              widget.product.image_url,
                               width: 300,
                               height: 200,
                               fit: BoxFit.cover,
@@ -104,14 +105,14 @@ class _ItemCardState extends State<ItemCard> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    widget.title,
+                    widget.product.title,
                     style: const TextStyle(fontWeight: FontWeight.normal),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        widget.itemPrice,
+                        '\$ ${widget.product.price}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Row(
@@ -122,7 +123,7 @@ class _ItemCardState extends State<ItemCard> {
                             color: const Color(0xFFFFA439),
                           ),
                           Text(
-                            widget.rating.toString(),
+                            widget.product.rating.toString(),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           )
                         ],
