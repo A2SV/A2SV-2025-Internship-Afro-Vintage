@@ -4,9 +4,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - backend/afro-vintage-backend/**
   pull_request:
     branches:
       - main
+    paths:
+      - backend/afro-vintage-backend/**
 
 jobs:
   build-and-test:
