@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Package, Clock, CheckCircle2, XCircle, Star } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import ReviewForm from '../reviews/ReviewForm';
-import { Order, PaymentStatus } from '@/types/orders';
+import { Order, PaymentStatus } from '@/types/order';
 
 export default function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -173,26 +173,12 @@ export default function OrderHistory() {
             </div>
 
             <div className="space-y-2 mb-4">
-              {order.items.map((item) => (
-                <div key={item.id} className="flex justify-between items-center">
-                  <span>{item.name}</span>
-                  <div className="flex items-center gap-2">
-                    <span>${item.price.toLocaleString()}</span>
-                    {order.status === 'DELIVERED' && !item.hasReview && (
-                      <button
-                        onClick={() => {
-                          setSelectedItem({ id: item.id, name: item.name });
-                          setShowReviewForm(true);
-                        }}
-                        className="text-teal-600 hover:text-teal-700 flex items-center gap-1"
-                      >
-                        <Star className="w-4 h-4" />
-                        <span className="text-sm">Review</span>
-                      </button>
-                    )}
-                  </div>
+              <div className="flex justify-between items-center">
+                <span>{order.title}</span>
+                <div className="flex items-center gap-2">
+                  <span>${order.price.toLocaleString()}</span>
                 </div>
-              ))}
+              </div>
             </div>
 
             <div className="border-t pt-3 flex items-center justify-between">
@@ -203,7 +189,7 @@ export default function OrderHistory() {
               </div>
               <div className="text-right">
                 <div className="text-sm text-gray-500">Total</div>
-                <div className="font-medium">${order.total.toLocaleString()}</div>
+                <div className="font-medium">${order.price.toLocaleString()}</div>
               </div>
             </div>
           </div>

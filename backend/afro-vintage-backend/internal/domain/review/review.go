@@ -9,14 +9,14 @@ import (
 )
 
 type Review struct {
-	ID         string `bson:"_id" json:"id"`
-	OrderID    string `bson:"order_id" json:"order_id"`
-	ProductID  string `bson:"product_id" json:"product_id"`
-	UserID     string `bson:"user_id" json:"user_id"`
-	ResellerID string `bson:"reseller_id" json:"reseller_id"`
-	Rating     int    `bson:"rating" json:"rating"`
-	Comment    string `bson:"comment" json:"comment"`
-	CreatedAt  string `bson:"created_at" json:"created_at"`
+	ID         string    `bson:"_id" json:"id"`
+	OrderID    string    `bson:"order_id" json:"order_id"`
+	ProductID  string    `bson:"product_id" json:"product_id"`
+	UserID     string    `bson:"user_id" json:"user_id"`
+	ResellerID string    `bson:"reseller_id" json:"reseller_id"`
+	Rating     int       `bson:"rating" json:"rating"`
+	Comment    string    `bson:"comment" json:"comment"`
+	CreatedAt  time.Time `bson:"created_at" json:"created_at"`
 }
 
 func (r *Review) Validate() error {
@@ -50,6 +50,6 @@ func NewReview(orderID, productID, userID, resellerID string, rating int, commen
 		ResellerID: resellerID,
 		Rating:     rating,
 		Comment:    comment,
-		CreatedAt:  time.Now().Format(time.RFC3339),
+		CreatedAt:  time.Now(),
 	}
 }

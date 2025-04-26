@@ -94,6 +94,14 @@ func (m *MockOrderUseCase) PurchaseProduct(ctx context.Context, productID, consu
 	return args.Get(0).(*order.Order), args.Get(1).(*payment.Payment), args.Error(2)
 }
 
+func (m *MockOrderUseCase) GetOrdersByConsumer(ctx context.Context, consumerID string) ([]*order.Order, map[string]string, map[string]string, error) {
+	args := m.Called(ctx, consumerID)
+	if args.Get(0) == nil {
+		return nil, nil, nil, args.Error(3)
+	}
+	return args.Get(0).([]*order.Order), args.Get(1).(map[string]string), args.Get(2).(map[string]string), args.Error(3)
+}
+
 func (suite *OrderControllerTestSuite) SetupTest() {
 	suite.orderUseCase = new(MockOrderUseCase)
 	suite.controller = NewOrderController(suite.orderUseCase)

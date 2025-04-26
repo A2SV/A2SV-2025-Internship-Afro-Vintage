@@ -1,6 +1,6 @@
 import { Item } from '@/types/marketplace';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export interface CartResponse {
   success: boolean;
@@ -50,6 +50,7 @@ export const cartApi = {
         price: item.price,
         imageUrl: item.image_url,
         grade: item.grade,
+        size: item.size || '',
       }));
     } catch (error) {
       console.error('Error fetching cart items:', error);

@@ -8,7 +8,7 @@ import { useCart } from '@/context/CartContext';
 import CartView from '../cart/CartView';
 
 type NavbarProps = {
-  onFilterClick: () => void;
+  onFilterClick?: () => void;
 };
 
 interface User {
@@ -56,12 +56,14 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-500 text-sm"
               />
             </div>
-            <button 
-              onClick={onFilterClick}
-              className="ml-2 p-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-            >
-              <Filter className="w-5 h-5 text-gray-600" />
-            </button>
+            {onFilterClick && (
+              <button 
+                onClick={onFilterClick}
+                className="ml-2 p-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+              >
+                <Filter className="w-5 h-5 text-gray-600" />
+              </button>
+            )}
           </div>
 
           {/* Right section */}
@@ -115,7 +117,10 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
               {showProfileMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-20 border border-gray-100">
                   <button
-                    onClick={() => {/* Add profile action */}}
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      router.push('/profile-settings');
+                    }}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
                   >
                     Profile Settings
