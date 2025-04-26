@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ItemPreview, Item } from '@/types/marketplace';
 import { marketplaceApi } from '@/lib/api/marketplace';
 import ItemCard from '@/components/marketplace/ItemCard';
@@ -40,6 +40,11 @@ export default function MarketplacePage({
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Add useEffect to load items on mount
+  useEffect(() => {
+    loadItems(1, initialFilters);
+  }, []); // Empty dependency array means this runs once on mount
+
   const loadItems = async (page: number, filters: FilterValues) => {
     try {
       setLoading(true);
@@ -53,6 +58,7 @@ export default function MarketplacePage({
       });
       setItems(response.items);
       setTotalPages(Math.ceil(response.total / 12));
+      setError(null); // Clear any previous errors
       
       // Update active filters display
       const newActiveFilters = [
@@ -64,7 +70,9 @@ export default function MarketplacePage({
       ];
       setActiveFilters(newActiveFilters);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Error loading items:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load products');
+      setItems([]); // Clear items on error
     } finally {
       setLoading(false);
     }
@@ -89,7 +97,8 @@ export default function MarketplacePage({
       description: item.description,
       category: item.category,
       grade: item.grade,
-      status: 'available'
+      status: 'available',
+      seller_id: item.resellerId,
     });
     setIsModalOpen(true);
   };

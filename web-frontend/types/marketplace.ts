@@ -37,5 +37,6 @@ export type Item = {
   category: string;
   size?: string;
   grade?: string;
+  seller_id: string;
   status: 'available' | 'sold' | 'reserved';
 }; 

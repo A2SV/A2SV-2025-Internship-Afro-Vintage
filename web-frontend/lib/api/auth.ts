@@ -1,4 +1,4 @@
-const BACKEND_URL = 'https://2kps99nm-8080.uks1.devtunnels.ms';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 interface SignupData {
   username: string;
@@ -25,7 +25,7 @@ interface AuthResponse {
 export const authApi = {
   async signup(data: SignupData): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${BACKEND_URL}/auth/register`, {
+      const response = await fetch(`${API_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -48,7 +48,7 @@ export const authApi = {
 
   async login(data: LoginData): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${BACKEND_URL}/auth/login`, {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

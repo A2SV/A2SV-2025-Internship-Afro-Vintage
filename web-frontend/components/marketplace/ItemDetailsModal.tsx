@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Star, X } from 'lucide-react';
 import { Item } from '@/types/marketplace';
 import { useCart } from '@/context/CartContext';
+import { getUserById } from '@/lib/api/marketplace';
 
 type ItemDetailsModalProps = {
   item: Item;
@@ -15,12 +16,36 @@ type ItemDetailsModalProps = {
 export default function ItemDetailsModal({ item, onClose, isOpen }: ItemDetailsModalProps) {
   const { addToCart, isInCart } = useCart();
   const [selectedSize, setSelectedSize] = useState('S');
+  const [seller, setSeller] = useState<{ name: string; photo?: string } | null>(null);
   const sizes = ['S', 'M', 'L', 'XL'];
+
+  useEffect(() => {
+    console.log('ItemDetailsModal opened. isOpen:', isOpen, 'item:', item);
+    if (isOpen && item) {
+      console.log('item.seller_id:', item.seller_id);
+    }
+    if (isOpen && item && item.seller_id) {
+      getUserById(item.seller_id).then((user) => {
+        console.log('Fetched user for seller_id', item.seller_id, ':', user);
+        setSeller({
+          name: user?.username || 'Unknown Seller',
+          photo: user?.photo || '/images/avatar.png',
+        });
+      }).catch((err) => {
+        console.error('Error fetching seller info:', err);
+        setSeller({ name: 'Unknown Seller', photo: '/images/avatar.png' });
+      });
+    }
+  }, [isOpen, item]);
 
   if (!isOpen) return null;
 
   const handleAddToCart = async () => {
-    const result = await addToCart(item);
+    const itemWithSize = {
+      ...item,
+      size: selectedSize
+    };
+    const result = await addToCart(itemWithSize);
     if (result.success) {
       setTimeout(onClose, 1500);
     }
@@ -55,14 +80,14 @@ export default function ItemDetailsModal({ item, onClose, isOpen }: ItemDetailsM
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 relative rounded-full overflow-hidden">
                 <Image
-                  src="/images/avatar.png"
-                  alt="Jake Santiago"
+                  src={seller?.photo || '/images/avatar.png'}
+                  alt={seller?.name || 'Seller'}
                   fill
                   className="object-cover"
                 />
               </div>
               <div>
-                <h3 className="text-teal-600 font-medium">Jake Santiago</h3>
+                <h3 className="text-teal-600 font-medium">{seller?.name}</h3>
                 <div className="flex items-center gap-2">
                   <div className="flex">
                     {[1, 2, 3, 4, 5].map((star) => (
