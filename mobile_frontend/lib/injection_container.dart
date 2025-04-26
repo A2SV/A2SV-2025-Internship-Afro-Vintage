@@ -8,6 +8,11 @@ import 'package:mobile_frontend/features/auth/domain/usecases/signin.dart';
 import 'package:mobile_frontend/features/auth/domain/usecases/signup.dart';
 import 'package:mobile_frontend/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:http/http.dart' as http;
+import 'package:mobile_frontend/features/consumer/orders/data/datasources/order_data_source.dart';
+import 'package:mobile_frontend/features/consumer/orders/data/repositories/order_repository_impl.dart';
+import 'package:mobile_frontend/features/consumer/orders/domain/repositories/order_repository.dart';
+import 'package:mobile_frontend/features/consumer/orders/domain/usecases/get_orders.dart';
+import 'package:mobile_frontend/features/consumer/orders/presentation/bloc/order_bloc.dart';
 import 'package:mobile_frontend/features/reseller/dashboard/data/datasources/dashboard_remote_data_source.dart';
 import 'package:mobile_frontend/features/reseller/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'package:mobile_frontend/features/reseller/dashboard/domain/repository/dashboard_repository.dart';
@@ -66,6 +71,8 @@ Future<void> init() async {
 
   sl.registerFactory(() => CheckoutBloc(performCheckoutUseCase: sl()));
 
+  sl.registerFactory(() => OrderBloc(getOrders: sl()));
+
   // Use cases
   sl.registerLazySingleton(() => SignupUseCase(repository: sl()));
   sl.registerLazySingleton(() => SigninUseCase(repository: sl()));
@@ -74,6 +81,8 @@ Future<void> init() async {
   sl.registerLazySingleton(() => FetchCartUseCase(repository: sl()));
   sl.registerLazySingleton(() => RemoveFromCartUseCase(repository: sl()));
   sl.registerLazySingleton(() => CheckoutUseCase(repository: sl()));
+  sl.registerLazySingleton(() => GetOrdersUseCase(repository: sl()));
+
   // repository
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(authDataSource: sl()),
@@ -88,6 +97,10 @@ Future<void> init() async {
 
   sl.registerLazySingleton<CheckoutRepository>(
     () => CheckoutRepositoryImpl(checkoutDataSource: sl()),
+  );
+
+  sl.registerLazySingleton<OrderRepository>(
+    () => OrderRepositoryImpl(orderDataSource: sl()),
   );
 
   // Data sources
@@ -106,7 +119,11 @@ Future<void> init() async {
     () => CheckoutDataSourceImpl(client: sl()),
   );
 
-   // Marketplace
+  sl.registerLazySingleton<OrderDataSource>(
+    () => OrderDataSourceImpl(client: sl()),
+  );
+
+  // Marketplace
   // Bloc
   sl.registerFactory(
     () => MarketplaceBloc(
@@ -126,12 +143,10 @@ Future<void> init() async {
   // Repository
   sl.registerLazySingleton<BundleRepository>(
     () => BundleRepositoryImpl(
-      remoteDataSource: sl(),  networkInfo: sl() ,
+      remoteDataSource: sl(),
+      networkInfo: sl(),
     ),
   );
-
-
-
 
   // Dashboard Feature
   // Bloc
@@ -160,8 +175,6 @@ Future<void> init() async {
     ),
   );
 
-
-
   // Unpack Feature
   // Bloc
   sl.registerFactory(
@@ -187,8 +200,6 @@ Future<void> init() async {
     ),
   );
 
-  
-
   // Get SharedPreferences instance
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
@@ -197,7 +208,7 @@ Future<void> init() async {
   sl.registerLazySingleton<BundleRemoteDataSource>(
     () => BundleRemoteDataSourceImpl(
       client: sl(),
-       sharedPreferences: sl<SharedPreferences>(),
+      sharedPreferences: sl<SharedPreferences>(),
     ),
   );
 

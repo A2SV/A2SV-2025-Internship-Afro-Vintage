@@ -12,7 +12,6 @@ class AddToCartUseCase extends UseCase<String, AddtoCartParams> {
 
   @override
   Future<Either<Failure, String>> call(AddtoCartParams params) async {
-    print("Usecase listin ${params.cart}");
     return await repository.addToCart(params.cart);
   }
 }
