@@ -1,11 +1,21 @@
-export type OrderStatus = 'completed' | 'shipped' | 'delivered' | 'failed';
+export type OrderStatus = 'PENDING_DELIVERY' | 'DELIVERED' | 'FAILED' | 'SHIPPED';
+export type PaymentStatus = 'PAID' | 'PENDING' | 'FAILED';
+
+export interface OrderItem {
+  id: string;
+  name: string;
+  price: number;
+  imageUrl?: string;
+  hasReview?: boolean;
+}
 
 export interface Order {
   id: string;
-  title: string;
-  price: number;
-  imageUrl: string;
+  items: OrderItem[];
+  total: number;
   status: OrderStatus;
-  purchaseDate: string;
-  estimatedDeliveryTime: string;
+  paymentStatus: PaymentStatus;
+  createdAt: string;
+  estimatedDeliveryTime?: string;
+  title?: string;
 } 

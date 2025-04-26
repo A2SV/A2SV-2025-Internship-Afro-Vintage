@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Package, Clock, CheckCircle2, XCircle, Star } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import ReviewForm from '../reviews/ReviewForm';
-import { Order, PaymentStatus } from '@/types/orders';
+import { Order, PaymentStatus } from '@/types/order';
 
 export default function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([]);

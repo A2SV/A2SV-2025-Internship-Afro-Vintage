@@ -1,6 +1,6 @@
 import { Order } from '../../types/order';
 
-const API_URL = 'https://2kps99nm-8080.uks1.devtunnels.ms';
+const API_URL = process.env.NEXT_PUBLIC_API_URL
 
 export const orderApi = {
   async getOrderHistory(): Promise<Order[]> {
@@ -38,11 +38,10 @@ export const orderApi = {
 
       return orders.map((order: any) => ({
         id: order.orderId || order._id,
-        title: order.itemTitle || order.productTitle || order.title || 'Untitled Product',
+        title: order.product_title || 'Untitled Product',
         price: order.price || 0,
-        imageUrl: order.imageUrl || order.photo || '/images/placeholder.png',
+        imageUrl: order.image_url || '/images/placeholder.png',
         status: (order.status || 'completed').toLowerCase(),
-        purchaseDate: order.purchaseDate || order.createdAt || new Date().toISOString(),
         estimatedDeliveryTime: order.estimatedDeliveryTime || '3 minutes',
       }));
     } catch (error) {

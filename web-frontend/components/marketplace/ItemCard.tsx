@@ -31,6 +31,8 @@ export default function ItemCard({ item, onItemClick }: ItemCardProps) {
           alt={item.title}
           fill
           className="object-cover"
+          unoptimized
+          priority
         />
         <button 
           className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md hover:bg-gray-100"
