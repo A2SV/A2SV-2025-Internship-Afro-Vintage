@@ -99,7 +99,7 @@ func main() {
 	routes.RegisterSupplierRoutes(r, supplierCtrl, jwtSvc)
 	routes.RegisterWarehouseRoutes(r, warehouseCtrl, jwtSvc)
 	routes.RegisterResellerRoutes(r, supplierCtrl, jwtSvc)
-	routes.SetupUserRoutes(r, userUC) // Add user routes
+	routes.SetupUserRoutes(r, userUC, jwtSvc) // Add user routes
 
 	// Run server
 	r.Run(":8080")
