@@ -97,7 +97,8 @@ export default function MarketplacePage({
       description: item.description,
       category: item.category,
       grade: item.grade,
-      status: 'available'
+      status: 'available',
+      seller_id: item.resellerId,
     });
     setIsModalOpen(true);
   };

@@ -219,4 +219,20 @@ export const marketplaceApi = {
       throw error;
     }
   },
-}; 
+};
+
+export async function getUserById(id: string) {
+  const token = localStorage.getItem('token');
+  const res = await fetch(`${API_URL}/admin/users`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Accept': 'application/json',
+    },
+  });
+  if (!res.ok) throw new Error('Failed to fetch users');
+  const users = await res.json();
+  if (Array.isArray(users)) {
+    return users.find((u: any) => u.id === id);
+  }
+  return users;
+} 

@@ -38,11 +38,11 @@ export const orderApi = {
 
       return orders.map((order: any) => ({
         id: order.orderId || order._id,
-        title: order.product_title || 'Untitled Product',
-        price: order.price || 0,
-        imageUrl: order.image_url || '/images/placeholder.png',
-        status: (order.status || 'completed').toLowerCase(),
-        estimatedDeliveryTime: order.estimatedDeliveryTime || '3 minutes',
+        title: order.product_title,
+        price: order.total_price,
+        imageUrl: order.image_url,
+        status: (order.status ).toLowerCase(),
+        estimatedDeliveryTime: order.estimatedDeliveryTime,
       }));
     } catch (error) {
       console.error('Error fetching orders:', error);

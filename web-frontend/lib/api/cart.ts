@@ -50,6 +50,7 @@ export const cartApi = {
         price: item.price,
         imageUrl: item.image_url,
         grade: item.grade,
+        size: item.size || '',
       }));
     } catch (error) {
       console.error('Error fetching cart items:', error);

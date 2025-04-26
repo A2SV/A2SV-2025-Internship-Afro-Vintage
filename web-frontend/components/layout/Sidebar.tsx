@@ -17,7 +17,6 @@ const Sidebar = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Marketplace', href: '/consumer/marketplace', icon: ShoppingBag },
     { name: 'Orders', href: '/orders', icon: ShoppingCart },
     { name: 'Settings', href: '/settings', icon: Settings },

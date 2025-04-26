@@ -1,21 +1,14 @@
 export type OrderStatus = 'PENDING_DELIVERY' | 'DELIVERED' | 'FAILED' | 'SHIPPED';
 export type PaymentStatus = 'PAID' | 'PENDING' | 'FAILED';
 
-export interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  imageUrl?: string;
-  hasReview?: boolean;
-}
-
 export interface Order {
   id: string;
-  items: OrderItem[];
-  total: number;
+  title?: string;
+  price: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   createdAt: string;
   estimatedDeliveryTime?: string;
-  title?: string;
+  imageUrl?: string;
+  hasReview?: boolean;
 } 

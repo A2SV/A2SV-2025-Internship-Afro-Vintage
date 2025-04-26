@@ -117,7 +117,10 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
               {showProfileMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-20 border border-gray-100">
                   <button
-                    onClick={() => {/* Add profile action */}}
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      router.push('/profile-settings');
+                    }}
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
                   >
                     Profile Settings
