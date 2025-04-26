@@ -30,7 +30,8 @@ export const orderApi = {
       }
 
       const data = await response.json();
-      console.log('Raw API response:', data);
+      console.log('Raw order data:', data);
+      console.log('First order:', data.data?.orders?.[0]);
 
       // Handle the response data structure
       const orders = Array.isArray(data) ? data : (data.data || []);
@@ -38,8 +39,8 @@ export const orderApi = {
 
       return orders.map((order: any) => ({
         id: order.orderId || order._id,
-        title: order.product_title,
-        price: order.total_price,
+        title: order.itemTitle,
+        price: order.price,
         imageUrl: order.image_url,
         status: (order.status ).toLowerCase(),
         estimatedDeliveryTime: order.estimatedDeliveryTime,

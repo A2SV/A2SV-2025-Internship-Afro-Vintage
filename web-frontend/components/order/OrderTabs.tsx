@@ -193,6 +193,7 @@ export default function OrderTabs() {
                       />
                     </div>
                     <div className="flex-1">
+                    
                       <div className="font-semibold text-lg mb-1">{order.title || 'Product'}</div>
                       <div className="font-bold text-xl">${order.price?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                     </div>
