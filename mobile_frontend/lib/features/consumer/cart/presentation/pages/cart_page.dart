@@ -29,10 +29,8 @@ class CartBottomSheet extends StatelessWidget {
     return BlocListener<CheckoutBloc, CheckoutState>(
       listener: (context, state) {
         if (state is CheckoutSuccess) {
-          // Show the payment success dialog
           _showPaymentSuccessDialog(context, state.data);
         } else if (state is CheckoutError) {
-          // Show an error message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
           );
