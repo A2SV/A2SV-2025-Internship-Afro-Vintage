@@ -16,7 +16,7 @@ const getRoleBasedRedirect = (role: string) => {
     case "consumer":
       return "/consumer/marketplace";
     case "supplier":
-      return "../supplier";
+      return "../supplier/dashboard";
     case "reseller":
       return "/reseller/dashboard";
     default:

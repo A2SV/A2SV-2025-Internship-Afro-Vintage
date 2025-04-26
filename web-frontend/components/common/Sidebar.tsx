@@ -1,27 +1,25 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  LayoutDashboard,
-  ShoppingBag,
-  ShoppingCart,
-  Package,
-  Star,
-  Settings,
-  LogOut,
-  ChevronLeft,
-  ChevronRight,
-  Menu
-} from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, ShoppingCart, Package, Star, Settings, LogOut, ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
 
 const Sidebar = () => {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      setRole(user.role); // Get role from localStorage
+    }
+  }, []);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -36,19 +34,53 @@ const Sidebar = () => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Dispatch collapse event when sidebar state changes
   useEffect(() => {
     const event = new CustomEvent('sidebar-collapse', {
-      detail: { isCollapsed }
+      detail: { isCollapsed },
     });
     window.dispatchEvent(event);
   }, [isCollapsed]);
 
-  const navItems = [
+  const consumerNavItems = [
+    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
     { name: 'Marketplace', href: '/consumer/marketplace', icon: ShoppingBag },
     { name: 'Orders', href: '/consumer/orders', icon: ShoppingCart },
-    { name: 'Settings', href: '/profile-settings', icon: Settings },
+    { name: 'Settings', href: '/settings', icon: Settings },
   ];
+
+  const supplierNavItems = [
+    { name: 'Dashboard', href: '/supplier/dashboard', icon: LayoutDashboard },
+    { name: 'Add Bundle', href: '/supplier/addbundles', icon: ShoppingBag },
+    { name: 'Marketplace', href: '/supplier/marketplace', icon: Package },
+    { name: 'Orders', href: '/supplier/supplierOrder', icon: ShoppingCart },
+    { name: 'View Bundles', href: '/supplier/SupplierviewBundles', icon: Package },
+    { name: 'Reviews', href: '/supplier/review', icon: Star },
+    { name: 'Settings', href: '/supplier/settings', icon: Settings },
+  ];
+
+  const resellerNavItems = [
+    { name: 'Dashboard', href: '/reseller/dashboard', icon: LayoutDashboard },
+    { name: 'Warehouse', href: '/reseller/warehouse', icon: Package },
+    { name: 'Marketplace', href: '/reseller/marketplace', icon: ShoppingBag },
+    { name: 'Orders', href: '/reseller/orders', icon: ShoppingCart },
+    { name: 'Settings', href: '/reseller/settings', icon: Settings },
+  ];
+
+  let navItems = [];
+
+  if (role === 'supplier') {
+    navItems = supplierNavItems;
+  } else if (role === 'reseller') {
+    navItems = resellerNavItems;
+  } else {
+    navItems = consumerNavItems;
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
 
   return (
     <>
@@ -88,15 +120,11 @@ const Sidebar = () => {
             className="transition-all duration-300"
           />
           {!isMobile && (
-            <button 
+            <button
               onClick={() => setIsCollapsed(!isCollapsed)}
               className="p-2 rounded-lg hover:bg-gray-100"
             >
-              {isCollapsed ? (
-                <ChevronRight className="w-5 h-5" />
-              ) : (
-                <ChevronLeft className="w-5 h-5" />
-              )}
+              {isCollapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
             </button>
           )}
         </div>
@@ -125,12 +153,8 @@ const Sidebar = () => {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          <button 
-            onClick={() => {
-              localStorage.removeItem('token');
-              localStorage.removeItem('user');
-              window.location.href = '/login';
-            }}
+          <button
+            onClick={handleLogout}
             className="flex items-center space-x-3 px-4 py-2.5 w-full text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
           >
             <LogOut className="h-5 w-5" />
@@ -142,4 +166,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar; 
+export default Sidebar;

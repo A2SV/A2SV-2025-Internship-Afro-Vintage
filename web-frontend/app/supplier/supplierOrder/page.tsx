@@ -1,63 +1,59 @@
-import React from "react";
+'use client';
+
+import React, { useEffect, useState } from "react";
 
 interface Order {
-  orderId: string;
-  orderNumber: string;
-  status: string;
-  customerName: string;
-  trackingCode: string;
+  order: {
+    id: string;
+    bundle_id: string;
+    status: string;
+    created_at: string;
+  };
+  resellerUsername: string;
 }
 
 const OrderTable: React.FC = () => {
-  const orders: Order[] = [
-    {
-      orderId: "59217",
-      orderNumber: "59217342",
-      status: "[New order]",
-      customerName: "Coqty Fisher",
-      trackingCode: "940010010936113003113",
-    },
-    {
-      orderId: "59213",
-      orderNumber: "59217343",
-      status: "[Imposterism]",
-      customerName: "Kristin Watson",
-      trackingCode: "940010010936113003113",
-    },
-    {
-      orderId: "59219",
-      orderNumber: "59217344",
-      status: "[Shipped]",
-      customerName: "Esther Howard",
-      trackingCode: "940010010936113003113",
-    },
-    {
-      orderId: "59220",
-      orderNumber: "59217345",
-      status: "[Canceled]",
-      customerName: "Jenny Wilson",
-      trackingCode: "940010010936113003113",
-    },
-    {
-      orderId: "59223",
-      orderNumber: "59217346",
-      status: "[Rejected]",
-      customerName: "John Smith",
-      trackingCode: "940010010936113003113",
-    },
-    // Repeated entries for Cameron Williamson
-    ...Array(5).fill({
-      orderId: "592182",
-      orderNumber: "59217346",
-      status: "[Draft]",
-      customerName: "Cameron Williamson",
-      trackingCode: "940010010936113003113",
-    }),
-  ];
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<boolean>(false);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) throw new Error('No token found');
+
+        const response = await fetch('http://localhost:8080/orders/supplier/history', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch orders');
+        }
+
+        const data = await response.json();
+        console.log('🛠 Server Response:', data);
+
+        setOrders(data.data.orders); // ✅ correctly setting orders
+      } catch (err) {
+        console.error('Error fetching orders:', err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  if (loading) return <div className="p-4">Loading orders...</div>;
+  if (error) return <div className="p-4 text-red-500">Failed to load orders.</div>;
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4"># Order</h1>
+      <h1 className="text-xl font-bold mb-4"># Order History</h1>
       <table className="w-full table-auto">
         <thead className="bg-gray-50">
           <tr>
@@ -74,29 +70,29 @@ const OrderTable: React.FC = () => {
               CUSTOMER NAME
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              TRACKING CODE
+              CREATED AT
             </th>
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
-          {orders.map((order, index) => (
+          {orders.map((orderObj, index) => (
             <tr key={index}>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {order.orderId}
+                {orderObj.order.id}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {order.orderNumber}
+                {orderObj.order.bundle_id}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {order.status}
+                  {orderObj.order.status}
                 </span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                {order.customerName}
+                {orderObj.resellerUsername}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                {order.trackingCode}
+                {orderObj.order.created_at}
               </td>
             </tr>
           ))}

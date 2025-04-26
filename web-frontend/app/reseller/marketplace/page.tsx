@@ -206,7 +206,7 @@ Features:
 
             <div className="flex flex-col md:flex-row gap-2 h-[80vh]">
               {/* Image (Only visible on large screens) */}
-              <div className="md:w-1/2 w-full h-full flex justify-center items-center hidden md:block">
+              <div className="md:w-1/2 w-full h-full justify-center items-center hidden md:block">
                 <img
                   src={selectedProduct.image}
                   alt={selectedProduct.name}

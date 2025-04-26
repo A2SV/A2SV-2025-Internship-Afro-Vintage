@@ -1,249 +1,138 @@
-"use client";
-import { FaBell, FaSearch } from "react-icons/fa";
-import { Bar, Line, Doughnut } from "react-chartjs-2";
+'use client';
+
+import { useEffect, useState } from 'react';
+import { Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
   ArcElement,
-} from "chart.js";
-import type { ChartOptions } from "chart.js";
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
   Tooltip,
   Legend,
-  ArcElement
-);
+} from 'chart.js';
+import CountUp from 'react-countup';
 
-const chartContainerStyle = {
-  width: "100%",
-  height: "80px",
-};
+ChartJS.register(ArcElement, Tooltip, Legend);
 
-// Type-safe data generation function
-const generateRandomData = (
-  points: number,
-  min: number,
-  max: number
-): number[] => {
-  return Array.from(
-    { length: points },
-    () => Math.random() * (max - min) + min
-  );
-};
+// ---------- Types ----------
+interface DashboardResponse {
+  totalSales: number;
+  rating: number;
+  bestSelling: number;
+  performanceMetrics: {
+    totalBundlesListed: number;
+    activeCount: number;
+    soldCount: number;
+    deactivatedCount: number; // <-- IMPORTANT: make sure you have this in your backend response
+  };
+}
 
-// Chart data configurations
-const totalBundlesData = {
-  labels: Array.from({ length: 12 }, (_, i) => `Week ${i + 1}`),
-  datasets: [
-    {
-      data: generateRandomData(12, 5, 25),
-      borderColor: "#00a3a3",
-      borderWidth: 2,
-      fill: false,
-    },
-  ],
-};
-
-const bundlesSoldData = {
-  labels: Array.from({ length: 12 }, (_, i) => `Week ${i + 1}`),
-  datasets: [
-    {
-      data: generateRandomData(12, 3, 20),
-      borderColor: "#00a3a3",
-      borderWidth: 2,
-      fill: false,
-    },
-  ],
-};
-
-const ratingData = {
-  labels: Array.from({ length: 12 }, (_, i) => `Week ${i + 1}`),
-  datasets: [
-    {
-      data: generateRandomData(12, 4.0, 5.0),
-      borderColor: "#00a3a3",
-      borderWidth: 2,
-      fill: false,
-    },
-  ],
-};
-
-const bestSellingChartData = {
-  labels: [
-    "Classic Monochrome Tees",
-    "Monochromatic Wardrobe",
-    "Essential Neutrals",
-  ],
-  datasets: [
-    {
-      data: [940, 790, 740],
-      backgroundColor: ["#00a3a3", "#007777", "#008888"],
-      hoverBackgroundColor: ["#005555", "#00a3a36", "#007777"],
-    },
-  ],
-};
-
-// Typed chart options
-const chartOptions: ChartOptions<"line"> = {
-  responsive: true,
-  plugins: {
-    legend: { display: false },
-  },
-  scales: {
-    x: { display: false },
-    y: { display: false },
-  },
-  maintainAspectRatio: false,
-  elements: {
-    line: {
-      tension: 0.4,
-    },
-  },
-};
-
+// ---------- Components ----------
 interface StatCardProps {
   title: string;
   value: string | number;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 function StatCard({ title, value, children }: StatCardProps) {
   return (
     <div className="bg-white p-5 rounded-lg shadow">
       <p className="text-gray-500 text-base mb-1">{title}</p>
-      <h2 className="text-4xl font-semibold text-[#1C1D22]">{value}</h2>
-      <div className="mt-2" style={chartContainerStyle}>
-        {children}
-      </div>
+      <h2 className="text-4xl font-semibold text-[#1C1D22]">
+        {typeof value === 'number' ? <CountUp end={value} duration={1.5} /> : value}
+      </h2>
+      {children && <div className="mt-2">{children}</div>}
     </div>
   );
 }
 
-export default function DashboardPage() {
+// ---------- Main Page ----------
+export default function SupplierDashboardPage() {
+  const [totalBundles, setTotalBundles] = useState(0);
+  const [bundlesSold, setBundlesSold] = useState(0);
+  const [rating, setRating] = useState(0);
+  const [totalSales, setTotalSales] = useState(0);
+  const [bestSelling, setBestSelling] = useState(0);
+  const [activeCount, setActiveCount] = useState(0);
+  const [deactivatedCount, setDeactivatedCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error("🚨 No token found in localStorage");
+          setError(true);
+          return;
+        }
+
+        const res = await fetch('http://localhost:8080/supplier/dashboard', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!res.ok) throw new Error('Failed to fetch');
+
+        const data: DashboardResponse = await res.json();
+
+        setTotalBundles(data.performanceMetrics.totalBundlesListed);
+        setBundlesSold(data.performanceMetrics.soldCount);
+        setRating(data.rating);
+        setTotalSales(data.totalSales);
+        setBestSelling(data.bestSelling);
+        setActiveCount(data.performanceMetrics.activeCount);
+        setDeactivatedCount(data.performanceMetrics.deactivatedCount || 0);
+      } catch (err) {
+        console.error("❌ Error loading dashboard:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div className="text-center text-lg mt-10">Loading dashboard...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-lg text-red-500 mt-10">Failed to load dashboard. Please try again.</div>;
+  }
+
+  // ---------- Pie Chart Data ----------
+  const pieData = {
+    labels: ['Available', 'Sold', 'Deactivated'],
+    datasets: [
+      {
+        data: [activeCount, bundlesSold, deactivatedCount],
+        backgroundColor: ['#10B981', '#3B82F6', '#9CA3AF'], // Green, Blue, Gray
+        hoverOffset: 8,
+      },
+    ],
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-
       {/* Top Stats */}
-      <div className="grid grid-cols-3 gap-6">
-        <StatCard title="Total Bundles" value="24">
-          <Line data={totalBundlesData} options={chartOptions} />
-        </StatCard>
-
-        <StatCard title="Bundles Sold" value="18">
-          <Line data={bundlesSoldData} options={chartOptions} />
-        </StatCard>
-
-        <div className="bg-white p-5 rounded-lg shadow flex flex-col justify-between">
-          <p className="text-gray-500 text-base mb-1">Your Rating</p>
-          <h2 className="text-5xl font-bold text-right text-[#1C1D22]">4.7</h2>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StatCard title="Total Bundles" value={totalBundles} />
+        <StatCard title="Bundles Sold" value={bundlesSold} />
+        <StatCard title="Your Rating" value={rating.toFixed(1)} />
       </div>
 
-      {/* Middle Section */}
-      <div className="grid grid-cols-2 gap-6">
-        {/* Best Selling */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-5 border-b">
-            <p className="text-base text-gray-500">Best Selling</p>
-            <h2 className="text-3xl font-semibold mt-1 text-[#1C1D22]">
-              $2,400{" "}
-              <span className="text-lg text-gray-500 font-normal">
-                — Total Sales
-              </span>
-            </h2>
-          </div>
-          <div className="p-5 space-y-4">
-            {bestSellingChartData.labels.map((label, index) => (
-              <div
-                key={index}
-                className="block w-full border border-gray-300 px-4 py-2 rounded-full text-lg text-gray-500"
-              >
-                {label} —{" "}
-                <span className="font-bold">
-                  ${bestSellingChartData.datasets[0].data[index]} Sales
-                </span>
-              </div>
-            ))}
-            <div className="mt-6 flex justify-center">
-              <div style={{ width: "150px", height: "150px" }}>
-                <Doughnut
-                  data={bestSellingChartData}
-                  options={{
-                    plugins: { legend: { display: false } },
-                    maintainAspectRatio: false,
-                    cutout: "70%",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Extra Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <StatCard title="Total Sales ($)" value={totalSales.toFixed(2)} />
+        <StatCard title="Top Sale ($)" value={bestSelling.toFixed(2)} />
+      </div>
 
-        {/* Bundles Table */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-5 flex justify-between items-center border-b">
-            <p className="text-base text-gray-500">Bundles</p>
-            <button className="text-base text-[#00a3a3] border border-[#00a3a3] rounded-full px-5 py-2 hover:bg-[#00a3a3] hover:text-white transition">
-              View All
-            </button>
-          </div>
-          <div className="p-5">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-gray-500">
-                  <th className="pb-3">Item</th>
-                  <th className="pb-3">Date</th>
-                  <th className="pb-3">Type</th>
-                  <th className="pb-3">Status</th>
-                </tr>
-              </thead>
-              <tbody className="text-gray-700 font-medium">
-                {[
-                  [
-                    "Mens Black T-Shirts",
-                    "20 Mar, 2023",
-                    "Sorted",
-                    "Available",
-                  ],
-                  ["Essential Neutrals", "19 Mar, 2023", "Unsorted", "Sold"],
-                  [
-                    "Sleek and Cozy Black",
-                    "7 Feb, 2023",
-                    "Sorted",
-                    "Available",
-                  ],
-                  ["MOCKUP Black", "29 Jan, 2023", "Unsorted", "Sold"],
-                  [
-                    "Monochromatic Wardrobe",
-                    "27 Jan, 2023",
-                    "Sorted",
-                    "Available",
-                  ],
-                ].map((row, index) => (
-                  <tr key={index} className="border-t">
-                    <td className="py-3">{row[0]}</td>
-                    <td>{row[1]}</td>
-                    <td>{row[2]}</td>
-                    <td>{row[3]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Performance Pie Chart */}
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h2 className="text-2xl font-semibold mb-4">Bundle Status Overview</h2>
+        <div className="w-full h-[300px] flex justify-center items-center">
+          <div className="w-72 h-72">
+            <Pie data={pieData} />
           </div>
         </div>
       </div>
