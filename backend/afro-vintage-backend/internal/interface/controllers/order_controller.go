@@ -164,3 +164,59 @@ func (c *OrderController) GetOrdersByReseller(ctx *gin.Context) {
 		},
 	})
 }
+
+func (c *OrderController) GetOrderHistory(ctx *gin.Context) {
+	consumerID, exists := ctx.Get("userID")
+	if !exists {
+		ctx.JSON(http.StatusUnauthorized, common.APIResponse{
+			Success: false,
+			Message: "user ID not found in context",
+		})
+		return
+	}
+
+	consumerIDStr, ok := consumerID.(string)
+	if !ok || consumerIDStr == "" {
+		ctx.JSON(http.StatusUnauthorized, common.APIResponse{
+			Success: false,
+			Message: "invalid user ID format",
+		})
+		return
+	}
+
+	orders, userNames, productNames, err := c.orderUseCase.GetOrdersByConsumer(ctx, consumerIDStr)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, common.APIResponse{
+			Success: false,
+			Message: fmt.Sprintf("failed to get order history: %v", err),
+		})
+		return
+	}
+
+	var formattedOrders []map[string]interface{}
+	for _, order := range orders {
+		// Get product details for this order
+		var products []map[string]interface{}
+		for _, productID := range order.ProductIDs {
+			if name, exists := productNames[productID]; exists {
+				products = append(products, map[string]interface{}{
+					"id":    productID,
+					"title": name,
+				})
+			}
+		}
+
+		formattedOrders = append(formattedOrders, map[string]interface{}{
+			"order": order,
+			"resellerUsername": userNames[order.ResellerID],
+			"products": products,
+		})
+	}
+
+	ctx.JSON(http.StatusOK, common.APIResponse{
+		Success: true,
+		Data: gin.H{
+			"orders": formattedOrders,
+		},
+	})
+}
