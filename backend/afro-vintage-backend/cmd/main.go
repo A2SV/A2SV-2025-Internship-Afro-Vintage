@@ -70,6 +70,7 @@ func main() {
 	warehouseSvc := warehouse_usecase.NewWarehouseUseCase(warehouseRepo, bundleRepo)
 
 	// Init Controllers
+
 	authCtrl := controllers.NewAuthController(authUC)
 	adminCtrl := controllers.NewAdminController(userUC, orderUC)
 	productCtrl := controllers.NewProductController(productUC, trustUC, bundleUC, warehouseRepo)
@@ -100,6 +101,8 @@ func main() {
 	routes.RegisterWarehouseRoutes(r, warehouseCtrl, jwtSvc)
 	routes.RegisterResellerRoutes(r, supplierCtrl, jwtSvc)
 	routes.SetupUserRoutes(r, userUC, jwtSvc) // Add user routes
+	routes.SetupUploadRoutes(r)               // ✅ Register Upload Route
+	r.Static("/uploads", "./uploads")
 
 	// Run server
 	r.Run(":8080")
