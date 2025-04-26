@@ -36,7 +36,7 @@ class _ItemCardState extends State<ItemCard> {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).primaryColor;
-
+    print("Sorry ${widget.product.image_url}");
     return BlocListener<CartBloc, CartState>(
       listener: (context, state) {
         if (state is Success) {

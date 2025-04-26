@@ -10,6 +10,7 @@ import 'package:mobile_frontend/features/consumer/checkout/domain/entities/check
 import 'package:mobile_frontend/features/consumer/checkout/presentation/bloc/checkout_bloc.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/domain/entities/product.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/presentation/bloc/product_bloc.dart';
+import 'package:mobile_frontend/features/consumer/orders/presentation/bloc/order_bloc.dart';
 import 'package:mobile_frontend/features/consumer/orders/presentation/pages/order_detail.dart';
 import 'package:mobile_frontend/features/consumer/reviews/presentation/pages/reviews.dart';
 import 'package:mobile_frontend/features/consumer/checkout/presentation/pages/add_address.dart';
@@ -53,6 +54,9 @@ Future<void> main() async {
         ),
         BlocProvider<PaymentBloc>(
           create: (context) => di.sl<PaymentBloc>(),
+        ),
+        BlocProvider<OrderBloc>(
+          create: (context) => sl<OrderBloc>(),
         ),
       ],
       child: const MyApp(),

@@ -19,9 +19,7 @@ class ProductDataSourceImpl implements ProductDataSource {
   @override
   Future<List<ProductModel>> getProducts() async {
     try {
-      // print("DataSource: Starting getProducts");
       final prefs = await SharedPreferences.getInstance();
-      // print("DataSource: SharedPreferences initialized");
       final token = prefs.getString('auth_token') ?? '';
       print("DataSource: Token retrieved: $token");
       final response = await client.get(
@@ -31,16 +29,36 @@ class ProductDataSourceImpl implements ProductDataSource {
           'Authorization': 'Bearer $token',
         },
       );
-      // print("DataSource: Response  received: ${response.statusCode}");
+      print("DataSource: Response received: ${response.body}");
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
-        for (var product in responseData) {
-          // print("Product image_url: ${product['image_url']}");
+
+        // Handle case where response is a list of products
+        if (responseData is List) {
+          return responseData
+              .map((product) => ProductModel.fromJson(product))
+              .toList();
         }
-        return (responseData as List)
-            .map((product) => ProductModel.fromJson(product))
-            .toList();
+
+        // Handle case where response is a map with an empty 'products' key
+        if (responseData is Map<String, dynamic> &&
+            responseData['products'] is List) {
+          final productsList = responseData['products'] as List;
+
+          // Return an empty list if 'products' is empty
+          if (productsList.isEmpty) {
+            print("No products available.");
+            return [];
+          }
+
+          // Map each product to ProductModel
+          return productsList
+              .map((product) => ProductModel.fromJson(product))
+              .toList();
+        }
+
+        throw Exception('Unexpected response format');
       } else {
         print(
             "Failed to fetch products: ${response.statusCode}, ${response.body}");

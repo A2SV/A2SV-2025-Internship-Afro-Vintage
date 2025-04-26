@@ -17,7 +17,12 @@ class GridItem extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         } else if (state is Success) {
           final products = state.data;
-          // print("Products $products");
+
+          // Check if the products list is empty
+          if (products.isEmpty) {
+            return const Center(child: Text('No products available.'));
+          }
+
           return Expanded(
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -29,14 +34,9 @@ class GridItem extends StatelessWidget {
               itemCount: products.length,
               itemBuilder: (context, index) {
                 final product = products[index];
-                // print("Product mf $product");
                 return ItemCard(
-                    // title: product.title,
-                    // itemPrice: '\$${product.price}',
-                    // rating: product.rating,
-                    // imageUrl: product.image_url,
-                    // id: product.id,
-                    product: product);
+                  product: product,
+                );
               },
             ),
           );
