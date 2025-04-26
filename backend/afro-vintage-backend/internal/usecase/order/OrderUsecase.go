@@ -180,7 +180,7 @@ func (uc *orderUseCaseImpl) GetDashboardMetrics(ctx context.Context, supplierID 
 }
 
 func (uc *orderUseCaseImpl) GetResellerMetrics(ctx context.Context, resellerID string) (*order.ResellerMetrics, error) {
-	fmt.Printf("🔍 Starting GetResellerMetrics for reseller: %s\n", resellerID)
+	fmt.Printf("\n🔍 Starting GetResellerMetrics for reseller: %s\n", resellerID)
 
 	// Get purchased bundles
 	bundles, err := uc.bundleRepo.ListPurchasedByReseller(ctx, resellerID)
@@ -197,6 +197,11 @@ func (uc *orderUseCaseImpl) GetResellerMetrics(ctx context.Context, resellerID s
 		return nil, err
 	}
 	fmt.Printf("👤 Reseller found: %s\n", reseller.Username)
+	fmt.Printf("📊 Reseller Trust Data:\n")
+	fmt.Printf("  - Trust Score: %d\n", reseller.TrustScore)
+	fmt.Printf("  - Trust Rated Count: %d\n", reseller.TrustRatedCount)
+	fmt.Printf("  - Trust Total Error: %f\n", reseller.TrustTotalError)
+	fmt.Printf("  - Is Blacklisted: %v\n", reseller.IsBlacklisted)
 
 	// Get sold products directly from product collection
 	soldProducts, err := uc.prodRepo.GetSoldProductsByReseller(ctx, resellerID)
@@ -224,7 +229,13 @@ func (uc *orderUseCaseImpl) GetResellerMetrics(ctx context.Context, resellerID s
 		BoughtBundles:      bundles,
 	}
 
-	fmt.Printf("✅ Final metrics: %+v\n", metrics)
+	fmt.Printf("📊 Final Metrics:\n")
+	fmt.Printf("  - Total Bought Bundles: %d\n", metrics.TotalBoughtBundles)
+	fmt.Printf("  - Total Items Sold: %d\n", metrics.TotalItemsSold)
+	fmt.Printf("  - Rating (Trust Score): %d\n", metrics.Rating)
+	fmt.Printf("  - Best Selling: %.2f\n", metrics.BestSelling)
+	fmt.Printf("✅ GetResellerMetrics completed\n\n")
+
 	return metrics, nil
 }
 
