@@ -138,22 +138,11 @@ Features:
   ];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-white">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-6">
-          <h2 className="text-2xl font-bold text-black">Type</h2>
-          <div className="flex gap-4">
-            <button className="px-4 py-2 bg-black text-white rounded-full">
-              #2025
-            </button>
-            <button className="px-4 py-2 bg-gray-100 rounded-full text-black">
-              Hoodie
-            </button>
-            <button className="px-4 py-2 bg-gray-100 rounded-full text-black">
-              Men
-            </button>
-          </div>
+          <h2 className="text-2xl font-bold text-black">Recommended Bundles</h2>
         </div>
         <a href="#" className="text-blue-600 hover:underline">
           View All
@@ -203,49 +192,95 @@ Features:
       </div>
 
       {/* Modal */}
+      {/* Modal */}
       {selectedProduct && (
-        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex justify-center items-center z-50">
-          <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-6xl relative">
+        <div className="fixed inset-0 backdrop-blur-sm bg-white/30 flex justify-center items-start z-50 pt-8">
+          <div className="bg-white p-2 rounded-xl shadow-2xl w-full max-w-4xl mx-2 relative">
+            {/* Close button */}
             <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-black text-2xl p-2"
+              className="absolute top-1 right-1 text-gray-500 hover:text-black text-base p-1"
               onClick={() => setSelectedProduct(null)}
             >
               ✕
             </button>
 
-            <div className="flex flex-col md:flex-row gap-8">
-              <img
-                src={selectedProduct.image}
-                alt={selectedProduct.name}
-                className="w-full md:w-1/2 h-96 object-cover rounded-lg"
-              />
-              <div className="flex-1 space-y-4">
-                <h2 className="text-3xl font-bold mb-4 text-black">
-                  {selectedProduct.bundleName}
-                </h2>
+            <div className="flex flex-col md:flex-row gap-2 h-[80vh]">
+              {/* Image (Only visible on large screens) */}
+              <div className="md:w-1/2 w-full h-full flex justify-center items-center hidden md:block">
+                <img
+                  src={selectedProduct.image}
+                  alt={selectedProduct.name}
+                  className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+                />
+              </div>
 
-                {selectedProduct.owner && (
-                  <div className="flex items-center gap-3 mb-4">
-                    <img
-                      src={selectedProduct.owner.profilePic}
-                      alt={selectedProduct.owner.name}
-                      className="w-10 h-10 rounded-full"
-                    />
+              {/* Right section (always visible) */}
+              <div className="flex-1 flex flex-col justify-between overflow-y-auto p-2 space-y-3 text-xs">
+                <div className="space-y-3">
+                  {/* Bundle Name */}
+                  <h2 className="text-sm font-bold text-black">
+                    {selectedProduct.bundleName}
+                  </h2>
+
+                  {/* Owner + Badge */}
+                  {selectedProduct.owner && (
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={selectedProduct.owner.profilePic}
+                        alt={selectedProduct.owner.name}
+                        className="w-6 h-6 rounded-full"
+                      />
+                      <div>
+                        <p className="text-xs font-semibold text-black">
+                          {selectedProduct.owner.name}
+                        </p>
+                        <p className="text-[10px] text-gray-500">
+                          {selectedProduct.owner.rating} ⭐ (
+                          {selectedProduct.owner.reviews} reviews)
+                        </p>
+                      </div>
+                      <span className="ml-2 px-2 py-0.5 text-[10px] bg-green-100 text-green-700 rounded-full">
+                        Ready to Ship
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Description */}
+                  <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                    {selectedProduct.description}
+                  </p>
+
+                  {/* Type & Quantity */}
+                  <div className="flex gap-6 mt-2">
                     <div>
-                      <p className="text-sm font-semibold text-black">
-                        {selectedProduct.owner.name}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {selectedProduct.owner.rating} ⭐ (
-                        {selectedProduct.owner.reviews} reviews)
-                      </p>
+                      <h4 className="font-semibold text-black text-xs">
+                        Quantity
+                      </h4>
                     </div>
                   </div>
-                )}
 
-                <p className="text-lg leading-relaxed text-gray-700 whitespace-pre-line">
-                  {selectedProduct.description}
-                </p>
+                  {/* Grade selection */}
+                  <div className="mt-2">
+                    <h4 className="font-semibold text-black text-xs">Grade</h4>
+                    <div className="flex gap-2 mt-1">
+                      {["A", "B", "C", "D"].map((grade) => (
+                        <button
+                          key={grade}
+                          className="w-8 h-8 border rounded-full flex items-center justify-center text-black font-semibold text-xs hover:bg-black hover:text-white transition"
+                        >
+                          {grade}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Buy button */}
+                <div className="mt-3">
+                  <button className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-1.5 rounded-xl text-xs">
+                    Buy Bundle
+                  </button>
+                </div>
               </div>
             </div>
           </div>
