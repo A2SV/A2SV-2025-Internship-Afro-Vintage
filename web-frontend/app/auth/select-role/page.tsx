@@ -34,7 +34,7 @@ export default function SelectRolePage() {
     // Check if we have pending signup data
     const pendingSignup = sessionStorage.getItem('pendingSignup');
     if (!pendingSignup) {
-      router.push('/signup');
+      router.push('auth/signup');
       return;
     }
     setStoredData(JSON.parse(pendingSignup));
