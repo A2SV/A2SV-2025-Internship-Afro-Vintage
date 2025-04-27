@@ -10,8 +10,7 @@ abstract class ProductDataSource {
 }
 
 class ProductDataSourceImpl implements ProductDataSource {
-  final String _baseUrl =
-      "https://a2sv-2025-internship-afro-vintage.onrender.com";
+  final String _baseUrl = "https://2kps99nm-8081.uks1.devtunnels.ms";
 
   final http.Client client;
 
