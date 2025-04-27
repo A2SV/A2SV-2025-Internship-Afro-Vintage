@@ -46,12 +46,24 @@ class _SigninPageState extends State<SigninPage> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) async {
           if (state is Success) {
+            final selectedRole = state.data.user!.role;
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('auth_token', state.data.token);
+            await prefs.setString(
+                'role', selectedRole!); // Save the role to local storage
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Success: ${state.data.user!.username}')),
             );
-            Navigator.pushNamed(context, '/consumermarketplace');
+
+            // Navigate to the appropriate page based on the role
+            if (selectedRole == 'supplier') {
+              Navigator.pushNamed(context, '/consumermarketplace');
+            } else if (selectedRole == 'reseller') {
+              Navigator.pushNamed(context, '/supplier-reseller-marketplace');
+            } else if (selectedRole == 'consumer') {
+              Navigator.pushNamed(context, '/consumermarketplace');
+            }
           } else if (state is Error) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
