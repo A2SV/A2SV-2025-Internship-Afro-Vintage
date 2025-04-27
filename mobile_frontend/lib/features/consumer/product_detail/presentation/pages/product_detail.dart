@@ -59,7 +59,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           controller: _sheetController,
           expand: false,
           initialChildSize: 0.5,
-          minChildSize: 0.4,
+          minChildSize: 0.5,
           maxChildSize: 0.9,
           builder: (_, controller) => DefaultTabController(
             length: 2,
@@ -69,35 +69,80 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 controller: controller,
                 children: [
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      CircleAvatar(
-                        backgroundImage: NetworkImage(
-                          "https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                        ),
-                        radius: 24,
-                      ),
-                      SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
                         children: [
-                          Text(widget.product.title,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16)),
-                          Row(
-                            children: [
-                              Text(widget.product.type),
-                              SizedBox(
-                                width: 10,
-                              ),
-                              Icon(Icons.star, size: 16, color: Colors.amber),
-                              Text(widget.product.rating.toString())
-                            ],
-                          )
+                          CircleAvatar(
+                            backgroundImage: NetworkImage(
+                              "https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                            ),
+                            radius: 24,
+                          ),
+                          SizedBox(width: 12),
+                          SizedBox(
+                            width: 220,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.product.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 21,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Text(
+                                      widget.product.type,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 10,
+                                    ),
+                                    Icon(Icons.star,
+                                        size: 16, color: Colors.amber),
+                                    Text(widget.product.rating.toString())
+                                  ],
+                                )
+                              ],
+                            ),
+                          ),
                         ],
-                      )
+                      ),
+                      Container(
+                        width: 70,
+                        height: 30,
+                        // padding: const EdgeInsets.symmetric(
+                        //     horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color:
+                              widget.product.status.toLowerCase() == 'available'
+                                  ? Colors.green.withOpacity(0.1)
+                                  : Colors.grey.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Center(
+                          child: Text(
+                            widget.product.status,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: widget.product.status.toLowerCase() ==
+                                      'available'
+                                  ? Colors.green
+                                  : Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 17),
                   TabBar(
                     tabAlignment: TabAlignment.start,
                     controller: _tabController,
@@ -115,7 +160,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                         horizontal: 16, vertical: 10),
                   ),
                   SizedBox(
-                    height: 180,
+                    height: 160,
                     child: TabBarView(
                       controller: _tabController,
                       children: [
@@ -156,7 +201,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 20, vertical: 16),
+                                          horizontal: 16, vertical: 12),
                                       child: Text(
                                         size,
                                         style: TextStyle(
@@ -175,7 +220,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(
+                    height: 10,
+                  ),
                   Material(
                     elevation: 5,
                     borderRadius: BorderRadius.circular(50),
@@ -262,9 +309,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   const SizedBox(height: 20),
                   Align(
                     alignment: Alignment.center,
-                    child: Text(widget.product.title,
+                    child: Text("Product Detail",
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 18)),
+                            fontWeight: FontWeight.bold, fontSize: 22)),
                   ),
                   const SizedBox(height: 120),
                   Transform.scale(
