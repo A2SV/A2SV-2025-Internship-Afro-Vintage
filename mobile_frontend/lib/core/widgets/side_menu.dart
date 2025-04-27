@@ -180,11 +180,11 @@ class SideMenu extends StatelessWidget {
             color: Color(0xFF8C8787),
           ),
           title: const Text(
-            "Orders",
+            "Histroy",
             style: TextStyle(color: Color(0xFF8C8787)),
           ),
           onTap: () {
-            Navigator.pushNamed(context, '/allorder');
+            Navigator.pushNamed(context, '/History');
           },
         ),
       ]);
