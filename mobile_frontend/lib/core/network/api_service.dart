@@ -14,6 +14,26 @@ class ApiService {
     throw UnimplementedError('post method is not implemented yet.');
   }
 
+  static Future<Map<String, dynamic>> put(String endpoint, {required Map body}) async {
+    final uri = Uri.parse(endpoint);
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final headers = <String, String>{
+      if (token != null) 'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+    final response = await http.put(
+      uri,
+      headers: headers,
+      body: json.encode(body),
+    );
+    if (response.statusCode == 200) {
+      return json.decode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to update data: ${response.statusCode}');
+    }
+  }
+
   static Future<Map<String, dynamic>> get(String endpoint) async {
     final uri = Uri.parse(endpoint);
     final prefs = await SharedPreferences.getInstance();
@@ -26,6 +46,21 @@ class ApiService {
       return json.decode(response.body) as Map<String, dynamic>;
     } else {
       throw Exception('Failed to load data: ${response.statusCode}');
+    }
+  }
+
+  static Future<Map<String, dynamic>> delete(String endpoint) async {
+    final uri = Uri.parse(endpoint);
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final headers = <String, String>{
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+    final response = await http.delete(uri, headers: headers);
+    if (response.statusCode == 200) {
+      return json.decode(response.body) as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to delete data: ${response.statusCode}');
     }
   }
 }
