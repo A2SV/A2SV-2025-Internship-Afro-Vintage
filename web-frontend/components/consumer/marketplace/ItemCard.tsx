@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { useResellerRatings } from '@/hooks/useResellerRatings';
 import ResellerRating from '../reviews/ResellerRating';
 import { ItemPreview } from '@/types/marketplace';
+import { convertRatingToFiveScale } from '@/lib/utils/rating';
+import { useCart } from '@/context/CartContext';
 
 interface ItemCardProps {
   item: ItemPreview;
@@ -13,6 +15,7 @@ interface ItemCardProps {
 
 export default function ItemCard({ item, onItemClick }: ItemCardProps) {
   const { ratings, loading } = useResellerRatings(item.resellerId);
+  const { isInCart } = useCart();
 
   const handleClick = () => {
     if (onItemClick) {
@@ -39,8 +42,8 @@ export default function ItemCard({ item, onItemClick }: ItemCardProps) {
           aria-label="Add to cart"
         >
           <svg 
-            className="w-5 h-5 text-gray-600" 
-            fill="none" 
+            className={`w-5 h-5 ${isInCart(item.id) ? 'text-teal-600 fill-teal-600' : 'text-gray-600'}`}
+            fill={isInCart(item.id) ? 'currentColor' : 'none'}
             strokeWidth="2" 
             stroke="currentColor" 
             viewBox="0 0 24 24"
@@ -56,7 +59,7 @@ export default function ItemCard({ item, onItemClick }: ItemCardProps) {
           <span className="text-lg font-semibold text-gray-900">${item.price}</span>
           <span className="flex items-center text-amber-500 font-medium text-base">
             <svg className="w-5 h-5 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.178c.969 0 1.371 1.24.588 1.81l-3.385 2.46a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.385-2.46a1 1 0 00-1.175 0l-3.385 2.46c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118l-3.385-2.46c-.783-.57-.38-1.81.588-1.81h4.178a1 1 0 00.95-.69l1.286-3.967z"/></svg>
-            {item.rating?.toFixed(1) ?? 'N/A'}
+            {item.rating ? convertRatingToFiveScale(item.rating).toFixed(1) : 'N/A'}
           </span>
         </div>
       </div>

@@ -16,21 +16,22 @@ export type FilterValues = {
 
 type FilterPanelProps = {
   onFilterChange: (filters: FilterValues) => void;
+  onClearAll: () => void;
   className?: string;
 };
 
-const categories = ['Jackets', 'Pants', 'Shirts', 'Dresses', 'Accessories'];
+const categories = ['shirt', 'suit', 'jacket', 'pants', 'dress'];
 const sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-const grades = ['New', 'Like New', 'Good', 'Fair'];
+const grades = ['A', 'B', 'C', 'D'];
 
-export const FilterPanel = ({ onFilterChange, className = '' }: FilterPanelProps) => {
+export const FilterPanel = ({ onFilterChange, onClearAll, className = '' }: FilterPanelProps) => {
   const [filters, setFilters] = useState<FilterValues>({
     search: '',
     category: [],
     size: [],
     priceRange: {
       min: 0,
-      max: 1000,
+      max: 10000,
     },
     grade: [],
   });
@@ -69,12 +70,13 @@ export const FilterPanel = ({ onFilterChange, className = '' }: FilterPanelProps
       size: [],
       priceRange: {
         min: 0,
-        max: 1000,
+        max: 10000,
       },
       grade: [],
     };
     setFilters(resetFilters);
     onFilterChange(resetFilters);
+    onClearAll();
   };
 
   return (
@@ -88,17 +90,6 @@ export const FilterPanel = ({ onFilterChange, className = '' }: FilterPanelProps
           <X className="w-4 h-4 mr-1" />
           Clear all
         </button>
-      </div>
-
-      {/* Search */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Search items..."
-          value={filters.search}
-          onChange={(e) => handleFilterChange('search', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-500"
-        />
       </div>
 
       {/* Categories */}

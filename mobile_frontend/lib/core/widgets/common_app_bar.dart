@@ -25,25 +25,60 @@ class _CommonAppBarState extends State<CommonAppBar> {
         Padding(
           padding: const EdgeInsets.only(right: 16.0),
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.notifications_none_outlined,
-                  color: Color(0xFF5C5F6A),
-                  size: 35,
-                ),
-              ),
-              CircleAvatar(
-                child: ClipOval(
-                  child: Image.network(
-                    "https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
+              Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications, size: 30),
+                    onPressed: () {
+                      // Handle notification button press
+                    },
                   ),
-                ),
+                  Positioned(
+                    top: 3,
+                    right: 3,
+                    child: Container(
+                      height: 19,
+                      width: 19,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFC53030),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '1',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              Stack(
+                children: [
+                  const CircleAvatar(
+                    backgroundImage: NetworkImage(
+                      'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cGVyc29ufGVufDB8fDB8fHww&w=1000&q=80',
+                    ),
+                    radius: 24,
+                  ),
+                  Positioned(
+                    bottom: 2,
+                    right: 4,
+                    child: Container(
+                      height: 8,
+                      width: 8,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF54D62C),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

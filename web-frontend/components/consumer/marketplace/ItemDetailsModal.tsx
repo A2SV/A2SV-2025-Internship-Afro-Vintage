@@ -6,6 +6,7 @@ import { Star, X } from 'lucide-react';
 import { Item } from '@/types/marketplace';
 import { useCart } from '@/context/CartContext';
 import { getUserById } from '@/lib/api/marketplace';
+import { convertRatingToFiveScale } from '@/lib/utils/rating';
 
 type ItemDetailsModalProps = {
   item: Item;
@@ -20,13 +21,8 @@ export default function ItemDetailsModal({ item, onClose, isOpen }: ItemDetailsM
   const sizes = ['S', 'M', 'L', 'XL'];
 
   useEffect(() => {
-    console.log('ItemDetailsModal opened. isOpen:', isOpen, 'item:', item);
-    if (isOpen && item) {
-      console.log('item.seller_id:', item.seller_id);
-    }
     if (isOpen && item && item.seller_id) {
       getUserById(item.seller_id).then((user) => {
-        console.log('Fetched user for seller_id', item.seller_id, ':', user);
         setSeller({
           name: user?.username || 'Unknown Seller',
           photo: user?.photo || '/images/avatar.png',
@@ -94,12 +90,12 @@ export default function ItemDetailsModal({ item, onClose, isOpen }: ItemDetailsM
                       <Star 
                         key={star} 
                         size={16}
-                        className="fill-yellow-400 text-yellow-400" 
+                        className={`${star <= (item.rating ? convertRatingToFiveScale(item.rating) : 0) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
                       />
                     ))}
                   </div>
                   <span className="text-sm text-gray-600">
-                    4.9 (2130 reviews)
+                    {item.rating ? convertRatingToFiveScale(item.rating).toFixed(1) : 'No rating'}
                   </span>
                 </div>
               </div>

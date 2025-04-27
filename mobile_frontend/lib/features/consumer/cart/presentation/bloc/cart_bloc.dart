@@ -22,6 +22,8 @@ class CartBloc extends Bloc<CartEvent, CartState> {
   }
 
   Future<void> _addToCart(AddToCartEvent event, Emitter<CartState> emit) async {
+    emit(Loading());
+    await Future.delayed(Duration(milliseconds: 500));
     try {
       print("Bloc received Cart object: ${event.productId}");
       final message =
@@ -57,6 +59,7 @@ class CartBloc extends Bloc<CartEvent, CartState> {
 
   Future<void> _removeFromCart(
       RemoveFromCartEvent event, Emitter<CartState> emit) async {
+    emit(Loading());
     try {
       print("Bloc received request to remove item: ${event.productId}");
       final message = await removeFromCartUseCase

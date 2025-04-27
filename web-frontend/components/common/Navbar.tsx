@@ -1,11 +1,11 @@
 'use client';
 
-import { ChevronDown, Filter } from 'lucide-react';
+import { ChevronDown, Filter, Menu } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import CartView from '../cart/CartView';
+import CartView from '../consumer/cart/CartView';
 
 type NavbarProps = {
   onFilterClick?: () => void;
@@ -23,6 +23,8 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { items } = useCart();
 
   useEffect(() => {
@@ -32,6 +34,31 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
     }
   }, []);
 
+  // Listen for sidebar collapse state
+  useEffect(() => {
+    const handleSidebarCollapse = (e: CustomEvent) => {
+      setIsSidebarCollapsed(e.detail.isCollapsed);
+    };
+
+    window.addEventListener('sidebar-collapse', handleSidebarCollapse as EventListener);
+    return () => {
+      window.removeEventListener('sidebar-collapse', handleSidebarCollapse as EventListener);
+    };
+  }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      const marketplacePage = document.querySelector('[data-marketplace-page]');
+      if (marketplacePage) {
+        const event = new CustomEvent('marketplace-search', {
+          detail: { searchTerm: searchTerm.trim() }
+        });
+        marketplacePage.dispatchEvent(event);
+      }
+    }
+  };
+
   const handleSignOut = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -40,11 +67,13 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
 
   return (
     <>
-      <div className="h-16 fixed top-0 right-0 left-64 bg-white border-b border-gray-200 z-10">
-        <div className="h-full px-8 flex items-center justify-between">
+      <div className={`h-16 fixed top-0 right-0 bg-white border-b border-gray-200 z-10 transition-all duration-300 ${
+        isSidebarCollapsed ? 'left-20' : 'left-64'
+      }`}>
+        <div className="h-full px-4 md:px-8 flex items-center justify-between">
           {/* Search */}
-          <div className="flex-1 max-w-xl flex items-center">
-            <div className="relative flex-1">
+          <div className={`flex-1 flex items-center ${isSidebarCollapsed ? 'max-w-2xl' : 'max-w-xl'}`}>
+            <form onSubmit={handleSearch} className="relative flex-1">
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M17.5 17.5L12.5 12.5M14.1667 8.33333C14.1667 11.555 11.555 14.1667 8.33333 14.1667C5.11167 14.1667 2.5 11.555 2.5 8.33333C2.5 5.11167 5.11167 2.5 8.33333 2.5C11.555 2.5 14.1667 5.11167 14.1667 8.33333Z" stroke="#6B7280" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
@@ -53,9 +82,11 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
               <input
                 type="text"
                 placeholder="Search Bundles"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-500 text-sm"
               />
-            </div>
+            </form>
             {onFilterClick && (
               <button 
                 onClick={onFilterClick}
@@ -67,7 +98,7 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
           </div>
 
           {/* Right section */}
-          <div className="flex items-center space-x-6">
+          <div className={`flex items-center ${isSidebarCollapsed ? 'space-x-3' : 'space-x-4 md:space-x-6'}`}>
             <button className="p-2 text-teal-600 hover:bg-gray-50 rounded-lg">
               <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path fillRule="evenodd" clipRule="evenodd" d="M10 2C7.23858 2 5 4.23858 5 7V10.8293L3.87868 11.9497C3.31607 12.5123 3 13.2674 3 14.0503V15C3 16.1046 3.89543 17 5 17H15C16.1046 17 17 16.1046 17 15V14.0503C17 13.2674 16.6839 12.5123 16.1213 11.9497L15 10.8293V7C15 4.23858 12.7614 2 10 2ZM8 18C8 19.1046 8.89543 20 10 20C11.1046 20 12 19.1046 12 18H8Z" fill="currentColor"/>
@@ -89,7 +120,7 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
             <div className="relative">
               <button 
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center space-x-3 focus:outline-none"
+                className="flex items-center space-x-2 focus:outline-none"
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
                   <Image
@@ -100,7 +131,7 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
                     className="object-cover"
                   />
                 </div>
-                <div className="flex items-center">
+                <div className={`items-center ${isSidebarCollapsed ? 'hidden' : 'hidden md:flex'}`}>
                   <div>
                     <div className="text-sm font-semibold text-teal-600">
                       {user?.username || 'Guest'}
