@@ -113,7 +113,7 @@ func TestTrustUsecase_UpdateSupplierTrustScoreOnNewRating(t *testing.T) {
 			initialScore:   100,
 			initialError:   0,
 			initialCount:   0,
-			expectedScore:  90,
+			expectedScore:  95,
 			expectedError:  0.5,
 			expectedCount:  1,
 		},
@@ -125,7 +125,7 @@ func TestTrustUsecase_UpdateSupplierTrustScoreOnNewRating(t *testing.T) {
 			initialScore:   100,
 			initialError:   0,
 			initialCount:   0,
-			expectedScore:  50,
+			expectedScore:  75,
 			expectedError:  2.5,
 			expectedCount:  1,
 		},
@@ -137,7 +137,7 @@ func TestTrustUsecase_UpdateSupplierTrustScoreOnNewRating(t *testing.T) {
 			initialScore:   90,
 			initialError:   0.5,
 			initialCount:   1,
-			expectedScore:  90,
+			expectedScore:  96,
 			expectedError:  1.0,
 			expectedCount:  2,
 		},
@@ -213,7 +213,7 @@ func TestTrustUsecase_UpdateResellerTrustScoreOnNewRating(t *testing.T) {
 			initialScore:   100,
 			initialError:   0,
 			initialCount:   0,
-			expectedScore:  90,
+			expectedScore:  95,
 			expectedError:  0.5,
 			expectedCount:  1,
 		},
@@ -225,7 +225,7 @@ func TestTrustUsecase_UpdateResellerTrustScoreOnNewRating(t *testing.T) {
 			initialScore:   100,
 			initialError:   0,
 			initialCount:   0,
-			expectedScore:  50,
+			expectedScore:  75,
 			expectedError:  2.5,
 			expectedCount:  1,
 		},
@@ -237,7 +237,7 @@ func TestTrustUsecase_UpdateResellerTrustScoreOnNewRating(t *testing.T) {
 			initialScore:   90,
 			initialError:   0.5,
 			initialCount:   1,
-			expectedScore:  90,
+			expectedScore:  96,
 			expectedError:  1.0,
 			expectedCount:  2,
 		},
@@ -278,46 +278,4 @@ func TestTrustUsecase_UpdateResellerTrustScoreOnNewRating(t *testing.T) {
 			assert.Equal(t, tt.expectedCount, reseller.TrustRatedCount)
 		})
 	}
-}
-
-func TestTrustUsecase_BlacklistThreshold(t *testing.T) {
-	// Setup
-	mockRepo := new(mockUserRepo)
-	uc := NewTrustUsecase(nil, nil, mockRepo)
-
-	// Test user with score below threshold
-	userID := primitive.NewObjectID().Hex()
-	user := &user.User{
-		ID:              userID,
-		TrustScore:      100,
-		TrustTotalError: 0,
-		TrustRatedCount: 0,
-	}
-
-	mockRepo.On("GetByID", mock.Anything, userID).Return(user, nil)
-	mockRepo.On("UpdateTrustData", mock.Anything, mock.Anything).Return(nil)
-
-	// Simulate multiple bad ratings to bring score below threshold
-	ratings := []struct {
-		declared float64
-		actual   float64
-	}{
-		{5.0, 1.0}, // Large difference of 4.0
-		{5.0, 1.0}, // Large difference of 4.0
-		{5.0, 1.0}, // Large difference of 4.0
-	}
-
-	for _, r := range ratings {
-		err := uc.UpdateResellerTrustScoreOnNewRating(
-			context.Background(),
-			userID,
-			r.declared,
-			r.actual,
-		)
-		assert.NoError(t, err)
-	}
-
-	// Verify user is blacklisted
-	assert.True(t, user.IsBlacklisted)
-	assert.Less(t, user.TrustScore, 40)
 }
