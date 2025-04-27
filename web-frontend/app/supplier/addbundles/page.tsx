@@ -24,7 +24,6 @@ export default function AddBundlePage() {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
-    console.log("Submitted:", formData);
   };
 
   return (

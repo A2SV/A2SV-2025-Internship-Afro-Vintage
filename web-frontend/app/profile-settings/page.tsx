@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from 'react';
-import Sidebar from '@/components/layout/Sidebar';
-import Navbar from '@/components/layout/Navbar';
+import Sidebar from '@/components/common/Sidebar';
+import Navbar from '@/components/common/Navbar';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 export default function ProfileSettingsPage() {

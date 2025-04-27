@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
-import CartView from '../cart/CartView';
+import CartView from '../consumer/cart/CartView';
 
 type NavbarProps = {
   onFilterClick?: () => void;
@@ -23,6 +23,7 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const { items } = useCart();
 
   useEffect(() => {
@@ -31,6 +32,20 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
       setUser(JSON.parse(userData));
     }
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      // Update the marketplace page's filters directly
+      const marketplacePage = document.querySelector('[data-marketplace-page]');
+      if (marketplacePage) {
+        const event = new CustomEvent('marketplace-search', {
+          detail: { searchTerm: searchTerm.trim() }
+        });
+        marketplacePage.dispatchEvent(event);
+      }
+    }
+  };
 
   const handleSignOut = () => {
     localStorage.removeItem('token');
@@ -44,7 +59,7 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
         <div className="h-full px-8 flex items-center justify-between">
           {/* Search */}
           <div className="flex-1 max-w-xl flex items-center">
-            <div className="relative flex-1">
+            <form onSubmit={handleSearch} className="relative flex-1">
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M17.5 17.5L12.5 12.5M14.1667 8.33333C14.1667 11.555 11.555 14.1667 8.33333 14.1667C5.11167 14.1667 2.5 11.555 2.5 8.33333C2.5 5.11167 5.11167 2.5 8.33333 2.5C11.555 2.5 14.1667 5.11167 14.1667 8.33333Z" stroke="#6B7280" strokeWidth="1.66667" strokeLinecap="round" strokeLinejoin="round"/>
@@ -53,9 +68,11 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
               <input
                 type="text"
                 placeholder="Search Bundles"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-teal-500 text-sm"
               />
-            </div>
+            </form>
             {onFilterClick && (
               <button 
                 onClick={onFilterClick}

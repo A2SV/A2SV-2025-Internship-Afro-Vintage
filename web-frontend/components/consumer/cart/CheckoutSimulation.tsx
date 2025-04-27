@@ -9,9 +9,10 @@ import OrderConfirmation from './OrderConfirmation';
 type CheckoutSimulationProps = {
   onClose: () => void;
   total: number;
+  selectedItems: string[];
 };
 
-export default function CheckoutSimulation({ onClose, total }: CheckoutSimulationProps) {
+export default function CheckoutSimulation({ onClose, total, selectedItems }: CheckoutSimulationProps) {
   const { checkout, items } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +24,7 @@ export default function CheckoutSimulation({ onClose, total }: CheckoutSimulatio
     setError(null);
     
     try {
-      const result = await checkout();
+      const result = await checkout(selectedItems);
       if (result.success) {
         setOrderId(result.data?.order_id || 'N/A');
         setShowConfirmation(true);
@@ -40,11 +41,13 @@ export default function CheckoutSimulation({ onClose, total }: CheckoutSimulatio
   const platformFee = total * 0.02;
   const totalWithFee = total + platformFee;
 
+  const selectedItemsList = items.filter(item => selectedItems.includes(item.id));
+
   if (showConfirmation && orderId) {
     return (
       <OrderConfirmation
         orderId={orderId}
-        items={items}
+        items={selectedItemsList}
         total={totalWithFee}
         onClose={onClose}
       />
@@ -54,8 +57,18 @@ export default function CheckoutSimulation({ onClose, total }: CheckoutSimulatio
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg p-6 w-96">
-        <h2 className="text-xl font-medium mb-4">Simulated Checkout</h2>
+        <h2 className="text-xl font-medium mb-4">Checkout</h2>
         
+        {/* Selected Items */}
+        <div className="mb-4 max-h-40 overflow-y-auto">
+          {selectedItemsList.map(item => (
+            <div key={item.id} className="flex justify-between items-center py-2 border-b">
+              <span className="text-sm">{item.name}</span>
+              <span className="text-sm font-medium">${item.price.toLocaleString()}</span>
+            </div>
+          ))}
+        </div>
+
         <div className="space-y-4">
           <div className="flex justify-between">
             <span>Subtotal:</span>

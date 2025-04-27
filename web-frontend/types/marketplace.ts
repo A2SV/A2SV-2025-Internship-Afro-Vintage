@@ -26,6 +26,9 @@ export interface MarketplaceFilters {
   minPrice?: number;
   maxPrice?: number;
   type?: string;
+  size?: string[];
+  grade?: string[];
+  search?: string;
 }
 
 export type Item = {
@@ -39,4 +42,6 @@ export type Item = {
   grade?: string;
   seller_id: string;
   status: 'available' | 'sold' | 'reserved';
+  resellerName?: string;
+  rating?: number;
 }; 

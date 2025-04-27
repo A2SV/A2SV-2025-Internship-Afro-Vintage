@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import OrderTabs from "@/components/order/OrderTabs"
+import OrderTabs from "@/components/consumer/order/OrderTabs"
 
 export const metadata: Metadata = {
   title: "My Orders | Afro Vintage",
