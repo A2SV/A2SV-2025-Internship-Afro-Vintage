@@ -30,9 +30,22 @@ export default function OrderTabs() {
   const [activeTab, setActiveTab] = useState('to-pay');
   const { items: cartItems, loading: cartLoading } = useCart();
   const [showCheckout, setShowCheckout] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     loadOrders();
+  }, []);
+
+  // Listen for sidebar collapse state
+  useEffect(() => {
+    const handleSidebarCollapse = (e: CustomEvent) => {
+      setIsSidebarCollapsed(e.detail.isCollapsed);
+    };
+
+    window.addEventListener('sidebar-collapse', handleSidebarCollapse as EventListener);
+    return () => {
+      window.removeEventListener('sidebar-collapse', handleSidebarCollapse as EventListener);
+    };
   }, []);
 
   const loadOrders = async () => {
@@ -75,8 +88,8 @@ export default function OrderTabs() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto mt-8">
-      <div className="bg-[#F6F8F9] rounded-xl px-4 py-3 flex gap-4 mb-8">
+    <div className={`w-full mx-auto mt-4 md:mt-8 ${isSidebarCollapsed ? 'max-w-5xl' : 'max-w-4xl'}`}>
+      <div className="bg-[#F6F8F9] rounded-xl px-2 md:px-4 py-2 md:py-3 flex flex-wrap gap-2 md:gap-4 mb-4 md:mb-8">
         {orderStatuses.map((status) => {
           let count = 0;
           if (status.id === 'to-pay') count = cartItems.length;
@@ -87,7 +100,7 @@ export default function OrderTabs() {
           return (
             <button
               key={status.id}
-              className={`px-6 py-2.5 rounded-full font-medium transition-all text-sm flex items-center justify-center gap-2
+              className={`px-4 md:px-6 py-2 md:py-2.5 rounded-full font-medium transition-all text-sm flex items-center justify-center gap-2
                 ${activeTab === status.id 
                   ? 'bg-teal-600 text-white shadow-sm' 
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-teal-50 hover:border-teal-200'}
@@ -116,17 +129,17 @@ export default function OrderTabs() {
             <p className="text-muted-foreground">You don&apos;t have any items in your cart at the moment</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4 md:gap-6">
             {cartItems.map((item) => (
               <div
                 key={item.id}
-                className="bg-white rounded-2xl shadow p-6 flex flex-col gap-2 relative"
+                className="bg-white rounded-2xl shadow p-4 md:p-6 flex flex-col gap-2 relative"
               >
-                <div className="flex justify-between items-start mb-2">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2 md:gap-0 mb-2">
                   <span className="text-gray-400 font-medium text-sm">{item.resellerName}</span>
                   <span className="text-orange-500 font-semibold text-base">Pending Payment</span>
                 </div>
-                <div className="flex gap-4 items-center">
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
                   <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                     <img
                       src={item.image || '/images/placeholder.png'}
@@ -139,9 +152,10 @@ export default function OrderTabs() {
                     <div className="font-bold text-xl">${item.price?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                   </div>
                   <div 
-                  onClick={() => setShowCheckout(true)}
-                  className="flex flex-col gap-2 items-end">
-                    <button className="bg-teal-600 text-white rounded-full px-4 py-2 font-medium text-sm">Pay now</button>
+                    onClick={() => setShowCheckout(true)}
+                    className="flex flex-col gap-2 items-end w-full md:w-auto"
+                  >
+                    <button className="w-full md:w-auto bg-teal-600 text-white rounded-full px-4 py-2 font-medium text-sm">Pay now</button>
                   </div>
                 </div>
               </div>
@@ -161,18 +175,18 @@ export default function OrderTabs() {
             <p className="text-muted-foreground">You don&apos;t have any completed orders at the moment</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4 md:gap-6">
             {completedOrders.map((order) => {
               return (
                 <div
                   key={order.id}
-                  className="bg-white rounded-2xl shadow p-6 flex flex-col gap-2 relative"
+                  className="bg-white rounded-2xl shadow p-4 md:p-6 flex flex-col gap-2 relative"
                 >
-                  <div className="flex justify-between items-start mb-2">
+                  <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-2 md:gap-0 mb-2">
                     <span className="text-gray-400 font-medium text-sm">{order.resellerName}</span>
                     <span className="text-green-600 font-semibold text-base">Completed Payment</span>
                   </div>
-                  <div className="flex gap-4 items-center">
+                  <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
                     <div className="w-20 h-20 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                       <img
                         src={order.imageUrl || '/images/placeholder.png'}
@@ -181,7 +195,6 @@ export default function OrderTabs() {
                       />
                     </div>
                     <div className="flex-1">
-                    
                       <div className="font-semibold text-lg mb-1">{order.title || 'Product'}</div>
                       <div className="font-bold text-xl">${order.price?.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                     </div>

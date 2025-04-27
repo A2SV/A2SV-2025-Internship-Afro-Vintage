@@ -11,7 +11,11 @@ export default function OrdersLayout({
       <Navbar />
       <div className="flex">
         <Sidebar />
-        <main className="flex-1 pl-64 pt-16">{children}</main>
+        <main className="flex-1 md:ml-64 transition-all duration-300 pt-16">
+          <div className="p-4 md:p-6">
+            {children}
+          </div>
+        </main>
       </div>
     </div>
   )
