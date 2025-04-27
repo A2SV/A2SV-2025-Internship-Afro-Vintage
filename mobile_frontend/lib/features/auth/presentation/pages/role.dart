@@ -26,9 +26,14 @@ class RoleSelectionPage extends StatefulWidget {
 
 class _RoleSelectionPageState extends State<RoleSelectionPage> {
   String? _selectedRole;
+  bool _isLoading = false; // Track loading state
 
   void _submitRole() {
     if (_selectedRole != null) {
+      setState(() {
+        _isLoading = true; // Set loading state to true
+      });
+
       final user = User(
         username: widget.username,
         email: widget.email,
@@ -52,6 +57,10 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) async {
         if (state is Success) {
+          setState(() {
+            _isLoading = false; // Stop loading when success is reached
+          });
+
           final selectedRole = state.data.user!.role;
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('auth_token', state.data.token);
@@ -71,6 +80,10 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
             Navigator.pushNamed(context, '/consumermarketplace');
           }
         } else if (state is Error) {
+          setState(() {
+            _isLoading = false; // Stop loading on error
+          });
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(state.message)),
           );
@@ -202,15 +215,26 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: _submitRole,
-                        child: const Text(
-                          'Create Account',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
+                        onPressed: _isLoading
+                            ? null
+                            : _submitRole, // Disable button when loading
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'Create Account',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                       ),
                       const SizedBox(height: 20),
                     ],

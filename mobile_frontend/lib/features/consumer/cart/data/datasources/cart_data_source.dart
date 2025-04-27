@@ -11,7 +11,7 @@ abstract class CartDataSource {
 }
 
 class CartDataSourceImpl implements CartDataSource {
-  final String _baseUrl = "https://2kps99nm-8081.uks1.devtunnels.ms";
+  final String _baseUrl = "https://2kps99nm-8080.uks1.devtunnels.ms";
   final http.Client client;
 
   CartDataSourceImpl({required this.client});

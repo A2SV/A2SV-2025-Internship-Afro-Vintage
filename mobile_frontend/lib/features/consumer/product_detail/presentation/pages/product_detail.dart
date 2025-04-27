@@ -59,7 +59,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
           controller: _sheetController,
           expand: false,
           initialChildSize: 0.5,
-          minChildSize: 0.5,
+          minChildSize: 0.4,
           maxChildSize: 0.9,
           builder: (_, controller) => DefaultTabController(
             length: 2,
@@ -69,80 +69,35 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                 controller: controller,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
+                      CircleAvatar(
+                        backgroundImage: NetworkImage(
+                          "https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+                        ),
+                        radius: 24,
+                      ),
+                      SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          CircleAvatar(
-                            backgroundImage: NetworkImage(
-                              "https://plus.unsplash.com/premium_photo-1690407617542-2f210cf20d7e?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-                            ),
-                            radius: 24,
-                          ),
-                          SizedBox(width: 12),
-                          SizedBox(
-                            width: 220,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  widget.product.title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 21,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Row(
-                                  children: [
-                                    Text(
-                                      widget.product.type,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 10,
-                                    ),
-                                    Icon(Icons.star,
-                                        size: 16, color: Colors.amber),
-                                    Text(widget.product.rating.toString())
-                                  ],
-                                )
-                              ],
-                            ),
-                          ),
+                          Text(widget.product.title,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16)),
+                          Row(
+                            children: [
+                              Text(widget.product.type),
+                              SizedBox(
+                                width: 10,
+                              ),
+                              Icon(Icons.star, size: 16, color: Colors.amber),
+                              Text(widget.product.rating.toString())
+                            ],
+                          )
                         ],
-                      ),
-                      Container(
-                        width: 70,
-                        height: 30,
-                        // padding: const EdgeInsets.symmetric(
-                        //     horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color:
-                              widget.product.status.toLowerCase() == 'available'
-                                  ? Colors.green.withOpacity(0.1)
-                                  : Colors.grey.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Center(
-                          child: Text(
-                            widget.product.status,
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: widget.product.status.toLowerCase() ==
-                                      'available'
-                                  ? Colors.green
-                                  : Colors.grey,
-                            ),
-                          ),
-                        ),
-                      ),
+                      )
                     ],
                   ),
-                  const SizedBox(height: 17),
+                  const SizedBox(height: 20),
                   TabBar(
                     tabAlignment: TabAlignment.start,
                     controller: _tabController,
@@ -160,7 +115,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                         horizontal: 16, vertical: 10),
                   ),
                   SizedBox(
-                    height: 160,
+                    height: 180,
                     child: TabBarView(
                       controller: _tabController,
                       children: [
@@ -201,7 +156,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                                         borderRadius: BorderRadius.circular(10),
                                       ),
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 16, vertical: 12),
+                                          horizontal: 20, vertical: 16),
                                       child: Text(
                                         size,
                                         style: TextStyle(
@@ -220,9 +175,7 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                       ],
                     ),
                   ),
-                  SizedBox(
-                    height: 10,
-                  ),
+                  const SizedBox(height: 24),
                   Material(
                     elevation: 5,
                     borderRadius: BorderRadius.circular(50),
@@ -256,16 +209,24 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                               final cartBloc = context.read<CartBloc>();
                               cartBloc.add(
                                   AddToCartEvent(productId: widget.product.id));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      '${widget.product.title} added to cart!'),
-                                ),
-                              );
                             },
-                            child: const Text(
-                              "Add to Cart",
-                              style: TextStyle(color: Colors.white),
+                            child: BlocBuilder<CartBloc, CartState>(
+                              builder: (context, state) {
+                                if (state is Loading) {
+                                  return const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  );
+                                }
+                                return const Text(
+                                  "Add to Cart",
+                                  style: TextStyle(color: Colors.white),
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -309,9 +270,9 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                   const SizedBox(height: 20),
                   Align(
                     alignment: Alignment.center,
-                    child: Text("Product Detail",
+                    child: Text(widget.product.title,
                         style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 22)),
+                            fontWeight: FontWeight.bold, fontSize: 18)),
                   ),
                   const SizedBox(height: 120),
                   Transform.scale(
