@@ -70,6 +70,7 @@ func main() {
 	warehouseSvc := warehouse_usecase.NewWarehouseUseCase(warehouseRepo, bundleRepo)
 
 	// Init Controllers
+
 	authCtrl := controllers.NewAuthController(authUC)
 	adminCtrl := controllers.NewAdminController(userUC, orderUC)
 	productCtrl := controllers.NewProductController(productUC, trustUC, bundleUC, warehouseRepo)
@@ -84,16 +85,24 @@ func main() {
 	// Init Gin Engine and Routes
 	r := gin.Default()
 	r.Use(middlewares.CORSMiddleware())
+
+	// Add a health check endpoint
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "OK"})
+	})
+
 	routes.RegisterAuthRoutes(r, authCtrl)
 	routes.RegisterProductRoutes(r, productCtrl, jwtSvc, reviewCtrl, trustUC, productUC)
 	routes.RegisterAdminRoutes(r, adminCtrl, jwtSvc)
 	routes.RegisterBundleRoutes(r, bundleCtrl, jwtSvc)
-	routes.RegisterCartItemRoutes(r, cartItemCtrl, jwtSvc) // Register cart item routes
-
-	routes.RegisterOrderRoutes(r, orderCtrl, consumerCtrl, jwtSvc) // Register order routes
+	routes.RegisterCartItemRoutes(r, cartItemCtrl, jwtSvc)
+	routes.RegisterOrderRoutes(r, orderCtrl, consumerCtrl, jwtSvc)
 	routes.RegisterSupplierRoutes(r, supplierCtrl, jwtSvc)
 	routes.RegisterWarehouseRoutes(r, warehouseCtrl, jwtSvc)
 	routes.RegisterResellerRoutes(r, supplierCtrl, jwtSvc)
+	routes.SetupUserRoutes(r, userUC, jwtSvc) // Add user routes
+	routes.SetupUploadRoutes(r)               // ✅ Register Upload Route
+	r.Static("/uploads", "./uploads")
 
 	// Run server
 	r.Run(":8080")

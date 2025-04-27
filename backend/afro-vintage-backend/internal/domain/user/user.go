@@ -24,4 +24,5 @@ type User struct {
 	TrustTotalError float64   `bson:"trust_total_error"`
 	IsDeleted       bool      `bson:"is_deleted"`
 	IsBlacklisted   bool      `bson:"is_blacklisted"`
+	ImageURL        string    `bson:"image_url"` // URL to the user's profile image
 }

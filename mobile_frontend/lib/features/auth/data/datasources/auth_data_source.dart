@@ -13,9 +13,7 @@ class AuthResponse {
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
       token: json['token'],
-      user: json['user'] != null
-          ? UserResponse.fromJson(json['user'])
-          : null, // Handle optional user
+      user: json['user'] != null ? UserResponse.fromJson(json['user']) : null,
     );
   }
 }
@@ -42,7 +40,7 @@ abstract class AuthDataSource {
 }
 
 class AuthDataSourceImpl implements AuthDataSource {
-  final String _baseUrl = "https://2kps99nm-8080.uks1.devtunnels.ms";
+  final String _baseUrl = "https://a2sv-2025-internship-afro-vintage.onrender.com";
 
   final http.Client client;
 

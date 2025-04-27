@@ -34,54 +34,76 @@ func (uc *trustUsecase) UpdateSupplierTrustScoreOnNewRating(
 	declaredRating float64,
 	productRating float64,
 ) error {
-	fmt.Println("🔥 TRUST UPDATE CALLED")
+	fmt.Println("\n🔥 TRUST UPDATE DEBUG START")
 	fmt.Println("➡️ Supplier ID:", supplierID)
 	fmt.Println("➡️ Declared Rating:", declaredRating)
 	fmt.Println("➡️ Product Rating:", productRating)
 
-	// Step 1: Fetch the supplier user
 	supplier, err := uc.userRepo.GetByID(ctx, supplierID)
 	if err != nil {
 		fmt.Println("❌ Failed to fetch supplier:", err)
 		return err
 	}
 
-	fmt.Println("✅ Supplier Found:", supplier.ID)
+	fmt.Println("\n📊 CURRENT USER DATA")
+	fmt.Println("User ID:", supplier.ID)
+	fmt.Println("Role:", supplier.Role)
+	fmt.Println("Current Trust Score:", supplier.TrustScore)
+	fmt.Println("Current Total Error:", supplier.TrustTotalError)
+	fmt.Println("Current Rated Count:", supplier.TrustRatedCount)
+	fmt.Println("Is Blacklisted:", supplier.IsBlacklisted)
+
+	// Initialize trust data if it's the first rating
+	if supplier.TrustRatedCount == 0 {
+		fmt.Println("\n🔄 Initializing trust data for new supplier")
+		supplier.TrustTotalError = 0
+		supplier.TrustRatedCount = 0
+		supplier.TrustScore = 100
+	}
 
 	// Step 2: Calculate absolute difference
 	diff := math.Abs(productRating - declaredRating)
+	fmt.Println("\n📊 RATING DIFFERENCE")
+	fmt.Println("Difference:", diff)
 
 	// Step 3: Update cumulative error and count
 	newTotalError := supplier.TrustTotalError + diff
 	newRatedCount := supplier.TrustRatedCount + 1
 
+	fmt.Println("\n📊 UPDATED METRICS")
+	fmt.Println("New Total Error:", newTotalError)
+	fmt.Println("New Rated Count:", newRatedCount)
+
 	// Step 4: Calculate new trust score
-	// Calculate new trust score based on average error
-	// Score = 100 - (average_error * 20)
-	averageError := newTotalError / float64(newRatedCount)
-	newTrust := 100 - (averageError * 20)
+	avgError := newTotalError / float64(newRatedCount)
+	newTrust := 100 - (avgError * 2) // ❗ Soft penalty: each point of avg error costs 2 trust
+
+	// Clamp between 0 and 100
 	if newTrust < 0 {
 		newTrust = 0
 	} else if newTrust > 100 {
 		newTrust = 100
 	}
+
+	fmt.Println("\n📊 TRUST SCORE CALCULATION")
+	fmt.Println("Final Trust Score:", newTrust)
+
 	if newTrust < 40 {
 		fmt.Println("⚠️ Supplier trust score below threshold — blacklisting")
 		supplier.IsBlacklisted = true
 	} else {
-		supplier.IsBlacklisted = false // Optional: recover if they improve
+		supplier.IsBlacklisted = false
 	}
-
-	fmt.Println("📊 TRUST SCORE CALCULATION")
-	fmt.Println("➡️ Previous Score:", supplier.TrustScore)
-	fmt.Println("➡️ New Total Error:", newTotalError)
-	fmt.Println("➡️ New Rated Count:", newRatedCount)
-	fmt.Println("➡️ New Trust Score (calculated):", newTrust)
 
 	// Step 5: Persist the changes
 	supplier.TrustScore = int(newTrust)
 	supplier.TrustRatedCount = newRatedCount
 	supplier.TrustTotalError = newTotalError
+
+	fmt.Println("\n💾 SAVING UPDATED DATA")
+	fmt.Println("New Trust Score:", supplier.TrustScore)
+	fmt.Println("New Total Error:", supplier.TrustTotalError)
+	fmt.Println("New Rated Count:", supplier.TrustRatedCount)
 
 	err = uc.userRepo.UpdateTrustData(ctx, supplier)
 	if err != nil {
@@ -89,6 +111,7 @@ func (uc *trustUsecase) UpdateSupplierTrustScoreOnNewRating(
 	} else {
 		fmt.Println("✅ Supplier trust data updated successfully")
 	}
+	fmt.Println("🔥 TRUST UPDATE DEBUG END")
 
 	return err
 }
@@ -99,12 +122,11 @@ func (uc *trustUsecase) UpdateResellerTrustScoreOnNewRating(
 	declaredRating float64,
 	productRating float64,
 ) error {
-	fmt.Println("🔥 RESELLER TRUST UPDATE CALLED")
+	fmt.Println("\n🔥 RESELLER TRUST UPDATE CALLED")
 	fmt.Println("➡️ Reseller ID:", resellerID)
 	fmt.Println("➡️ Declared Rating:", declaredRating)
 	fmt.Println("➡️ Product Rating:", productRating)
 
-	// Step 1: Fetch the reseller user
 	reseller, err := uc.userRepo.GetByID(ctx, resellerID)
 	if err != nil {
 		fmt.Println("❌ Failed to fetch reseller:", err)
@@ -113,37 +135,39 @@ func (uc *trustUsecase) UpdateResellerTrustScoreOnNewRating(
 
 	fmt.Println("✅ Reseller Found:", reseller.ID)
 
-	// Step 2: Calculate absolute difference
-	diff := math.Abs(productRating - declaredRating)
+	if reseller.TrustRatedCount == 0 {
+		fmt.Println("🔄 Resetting trust data for new reseller")
+		reseller.TrustTotalError = 0
+		reseller.TrustRatedCount = 0
+		reseller.TrustScore = 100
+	}
 
-	// Step 3: Update cumulative error and count
+	diff := math.Abs(productRating - declaredRating)
+	fmt.Println("📊 Rating Difference:", diff)
+
 	newTotalError := reseller.TrustTotalError + diff
 	newRatedCount := reseller.TrustRatedCount + 1
 
-	// Step 4: Calculate new trust score
-	// Calculate new trust score based on average error
-	// Score = 100 - (average_error * 20)
-	averageError := newTotalError / float64(newRatedCount)
-	newTrust := 100 - (averageError * 20)
+	// Calculate new trust score
+	avgError := newTotalError / float64(newRatedCount)
+	newTrust := 100 - (avgError * 2)
+
 	if newTrust < 0 {
 		newTrust = 0
 	} else if newTrust > 100 {
 		newTrust = 100
 	}
+
+	fmt.Println("\n📊 TRUST SCORE CALCULATION")
+	fmt.Println("➡️ New Trust Score:", newTrust)
+
 	if newTrust < 40 {
 		fmt.Println("⚠️ Reseller trust score below threshold — blacklisting")
 		reseller.IsBlacklisted = true
 	} else {
-		reseller.IsBlacklisted = false // Optional: recover if they improve
+		reseller.IsBlacklisted = false
 	}
 
-	fmt.Println("📊 TRUST SCORE CALCULATION")
-	fmt.Println("➡️ Previous Score:", reseller.TrustScore)
-	fmt.Println("➡️ New Total Error:", newTotalError)
-	fmt.Println("➡️ New Rated Count:", newRatedCount)
-	fmt.Println("➡️ New Trust Score (calculated):", newTrust)
-
-	// Step 5: Persist the changes
 	reseller.TrustScore = int(newTrust)
 	reseller.TrustRatedCount = newRatedCount
 	reseller.TrustTotalError = newTotalError

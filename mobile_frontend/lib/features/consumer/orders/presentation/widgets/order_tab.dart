@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_frontend/features/consumer/orders/presentation/bloc/order_bloc.dart';
+import 'package:mobile_frontend/features/consumer/orders/presentation/bloc/order_event.dart';
 import 'package:mobile_frontend/features/consumer/orders/presentation/pages/all_orders.dart';
 
 class OrderTabs extends StatefulWidget {
@@ -15,15 +18,15 @@ class _OrderTabsState extends State<OrderTabs>
   final _unselectedColor = const Color(0xff5f6368);
 
   final List<String> _tabLabels = const [
-    'All',
-    'To Ship',
-    'To Receive',
+    'Shipped',
   ];
 
   @override
   void initState() {
     _tabController = TabController(length: _tabLabels.length, vsync: this);
     super.initState();
+    // Trigger the GetOrdersEvent when the tabs are initialized
+    context.read<OrderBloc>().add(const GetOrdersEvent());
   }
 
   @override
@@ -45,7 +48,6 @@ class _OrderTabsState extends State<OrderTabs>
             borderRadius: BorderRadius.circular(10),
           ),
           child: TabBar(
-            tabAlignment: TabAlignment.start,
             controller: _tabController,
             isScrollable: true,
             tabs: _tabLabels.map((label) => Tab(text: label)).toList(),
@@ -65,16 +67,7 @@ class _OrderTabsState extends State<OrderTabs>
           child: TabBarView(
             controller: _tabController,
             children: const [
-              All(),
-              ToShip(
-                label: "Buyer has paid",
-                colored: "Address",
-              ),
-              ToReceive(
-                label: "Shipped",
-                colored: "Confirm",
-                unColored: "Refund",
-              ),
+              AllOrders(), // Displays all shipped orders
             ],
           ),
         ),

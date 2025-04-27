@@ -10,7 +10,7 @@ class User extends Equatable {
     required this.username,
     required this.email,
     required this.password,
-    required this.role, // Initialize role as a String
+    required this.role,
   });
 
   @override
@@ -30,7 +30,7 @@ class User extends Equatable {
       username: map['username'],
       email: map['email'],
       password: map['password'],
-      role: map['role'], // Directly assign role as a string
+      role: map['role'],
     );
   }
 }

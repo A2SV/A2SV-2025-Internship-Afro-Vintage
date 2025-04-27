@@ -17,8 +17,7 @@ const Sidebar = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Market place', href: '/consumer/marketplace', icon: ShoppingBag },
+    { name: 'Marketplace', href: '/consumer/marketplace', icon: ShoppingBag },
     { name: 'Orders', href: '/orders', icon: ShoppingCart },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
@@ -57,8 +56,15 @@ const Sidebar = () => {
         </ul>
       </nav>
 
-      <div className="absolute bottom-8 left-0 right-0 px-4">
-        <button className="flex items-center space-x-3 px-4 py-2.5 w-full text-gray-600 hover:bg-gray-50 rounded-lg transition-colors">
+      <div className="absolute bottom-0 left-0 right-0 p-4">
+        <button 
+          onClick={() => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login';
+          }}
+          className="flex items-center space-x-3 px-4 py-2.5 w-full text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+        >
           <LogOut className="h-5 w-5" />
           <span>Log out</span>
         </button>

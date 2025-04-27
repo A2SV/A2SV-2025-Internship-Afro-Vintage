@@ -55,13 +55,14 @@ func (ctrl *ReviewController) SubmitReview(c *gin.Context) {
 	}
 	fmt.Printf("✅ Found product: %+v\n", product)
 
-	r := &review.Review{
-		OrderID:   req.OrderID,
-		ProductID: req.ProductID,
-		UserID:    userID,
-		Rating:    req.Rating,
-		Comment:   req.Comment,
-	}
+	r := review.NewReview(
+		req.OrderID,
+		req.ProductID,
+		userID,
+		product.ResellerID.Hex(),
+		req.Rating,
+		req.Comment,
+	)
 	fmt.Printf("📝 Creating review: %+v\n", r)
 
 	if err := ctrl.usecase.SubmitReview(c.Request.Context(), r); err != nil {
@@ -83,4 +84,30 @@ func (ctrl *ReviewController) SubmitReview(c *gin.Context) {
 
 	fmt.Printf("✅ Review submitted successfully\n")
 	c.JSON(http.StatusCreated, gin.H{"message": "review submitted"})
+}
+
+func (ctrl *ReviewController) GetResellerReviews(c *gin.Context) {
+	fmt.Printf("🔍 Starting to fetch reseller reviews\n")
+	
+	resellerID := c.Param("id")
+	if resellerID == "" {
+		fmt.Printf("❌ No reseller ID provided\n")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "reseller ID is required"})
+		return
+	}
+
+	reviews, err := ctrl.usecase.GetResellerReviews(c.Request.Context(), resellerID)
+	if err != nil {
+		fmt.Printf("❌ Error fetching reviews: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	fmt.Printf("✅ Successfully fetched %d reviews\n", len(reviews))
+	c.JSON(http.StatusOK, gin.H{
+		"success": true,
+		"data": gin.H{
+			"reviews": reviews,
+		},
+	})
 }

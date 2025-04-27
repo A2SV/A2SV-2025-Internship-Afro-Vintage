@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_frontend/features/consumer/marketplace/presentation/bloc/product_state.dart';
+import '../bloc/product_bloc.dart';
 import 'item_card.dart';
 
 class GridItem extends StatelessWidget {
@@ -8,25 +11,41 @@ class GridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.6,
-          mainAxisSpacing: 20,
-          crossAxisSpacing: 15,
-        ),
-        itemCount: 6,
-        itemBuilder: (context, index) {
-          final itemName = "Casual women's tops collection $index";
-          const itemPrice = '\$2400.99';
-          return ItemCard(
-            itemName: itemName,
-            itemPrice: itemPrice,
-            onCartToggle: onCartToggle,
+    return BlocBuilder<ProductBloc, ProductState>(
+      builder: (context, state) {
+        if (state is Loading) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (state is Success) {
+          final products = state.data;
+
+          // Check if the products list is empty
+          if (products.isEmpty) {
+            return const Center(child: Text('No products available.'));
+          }
+
+          return Expanded(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.6,
+                mainAxisSpacing: 20,
+                crossAxisSpacing: 15,
+              ),
+              itemCount: products.length,
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return ItemCard(
+                  product: product,
+                );
+              },
+            ),
           );
-        },
-      ),
+        } else if (state is Error) {
+          return Center(child: Text('Error: ${state.message}'));
+        } else {
+          return const Center(child: Text('No products available.'));
+        }
+      },
     );
   }
 }

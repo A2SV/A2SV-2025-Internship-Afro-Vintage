@@ -59,7 +59,7 @@ func (u *reviewUsecase) SubmitReview(ctx context.Context, r *review.Review) erro
 
 	// Save the review
 	r.ID = uuid.NewString()
-	r.CreatedAt = time.Now().Format(time.RFC3339)
+	r.CreatedAt = time.Now()
 	fmt.Printf("📝 Saving review with ID: %s\n", r.ID)
 	
 	if err := u.reviewRepo.CreateReview(ctx, r); err != nil {
@@ -69,4 +69,17 @@ func (u *reviewUsecase) SubmitReview(ctx context.Context, r *review.Review) erro
 
 	fmt.Printf("✅ Review saved successfully\n")
 	return nil
+}
+
+func (u *reviewUsecase) GetResellerReviews(ctx context.Context, resellerID string) ([]*review.Review, error) {
+	fmt.Printf("🔍 Fetching reviews for reseller: %s\n", resellerID)
+	
+	reviews, err := u.reviewRepo.GetReviewsByReseller(ctx, resellerID)
+	if err != nil {
+		fmt.Printf("❌ Error fetching reseller reviews: %v\n", err)
+		return nil, fmt.Errorf("failed to fetch reseller reviews: %w", err)
+	}
+
+	fmt.Printf("✅ Found %d reviews for reseller\n", len(reviews))
+	return reviews, nil
 }

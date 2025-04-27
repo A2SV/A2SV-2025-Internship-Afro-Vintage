@@ -30,6 +30,11 @@ func (m *MockReviewUsecase) SubmitReview(ctx context.Context, r *review.Review) 
 	return args.Error(0)
 }
 
+func (m *MockReviewUsecase) GetResellerReviews(ctx context.Context, resellerID string) ([]*review.Review, error) {
+	args := m.Called(ctx, resellerID)
+	return args.Get(0).([]*review.Review), args.Error(1)
+}
+
 type MockTrustUsecase struct {
 	mock.Mock
 }

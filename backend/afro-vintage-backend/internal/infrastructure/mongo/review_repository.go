@@ -34,3 +34,18 @@ func (r *ReviewRepository) GetReviewByUserAndProduct(ctx context.Context, userID
 	}
 	return &rev, nil
 }
+
+func (r *ReviewRepository) GetReviewsByReseller(ctx context.Context, resellerID string) ([]*review.Review, error) {
+	cursor, err := r.collection.Find(ctx, bson.M{"reseller_id": resellerID})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var reviews []*review.Review
+	if err = cursor.All(ctx, &reviews); err != nil {
+		return nil, err
+	}
+
+	return reviews, nil
+}

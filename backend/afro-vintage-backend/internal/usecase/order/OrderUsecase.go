@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"math/rand"
 	"sort"
 	"time"
@@ -179,7 +180,7 @@ func (uc *orderUseCaseImpl) GetDashboardMetrics(ctx context.Context, supplierID 
 }
 
 func (uc *orderUseCaseImpl) GetResellerMetrics(ctx context.Context, resellerID string) (*order.ResellerMetrics, error) {
-	fmt.Printf("🔍 Starting GetResellerMetrics for reseller: %s\n", resellerID)
+	fmt.Printf("\n🔍 Starting GetResellerMetrics for reseller: %s\n", resellerID)
 
 	// Get purchased bundles
 	bundles, err := uc.bundleRepo.ListPurchasedByReseller(ctx, resellerID)
@@ -196,6 +197,11 @@ func (uc *orderUseCaseImpl) GetResellerMetrics(ctx context.Context, resellerID s
 		return nil, err
 	}
 	fmt.Printf("👤 Reseller found: %s\n", reseller.Username)
+	fmt.Printf("📊 Reseller Trust Data:\n")
+	fmt.Printf("  - Trust Score: %d\n", reseller.TrustScore)
+	fmt.Printf("  - Trust Rated Count: %d\n", reseller.TrustRatedCount)
+	fmt.Printf("  - Trust Total Error: %f\n", reseller.TrustTotalError)
+	fmt.Printf("  - Is Blacklisted: %v\n", reseller.IsBlacklisted)
 
 	// Get sold products directly from product collection
 	soldProducts, err := uc.prodRepo.GetSoldProductsByReseller(ctx, resellerID)
@@ -223,23 +229,38 @@ func (uc *orderUseCaseImpl) GetResellerMetrics(ctx context.Context, resellerID s
 		BoughtBundles:      bundles,
 	}
 
-	fmt.Printf("✅ Final metrics: %+v\n", metrics)
+	fmt.Printf("📊 Final Metrics:\n")
+	fmt.Printf("  - Total Bought Bundles: %d\n", metrics.TotalBoughtBundles)
+	fmt.Printf("  - Total Items Sold: %d\n", metrics.TotalItemsSold)
+	fmt.Printf("  - Rating (Trust Score): %d\n", metrics.Rating)
+	fmt.Printf("  - Best Selling: %.2f\n", metrics.BestSelling)
+	fmt.Printf("✅ GetResellerMetrics completed\n\n")
+
 	return metrics, nil
 }
 
-func (uc *orderUseCaseImpl) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, error) {
+func (uc *orderUseCaseImpl) GetSoldBundleHistory(ctx context.Context, supplierID string) ([]*order.Order, map[string]string, error) {
+	log.Printf("Getting sold bundle history for supplier: %s", supplierID)
 	orders, err := uc.orderRepo.GetOrdersBySupplier(ctx, supplierID)
 	if err != nil {
-		return nil, err
+		log.Printf("Error getting orders: %v", err)
+		return nil, nil, err
 	}
 
-	var soldBundleOrders []*order.Order
+	userNames := make(map[string]string)
 	for _, order := range orders {
-		if order.BundleID != "" && len(order.ProductIDs) == 0 {
-			soldBundleOrders = append(soldBundleOrders, order)
+		if order.ResellerID != "" {
+			user, err := uc.userRepo.GetByID(ctx, order.ResellerID)
+			if err != nil {
+				log.Printf("Error getting user name for ID %s: %v", order.ResellerID, err)
+				continue
+			}
+			userNames[order.ResellerID] = user.Username
 		}
 	}
-	return soldBundleOrders, nil
+
+	log.Printf("Found %d orders for supplier %s", len(orders), supplierID)
+	return orders, userNames, nil
 }
 
 func (uc *orderUseCaseImpl) GetAdminDashboardMetrics(ctx context.Context) (*admin.Metrics, error) {
@@ -324,3 +345,69 @@ func (uc *orderUseCaseImpl) PurchaseProduct(ctx context.Context, productID, cons
 
 	return order, payment, nil
 }
+func (uc *orderUseCaseImpl) GetOrdersByReseller(ctx context.Context, resellerID string) ([]*order.Order, map[string]string, error) {
+	orders, err := uc.orderRepo.GetOrdersByReseller(ctx, resellerID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	userNames := make(map[string]string)
+	for _, order := range orders {
+		if len(order.ProductIDs) > 0 { // Sold order
+			if order.ConsumerID != "" {
+				user, err := uc.userRepo.GetByID(ctx, order.ConsumerID)
+				if err == nil && user != nil {
+					userNames[order.ConsumerID] = user.Username
+				}
+			}
+		} else if order.BundleID != "" { // Bought order
+			if order.SupplierID != "" {
+				user, err := uc.userRepo.GetByID(ctx, order.SupplierID)
+				if err == nil && user != nil {
+					userNames[order.SupplierID] = user.Username
+				}
+			}
+		}
+	}
+
+	return orders, userNames, nil
+}
+
+func (uc *orderUseCaseImpl) GetOrdersByConsumer(ctx context.Context, consumerID string) ([]*order.Order, map[string]string, map[string]string, error) {
+	fmt.Printf("🔍 Getting orders for consumer: %s\n", consumerID)
+	
+	orders, err := uc.orderRepo.GetOrdersByConsumer(ctx, consumerID)
+	if err != nil {
+		fmt.Printf("❌ Error getting consumer orders: %v\n", err)
+		return nil, nil, nil, fmt.Errorf("failed to get consumer orders: %w", err)
+	}
+
+	userNames := make(map[string]string)
+	productNames := make(map[string]string)
+
+	// Get unique product IDs
+	productIDs := make(map[string]bool)
+	for _, order := range orders {
+		if order.ResellerID != "" {
+			user, err := uc.userRepo.GetByID(ctx, order.ResellerID)
+			if err == nil && user != nil {
+				userNames[order.ResellerID] = user.Username
+			}
+		}
+		for _, productID := range order.ProductIDs {
+			productIDs[productID] = true
+		}
+	}
+
+	// Get product names
+	for productID := range productIDs {
+		product, err := uc.prodRepo.GetProductByID(ctx, productID)
+		if err == nil && product != nil {
+			productNames[productID] = product.Title
+		}
+	}
+
+	fmt.Printf("✅ Found %d orders for consumer\n", len(orders))
+	return orders, userNames, productNames, nil
+}
+

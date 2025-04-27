@@ -1,14 +1,17 @@
-export type ItemPreview = {
+export interface ItemPreview {
   id: string;
   title: string;
   price: number;
   thumbnailUrl: string;
-  rating: number;
+  resellerId: string;
+  resellerName: string;
+  status: 'available' | 'sold';
   description: string;
   category: string;
-  size: string;
   grade: string;
-};
+  rating?: number;
+  size?: string;
+}
 
 export interface MarketplaceResponse {
   items: ItemPreview[];
@@ -34,5 +37,6 @@ export type Item = {
   category: string;
   size?: string;
   grade?: string;
+  seller_id: string;
   status: 'available' | 'sold' | 'reserved';
 }; 

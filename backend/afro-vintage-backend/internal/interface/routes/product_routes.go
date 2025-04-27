@@ -25,8 +25,16 @@ func RegisterProductRoutes(
 		products.GET("", productCtrl.ListAvailable)
 		products.GET("/title/:title", productCtrl.GetByTitle) 
 		products.GET("/:id", productCtrl.GetByID)
+		products.GET("/reseller/:id", productCtrl.ListByReseller)
 		products.PUT("/:id", middlewares.AuthorizeRoles("reseller"), productCtrl.Update)
 		products.DELETE("/:id", middlewares.AuthorizeRoles("reseller"), productCtrl.Delete)
 		products.POST("/:id/reviews", middlewares.AuthorizeRoles("consumer"), reviewCtrl.SubmitReview)
+	}
+
+	// Separate reviews group
+	reviews := r.Group("/reviews")
+	reviews.Use(middlewares.AuthMiddleware(jwtSvc))
+	{
+		reviews.GET("/reseller/:id", reviewCtrl.GetResellerReviews)
 	}
 }

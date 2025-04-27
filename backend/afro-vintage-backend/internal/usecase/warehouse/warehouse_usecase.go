@@ -30,8 +30,8 @@ func (uc *warehouseUseCaseImpl) GetWarehouseItems(ctx context.Context, resellerI
 		return nil, err
 	}
 
-	// Construct enriched response
-	var responses []*models.WarehouseItemResponse
+	// Initialize responses as empty slice
+	responses := make([]*models.WarehouseItemResponse, 0)
 	for _, item := range items {
 		bundle, err := uc.bundleRepo.GetBundleByID(ctx, item.BundleID)
 		if err != nil || bundle == nil {
