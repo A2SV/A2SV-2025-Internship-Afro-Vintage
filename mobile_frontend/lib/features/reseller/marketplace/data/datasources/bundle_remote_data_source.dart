@@ -19,7 +19,7 @@ class BundleRemoteDataSourceImpl implements BundleRemoteDataSource {
   BundleRemoteDataSourceImpl({
     required this.client,
     required this.sharedPreferences,
-  }) : _baseUrl = "https://a2sv-2025-internship-afro-vintage.onrender.com";
+  }) : _baseUrl = "https://2kps99nm-8081.uks1.devtunnels.ms";
 
   Map<String, String> get _headers {
     final token = sharedPreferences.getString('auth_token') ?? '';
