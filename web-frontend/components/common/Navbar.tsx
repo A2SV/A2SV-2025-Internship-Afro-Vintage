@@ -1,6 +1,6 @@
 'use client';
 
-import { ChevronDown, Filter } from 'lucide-react';
+import { ChevronDown, Filter, Menu } from 'lucide-react';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -24,6 +24,7 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { items } = useCart();
 
   useEffect(() => {
@@ -33,10 +34,21 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
     }
   }, []);
 
+  // Listen for sidebar collapse state
+  useEffect(() => {
+    const handleSidebarCollapse = (e: CustomEvent) => {
+      setIsSidebarCollapsed(e.detail.isCollapsed);
+    };
+
+    window.addEventListener('sidebar-collapse', handleSidebarCollapse as EventListener);
+    return () => {
+      window.removeEventListener('sidebar-collapse', handleSidebarCollapse as EventListener);
+    };
+  }, []);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      // Update the marketplace page's filters directly
       const marketplacePage = document.querySelector('[data-marketplace-page]');
       if (marketplacePage) {
         const event = new CustomEvent('marketplace-search', {
@@ -55,10 +67,12 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
 
   return (
     <>
-      <div className="h-16 fixed top-0 right-0 left-64 bg-white border-b border-gray-200 z-10">
-        <div className="h-full px-8 flex items-center justify-between">
+      <div className={`h-16 fixed top-0 right-0 bg-white border-b border-gray-200 z-10 transition-all duration-300 ${
+        isSidebarCollapsed ? 'left-20' : 'left-64'
+      }`}>
+        <div className="h-full px-4 md:px-8 flex items-center justify-between">
           {/* Search */}
-          <div className="flex-1 max-w-xl flex items-center">
+          <div className={`flex-1 flex items-center ${isSidebarCollapsed ? 'max-w-2xl' : 'max-w-xl'}`}>
             <form onSubmit={handleSearch} className="relative flex-1">
               <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
                 <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -84,7 +98,7 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
           </div>
 
           {/* Right section */}
-          <div className="flex items-center space-x-6">
+          <div className={`flex items-center ${isSidebarCollapsed ? 'space-x-3' : 'space-x-4 md:space-x-6'}`}>
             <button className="p-2 text-teal-600 hover:bg-gray-50 rounded-lg">
               <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                 <path fillRule="evenodd" clipRule="evenodd" d="M10 2C7.23858 2 5 4.23858 5 7V10.8293L3.87868 11.9497C3.31607 12.5123 3 13.2674 3 14.0503V15C3 16.1046 3.89543 17 5 17H15C16.1046 17 17 16.1046 17 15V14.0503C17 13.2674 16.6839 12.5123 16.1213 11.9497L15 10.8293V7C15 4.23858 12.7614 2 10 2ZM8 18C8 19.1046 8.89543 20 10 20C11.1046 20 12 19.1046 12 18H8Z" fill="currentColor"/>
@@ -106,7 +120,7 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
             <div className="relative">
               <button 
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className="flex items-center space-x-3 focus:outline-none"
+                className="flex items-center space-x-2 focus:outline-none"
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200">
                   <Image
@@ -117,7 +131,7 @@ const Navbar = ({ onFilterClick }: NavbarProps) => {
                     className="object-cover"
                   />
                 </div>
-                <div className="flex items-center">
+                <div className={`items-center ${isSidebarCollapsed ? 'hidden' : 'hidden md:flex'}`}>
                   <div>
                     <div className="text-sm font-semibold text-teal-600">
                       {user?.username || 'Guest'}
