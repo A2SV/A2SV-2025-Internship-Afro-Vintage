@@ -9,7 +9,7 @@ interface CartContextType {
   addToCart: (item: Item) => Promise<{ success: boolean; message: string }>;
   removeFromCart: (itemId: string) => Promise<{ success: boolean; message: string }>;
   isInCart: (itemId: string) => boolean;
-  checkout: () => Promise<{ success: boolean; message: string; data?: any }>;
+  checkout: (selectedItems?: string[]) => Promise<{ success: boolean; message: string; data?: any }>;
   loading: boolean;
 }
 
@@ -62,10 +62,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     return cartItems.some(item => item.id === itemId);
   };
 
-  const checkout = async () => {
-    const result = await cartApi.checkout();
+  const checkout = async (selectedItems?: string[]) => {
+    const itemsToCheckout = selectedItems 
+      ? cartItems.filter(item => selectedItems.includes(item.id))
+      : cartItems;
+
+    const result = await cartApi.checkout(itemsToCheckout.map(item => item.id));
     if (result.success) {
-      setCartItems([]); // Clear cart after successful checkout
+      // Only remove the checked out items from the cart
+      setCartItems(prev => prev.filter(item => !selectedItems?.includes(item.id)));
     }
     return result;
   };

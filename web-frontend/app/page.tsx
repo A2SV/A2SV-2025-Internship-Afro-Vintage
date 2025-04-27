@@ -19,10 +19,10 @@ export default function Home() {
 
   const handleChoice = (choice: string) => {
     if (choice === "login") {
-      router.push("login");
+      router.push("auth/login");
       // After successful login
     } else if (choice === "Sign up") {
-      router.push("signup"); // After logout
+      router.push("auth/signup"); // After logout
     }
   };
   return (

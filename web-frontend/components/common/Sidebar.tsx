@@ -18,8 +18,8 @@ const Sidebar = () => {
 
   const navItems = [
     { name: 'Marketplace', href: '/consumer/marketplace', icon: ShoppingBag },
-    { name: 'Orders', href: '/orders', icon: ShoppingCart },
-    { name: 'Settings', href: '/settings', icon: Settings },
+    { name: 'Orders', href: '/consumer/orders', icon: ShoppingCart },
+    { name: 'Settings', href: '/profile-settings', icon: Settings },
   ];
 
   return (

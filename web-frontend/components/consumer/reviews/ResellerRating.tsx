@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Star, StarHalf, ChevronDown, ChevronUp } from 'lucide-react';
 import { Review } from '@/types/reviews';
+import { convertRatingToFiveScale } from '@/lib/utils/rating';
 
 interface ResellerRatingProps {
   resellerId: string;
@@ -22,9 +23,10 @@ export default function ResellerRating({
   const [showReviews, setShowReviews] = useState(false);
 
   const renderStars = (rating: number) => {
+    const convertedRating = convertRatingToFiveScale(rating);
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
+    const fullStars = Math.floor(convertedRating);
+    const hasHalfStar = convertedRating % 1 >= 0.5;
 
     for (let i = 0; i < fullStars; i++) {
       stars.push(<Star key={`star-${i}`} className="w-4 h-4 text-yellow-400 fill-current" />);

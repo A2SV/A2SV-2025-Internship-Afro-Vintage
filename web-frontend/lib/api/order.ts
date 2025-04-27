@@ -1,4 +1,4 @@
-import { Order } from '../../types/order';
+import { Order, OrderStatus, PaymentStatus } from '../../types/order';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
 
@@ -6,12 +6,10 @@ export const orderApi = {
   async getOrderHistory(): Promise<Order[]> {
     try {
       const token = localStorage.getItem('token');
-      console.log('Token found:', !!token);
       if (!token) {
         throw new Error('Authentication required');
       }
 
-      console.log('Fetching orders from:', `${API_URL}/orders/history`);
       const response = await fetch(`${API_URL}/orders/history`, {
         headers: {
           'Accept': 'application/json',
@@ -30,21 +28,28 @@ export const orderApi = {
       }
 
       const data = await response.json();
-      console.log('Raw order data:', data);
-      console.log('First order:', data.data?.orders?.[0]);
+      const orders = data.data?.orders || [];
 
-      // Handle the response data structure
-      const orders = Array.isArray(data) ? data : (data.data || []);
-      console.log('Processed orders:', orders);
+      if (!Array.isArray(orders)) {
+        console.error('Orders is not an array:', orders);
+        return [];
+      }
 
-      return orders.map((order: any) => ({
-        id: order.orderId || order._id,
-        title: order.itemTitle,
-        price: order.price,
-        imageUrl: order.image_url,
-        status: (order.status ).toLowerCase(),
-        estimatedDeliveryTime: order.estimatedDeliveryTime,
-      }));
+      return orders.map((orderData: any) => {
+        const order = orderData.order;
+        const product = orderData.products?.[0];
+        return {
+          id: order.id,
+          title: product?.title || 'Unknown Product',
+          price: order.total_price,
+          imageUrl: product?.image_url,
+          status: (order.status || 'PENDING_DELIVERY').toLowerCase() as OrderStatus,
+          paymentStatus: (order.paymentStatus || 'PENDING') as PaymentStatus,
+          createdAt: order.created_at,
+          estimatedDeliveryTime: order.estimatedDeliveryTime,
+          resellerName: orderData.resellerUsername || 'Unknown Seller'
+        };
+      });
     } catch (error) {
       console.error('Error fetching orders:', error);
       throw error;

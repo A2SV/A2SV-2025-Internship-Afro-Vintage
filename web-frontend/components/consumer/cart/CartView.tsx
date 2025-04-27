@@ -16,16 +16,47 @@ export default function CartView({ isOpen, onClose }: CartViewProps) {
   const { items, removeFromCart } = useCart();
   const [isRemoving, setIsRemoving] = useState<string | null>(null);
   const [showCheckout, setShowCheckout] = useState(false);
-  const total = items.reduce((sum, item) => sum + item.price, 0);
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+  const [selectAll, setSelectAll] = useState(false);
 
   const handleRemove = async (itemId: string) => {
     setIsRemoving(itemId);
     try {
       await removeFromCart(itemId);
+      setSelectedItems(prev => {
+        const newSelected = new Set(prev);
+        newSelected.delete(itemId);
+        return newSelected;
+      });
     } finally {
       setIsRemoving(null);
     }
   };
+
+  const handleSelectItem = (itemId: string) => {
+    setSelectedItems(prev => {
+      const newSelected = new Set(prev);
+      if (newSelected.has(itemId)) {
+        newSelected.delete(itemId);
+      } else {
+        newSelected.add(itemId);
+      }
+      return newSelected;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedItems(new Set());
+    } else {
+      setSelectedItems(new Set(items.map(item => item.id)));
+    }
+    setSelectAll(!selectAll);
+  };
+
+  const selectedTotal = items
+    .filter(item => selectedItems.has(item.id))
+    .reduce((sum, item) => sum + item.price, 0);
 
   if (!isOpen) return null;
 
@@ -52,11 +83,30 @@ export default function CartView({ isOpen, onClose }: CartViewProps) {
               </div>
             ) : (
               <div className="space-y-4">
+                {/* Select All */}
+                <div className="flex items-center gap-2 pb-2 border-b">
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                  />
+                  <span className="text-sm font-medium">Select All</span>
+                </div>
+
                 {items.map((item) => (
                   <div
                     key={item.id}
                     className="flex gap-4 bg-white rounded-lg p-4 border"
                   >
+                    {/* Checkbox */}
+                    <input
+                      type="checkbox"
+                      checked={selectedItems.has(item.id)}
+                      onChange={() => handleSelectItem(item.id)}
+                      className="w-4 h-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500"
+                    />
+
                     {/* Item Image */}
                     <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0">
                       <Image
@@ -100,16 +150,17 @@ export default function CartView({ isOpen, onClose }: CartViewProps) {
           {items.length > 0 && (
             <div className="border-t p-4 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="font-medium">Total</span>
+                <span className="font-medium">Selected Total</span>
                 <span className="text-xl font-medium text-teal-600">
-                  ${total.toLocaleString()}
+                  ${selectedTotal.toLocaleString()}
                 </span>
               </div>
               <button 
                 onClick={() => setShowCheckout(true)}
-                className="w-full bg-teal-600 text-white py-3 rounded-lg font-medium hover:bg-teal-700"
+                disabled={selectedItems.size === 0}
+                className="w-full bg-teal-600 text-white py-3 rounded-lg font-medium hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Proceed to Checkout
+                Proceed to Checkout ({selectedItems.size} items)
               </button>
             </div>
           )}
@@ -120,7 +171,8 @@ export default function CartView({ isOpen, onClose }: CartViewProps) {
       {showCheckout && (
         <CheckoutSimulation
           onClose={() => setShowCheckout(false)}
-          total={total}
+          total={selectedTotal}
+          selectedItems={Array.from(selectedItems)}
         />
       )}
     </>

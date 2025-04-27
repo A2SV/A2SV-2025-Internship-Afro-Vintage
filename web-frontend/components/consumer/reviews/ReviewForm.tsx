@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Star, X } from 'lucide-react';
+import { convertRatingToHundredScale } from '@/lib/utils/rating';
 
 type ReviewFormProps = {
   itemId: string;
@@ -27,7 +28,7 @@ export default function ReviewForm({ itemId, itemName, onClose, onSubmit }: Revi
     setError(null);
 
     try {
-      await onSubmit(rating, comment);
+      await onSubmit(convertRatingToHundredScale(rating), comment);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to submit review');
