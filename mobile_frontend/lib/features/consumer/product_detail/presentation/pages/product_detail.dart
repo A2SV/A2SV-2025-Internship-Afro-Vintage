@@ -209,16 +209,24 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                               final cartBloc = context.read<CartBloc>();
                               cartBloc.add(
                                   AddToCartEvent(productId: widget.product.id));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      '${widget.product.title} added to cart!'),
-                                ),
-                              );
                             },
-                            child: const Text(
-                              "Add to Cart",
-                              style: TextStyle(color: Colors.white),
+                            child: BlocBuilder<CartBloc, CartState>(
+                              builder: (context, state) {
+                                if (state is Loading) {
+                                  return const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  );
+                                }
+                                return const Text(
+                                  "Add to Cart",
+                                  style: TextStyle(color: Colors.white),
+                                );
+                              },
                             ),
                           ),
                         ],

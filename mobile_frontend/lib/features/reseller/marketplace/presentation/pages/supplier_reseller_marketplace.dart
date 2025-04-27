@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_frontend/core/widgets/common_app_bar.dart';
+import 'package:mobile_frontend/core/widgets/side_menu.dart';
 import 'package:mobile_frontend/features/reseller/marketplace/domain/entities/bundle.dart';
 import 'package:mobile_frontend/features/reseller/marketplace/presentation/blocs/marketplace_bloc.dart';
 import 'package:mobile_frontend/features/reseller/marketplace/presentation/blocs/marketplace_event.dart';
@@ -15,6 +17,8 @@ class SupplierResellerMarketPlacePage extends StatelessWidget {
     context.read<MarketplaceBloc>().add(LoadBundles());
 
     return Scaffold(
+      drawer: SideMenu(),
+      appBar: CommonAppBar(title: 'View Bundles'),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: SingleChildScrollView(
@@ -340,7 +344,8 @@ class BundleCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: bundle.status.toLowerCase() == 'available'
                           ? Colors.green.withOpacity(0.1)

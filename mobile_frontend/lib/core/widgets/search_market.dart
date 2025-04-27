@@ -1,29 +1,24 @@
 import 'package:flutter/material.dart';
 
 class SearchMarket extends StatefulWidget {
-  const SearchMarket({super.key});
+  final List<dynamic> products; // Accept products as input
+
+  const SearchMarket({super.key, required this.products});
 
   @override
   State<SearchMarket> createState() => _SearchMarketState();
 }
 
 class _SearchMarketState extends State<SearchMarket> {
-  final List<String> _items = [
-    'Jacket',
-    'Hoodie',
-    'Jeans',
-    'Dress',
-    'Mango',
-    'Blueberry',
-    'Strawberry',
-  ];
   String _query = '';
   final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final filteredItems = _items
-        .where((item) => item.toLowerCase().contains(_query.toLowerCase()))
+    // Filter products based on the search query
+    final filteredProducts = widget.products
+        .where((product) =>
+            product.title.toLowerCase().contains(_query.toLowerCase()))
         .toList();
 
     return Column(
@@ -35,7 +30,7 @@ class _SearchMarketState extends State<SearchMarket> {
               child: TextField(
                 controller: _controller,
                 decoration: InputDecoration(
-                  hintText: 'Search...',
+                  hintText: 'Search products...',
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10)),
                 ),
@@ -47,14 +42,18 @@ class _SearchMarketState extends State<SearchMarket> {
               ),
             ),
             const SizedBox(width: 5),
-            IconButton(
-              icon: const Icon(
-                Icons.filter_list,
-                size: 30,
+            Container(
+              height: 36,
+              width: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFF008080).withOpacity(0.17),
+                borderRadius: BorderRadius.circular(20),
               ),
-              onPressed: () {
-                print('Filter Button Pressed');
-              },
+              child: const Icon(
+                Icons.tune, // Filter icon
+                color: Color(0xFF5C5F6A),
+                size: 20,
+              ),
             ),
           ],
         ),
@@ -67,12 +66,13 @@ class _SearchMarketState extends State<SearchMarket> {
               width: MediaQuery.of(context).size.width - 50,
               child: ListView.builder(
                 shrinkWrap: true,
-                itemCount: filteredItems.length,
+                itemCount: filteredProducts.length,
                 itemBuilder: (context, index) {
+                  final product = filteredProducts[index];
                   return ListTile(
-                    title: Text(filteredItems[index]),
+                    title: Text(product.title), // Display product name
                     onTap: () {
-                      _controller.text = filteredItems[index];
+                      _controller.text = product.title;
                       setState(() => _query = '');
                     },
                   );

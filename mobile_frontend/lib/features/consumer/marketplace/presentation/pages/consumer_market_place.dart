@@ -6,6 +6,7 @@ import 'package:mobile_frontend/core/widgets/search_market.dart';
 import 'package:mobile_frontend/core/widgets/side_menu.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/presentation/bloc/product_bloc.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/presentation/bloc/product_event.dart';
+import 'package:mobile_frontend/features/consumer/marketplace/presentation/bloc/product_state.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/presentation/widgets/grid_item.dart';
 import '../../../cart/presentation/pages/cart_page.dart';
 
@@ -18,6 +19,7 @@ class ConsumerMarketPlace extends StatefulWidget {
 
 class _ConsumerMarketPlaceState extends State<ConsumerMarketPlace> {
   final List<String> _cartItems = [];
+  List<dynamic> _products = []; // Store fetched products here
 
   @override
   void initState() {
@@ -56,16 +58,31 @@ class _ConsumerMarketPlaceState extends State<ConsumerMarketPlace> {
     return Scaffold(
       drawer: const SideMenu(),
       appBar: const CommonAppBar(title: 'Market Place'),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 25),
-            const SearchMarket(),
-            const SizedBox(height: 25),
-            GridItem(onCartToggle: _toggleCart),
-          ],
-        ),
+      body: BlocBuilder<ProductBloc, ProductState>(
+        builder: (context, state) {
+          if (state is Loading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is Success) {
+            _products = state.data; // Store products in the state
+
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 25),
+                  SearchMarket(
+                      products: _products), // Pass products to SearchMarket
+                  const SizedBox(height: 25),
+                  GridItem(onCartToggle: _toggleCart),
+                ],
+              ),
+            );
+          } else if (state is Error) {
+            return Center(child: Text('Error: ${state.message}'));
+          } else {
+            return const Center(child: Text('No products available.'));
+          }
+        },
       ),
       bottomNavigationBar: BottomNavBar(onCartTap: _viewCart),
     );

@@ -9,14 +9,14 @@ import 'payment_confirmation_page.dart';
 
 class UnboughtBundleDetail extends StatelessWidget {
   final Bundle bundle;
-  
+
   const UnboughtBundleDetail({
     super.key,
     required this.bundle,
   });
 
   @override
-  Widget build(BuildContext context) { 
+  Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       body: SingleChildScrollView(
@@ -84,7 +84,7 @@ class UnboughtBundleDetail extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: bundle.status.toLowerCase() == 'available' 
+                          color: bundle.status.toLowerCase() == 'available'
                               ? Colors.green[100]
                               : Colors.grey[100],
                           borderRadius: BorderRadius.circular(4),
@@ -92,7 +92,7 @@ class UnboughtBundleDetail extends StatelessWidget {
                         child: Text(
                           bundle.status,
                           style: TextStyle(
-                            color: bundle.status.toLowerCase() == 'available' 
+                            color: bundle.status.toLowerCase() == 'available'
                                 ? Colors.green
                                 : Colors.grey,
                             fontWeight: FontWeight.bold,
@@ -203,8 +203,11 @@ class UnboughtBundleDetail extends StatelessWidget {
                               if (result == true) {
                                 // Payment was successful, refresh the marketplace
                                 if (context.mounted) {
-                                  context.read<MarketplaceBloc>().add(LoadBundles());
-                                  Navigator.pop(context); // Go back to marketplace
+                                  context
+                                      .read<MarketplaceBloc>()
+                                      .add(LoadBundles());
+                                  Navigator.pop(
+                                      context); // Go back to marketplace
                                 }
                               }
                             }

@@ -19,6 +19,7 @@ class _SigninPageState extends State<SigninPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  bool _isLoading = false; // Track loading state
 
   @override
   void dispose() {
@@ -29,11 +30,15 @@ class _SigninPageState extends State<SigninPage> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
-      // Dispatch the signin event to AuthBloc
+      setState(() {
+        _isLoading = true; // Set loading state to true
+      });
+
       final loginUser = LoginUser(
         username: _usernameController.text,
         password: _passwordController.text,
       );
+
       context.read<AuthBloc>().add(SigninEvent(user: loginUser));
     }
   }
@@ -46,13 +51,31 @@ class _SigninPageState extends State<SigninPage> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) async {
           if (state is Success) {
+            setState(() {
+              _isLoading = false; // Stop loading on success
+            });
+
+            final selectedRole = state.data.user!.role;
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('auth_token', state.data.token);
+            await prefs.setString('role', selectedRole!);
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Success: ${state.data.user!.username}')),
             );
-            Navigator.pushNamed(context, '/consumermarketplace');
+
+            if (selectedRole == 'supplier') {
+              Navigator.pushNamed(context, '/consumermarketplace');
+            } else if (selectedRole == 'reseller') {
+              Navigator.pushNamed(context, '/supplier-reseller-marketplace');
+            } else if (selectedRole == 'consumer') {
+              Navigator.pushNamed(context, '/consumermarketplace');
+            }
           } else if (state is Error) {
+            setState(() {
+              _isLoading = false; // Stop loading on error
+            });
+
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
@@ -188,15 +211,26 @@ class _SigninPageState extends State<SigninPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          onPressed: _submitForm,
-                          child: const Text(
-                            'Sign In',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                            ),
-                          ),
+                          onPressed: _isLoading
+                              ? null
+                              : _submitForm, // Disable button when loading
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'Sign In',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
+                                ),
                         ),
                         const SizedBox(height: 15),
 

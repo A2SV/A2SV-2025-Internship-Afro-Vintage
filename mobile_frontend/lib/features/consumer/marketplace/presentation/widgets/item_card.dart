@@ -8,8 +8,9 @@ import '../../../cart/presentation/bloc/cart_bloc.dart';
 
 class ItemCard extends StatefulWidget {
   final Product product;
+  final double cardWidth;
 
-  const ItemCard({super.key, required this.product});
+  const ItemCard({super.key, required this.product, required this.cardWidth});
 
   @override
   State<ItemCard> createState() => _ItemCardState();
@@ -36,14 +37,10 @@ class _ItemCardState extends State<ItemCard> {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).primaryColor;
-    print("Sorry ${widget.product.image_url}");
+
     return BlocListener<CartBloc, CartState>(
       listener: (context, state) {
         if (state is Success) {
-          // Show success message
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   SnackBar(content: Text(state.data)),
-          // );
           print(state.data);
         } else if (state is Error) {
           // Show error message
@@ -64,72 +61,108 @@ class _ItemCardState extends State<ItemCard> {
                           )));
             },
             child: SizedBox(
-              width: 300,
-              height: 300,
+              width: widget.cardWidth,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20)),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20)),
+                      borderRadius: BorderRadius.circular(12),
                       child: widget.product.image_url != null
                           ? Image.network(
                               widget.product.image_url,
-                              width: 300,
-                              height: 200,
+                              width: widget.cardWidth,
+                              height: 180,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
                                 return Image.asset(
                                   "assets/images/cloth_3.png",
-                                  width: 300,
-                                  height: 200,
+                                  width: widget.cardWidth,
+                                  height: 180,
                                   fit: BoxFit.cover,
                                 );
                               },
                             )
                           : Image.asset(
                               "assets/images/cloth_3.png",
-                              width: 300,
-                              height: 200,
+                              width: widget.cardWidth,
+                              height: 180,
                               fit: BoxFit.cover,
                             ),
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    widget.product.title,
-                    style: const TextStyle(fontWeight: FontWeight.normal),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '\$ ${widget.product.price}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.star_rate_rounded,
-                            color: const Color(0xFFFFA439),
+                  Expanded(
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                        Text(
+                          widget.product.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.normal,
+                              color: Colors.black),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '\$ ${widget.product.price.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black),
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.star_rate_rounded,
+                                  color: const Color(0xFFFFA439),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  widget.product.rating.toString(),
+                                  style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold),
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: widget.product.status.toLowerCase() ==
+                                    'available'
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.grey.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                          Text(
-                            widget.product.rating.toString(),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          )
-                        ],
-                      )
-                    ],
-                  )
+                          child: Text(
+                            widget.product.status,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: widget.product.status.toLowerCase() ==
+                                      'available'
+                                  ? Colors.green
+                                  : Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ]))
                 ],
               ),
             ),
