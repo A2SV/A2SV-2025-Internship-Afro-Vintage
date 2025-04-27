@@ -69,13 +69,13 @@ export default function OrderConfirmation({
 
           <div className="flex gap-3 mt-6">
             <button
-              onClick={() => router.push('/orders')}
+              onClick={() => router.push('/consumer/orders')}
               className="flex-1 py-2 px-4 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
             >
               Track Delivery
             </button>
             <button
-              onClick={() => router.push('/marketplace')}
+              onClick={() => router.push('/consumer/marketplace')}
               className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50"
             >
               Return to Marketplace
