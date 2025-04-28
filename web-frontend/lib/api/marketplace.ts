@@ -1,6 +1,6 @@
 import { ItemPreview, MarketplaceFilters, MarketplaceResponse } from '@/types/marketplace';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://2kps99nm-8081.uks1.devtunnels.ms';
 
 
 export const marketplaceApi = {

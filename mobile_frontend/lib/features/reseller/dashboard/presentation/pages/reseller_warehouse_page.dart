@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:mobile_frontend/core/widgets/common_app_bar.dart';
+import 'package:mobile_frontend/core/widgets/side_menu.dart';
 import 'package:mobile_frontend/features/reseller/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:mobile_frontend/features/reseller/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:mobile_frontend/features/reseller/dashboard/presentation/pages/bought_bundle_detail.dart';
@@ -8,12 +10,15 @@ import '../bloc/dashboard_bloc.dart';
 import '../../domain/entities/dashboard_metrics.dart';
 
 class ResellerWarehousePage extends StatelessWidget {
-  const ResellerWarehousePage({super.key});
+  final bool showOnlyBoughtBundles;
+  const ResellerWarehousePage({super.key, this.showOnlyBoughtBundles = false});
 
   @override
   Widget build(BuildContext context) {
     context.read<DashboardBloc>().add(LoadDashboardMetrics());
     return Scaffold(
+      drawer: SideMenu(),
+      appBar: CommonAppBar(title: 'Warehouse'),
       body: BlocBuilder<DashboardBloc, DashboardState>(
         builder: (context, state) {
           if (state is DashboardLoading) {
@@ -52,7 +57,8 @@ class ResellerWarehousePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Header(),
+            // const Header(),
+             if (!showOnlyBoughtBundles) ...[
             const SizedBox(height: 20),
             const TextSection(),
             const SizedBox(height: 20),
@@ -90,6 +96,7 @@ class ResellerWarehousePage extends StatelessWidget {
               },
             ),
             const SizedBox(height: 40),
+             ],
             const Text(
               'Bought Bundles',
               style: TextStyle(

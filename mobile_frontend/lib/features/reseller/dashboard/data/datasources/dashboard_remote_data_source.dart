@@ -16,7 +16,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   DashboardRemoteDataSourceImpl({
     required this.client,
     required this.sharedPreferences,
-    this.baseUrl = "https://a2sv-2025-internship-afro-vintage.onrender.com",
+    this.baseUrl = "https://2kps99nm-8081.uks1.devtunnels.ms",
   });
 
   Map<String, String> get _headers {

@@ -28,6 +28,7 @@ import 'package:mobile_frontend/features/reseller/dashboard/presentation/pages/r
 import 'package:mobile_frontend/features/reseller/marketplace/presentation/blocs/marketplace_bloc.dart';
 import 'package:mobile_frontend/features/reseller/marketplace/presentation/blocs/payment/payment_bloc.dart';
 import 'package:mobile_frontend/features/reseller/marketplace/presentation/pages/supplier_reseller_marketplace.dart';
+import 'package:mobile_frontend/features/reseller/reseller_order/presentation/bloc/reseller_order_bloc.dart';
 import 'package:mobile_frontend/features/reseller/unpack/presentation/bloc/unpack_bloc.dart';
 import 'package:mobile_frontend/features/supplier/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:mobile_frontend/features/supplier/history/presentation/pages/history_page.dart';
@@ -39,6 +40,8 @@ import 'package:mobile_frontend/features/supplier/product_detail/presentation/pa
     as supplier;
 import 'package:mobile_frontend/injection_container.dart';
 import 'injection_container.dart' as di;
+import 'package:mobile_frontend/features/reseller/reseller_order/presentation/pages/reseller_all_orders.dart';
+import 'package:mobile_frontend/features/profile/presentation/bloc/profile_bloc.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,6 +71,12 @@ Future<void> main() async {
         ),
         BlocProvider<OrderBloc>(
           create: (context) => sl<OrderBloc>(),
+        ),
+        BlocProvider<ResellerOrderBloc>(
+          create: (context) => sl<ResellerOrderBloc>(),
+        ),
+        BlocProvider<ProfileBloc>(
+          create: (context) => sl<ProfileBloc>(),
         ),
         BlocProvider<ReviewBloc>(
           create: (context) => sl<ReviewBloc>(),
@@ -142,6 +151,7 @@ class MyApp extends StatelessWidget {
         '/supplierproductdetail': (context) => supplier.ProductDetailPage(
             bundleId: (ModalRoute.of(context)!.settings.arguments
                 as Map<String, dynamic>)['bundleId']),
+        '/reseller-all-orders': (context) => const ResellerAllOrders(),
       },
     );
   }

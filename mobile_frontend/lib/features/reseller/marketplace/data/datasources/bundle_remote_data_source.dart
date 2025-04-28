@@ -93,26 +93,56 @@ class BundleRemoteDataSourceImpl implements BundleRemoteDataSource {
     }
   }
 
-  @override
-  Future<List<BundleModel>> searchBundlesByTitle(String title) async {
-    try {
-      final response = await client.get(
-        Uri.parse('$_baseUrl/bundles/search?title=$title'),
-        headers: _headers,
-      );
+  // In bundle_remote_data_source.dart
+@override
+Future<List<BundleModel>> searchBundlesByTitle(String title) async {
+  try {
+    print('Attempting to search bundles by title: $title');
+    final response = await client.get(
+      Uri.parse('$_baseUrl/bundles/title/$title'),
+      headers: _headers,
+    );
+    print('Response status code: ${response.statusCode}');
+    print('Response body: ${response.body}');
 
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonList = json.decode(response.body);
-        return jsonList.map((json) => BundleModel.fromJson(json)).toList();
-      } else if (response.statusCode == 401) {
-        throw UnauthorizedException();
-      } else {
-        throw ServerException();
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+      
+      if (jsonResponse['success'] == true && jsonResponse['data'] != null) {
+        var bundleData = Map<String, dynamic>.from(jsonResponse['data']);
+        // Transform the data to match our model's expected format
+        bundleData = {
+          'ID': bundleData['id'],
+          'Title': bundleData['title'],
+          'Description': bundleData['description'],
+          'SampleImage': bundleData['sample_image'] ?? 'https://via.placeholder.com/150',
+          'Quantity': bundleData['quantity'],
+          'Grade': bundleData['grade'],
+          'SortingLevel': bundleData['sorting_level'],
+          'EstimatedBreakdown': bundleData['estimated_breakdown'] ?? {},
+          'Type': bundleData['type'],
+          'Price': bundleData['price'],
+          'Status': bundleData['status'],
+          'CreatedAt': bundleData['created_at'],
+          'DeclaredRating': bundleData['declared_rating'],
+          'RemainingItemCount': bundleData['quantity'], // Using quantity as remaining count
+          'SupplierID': bundleData['id'].split('_')[0], // Extract supplier ID from bundle ID
+          'size_range': bundleData['size_range'] ?? '',
+          'clothingTypes': [], // Default empty list for clothing types
+        };
+        
+        return [BundleModel.fromJson(bundleData)];
       }
-    } catch (e) {
-      throw ServerException();
+    } else if (response.statusCode == 401) {
+      throw UnauthorizedException();
     }
+    
+    return [];
+  } catch (e) {
+    print('Error in searchBundlesByTitle: $e');
+    return [];
   }
+}
 
   @override
   Future<BundleModel> purchaseBundle(String bundleId) async {

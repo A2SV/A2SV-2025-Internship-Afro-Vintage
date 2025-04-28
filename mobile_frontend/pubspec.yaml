@@ -50,6 +50,8 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   internet_connection_checker: ^3.0.1
   image_picker: ^1.1.2
+  mockito: ^5.4.6
+  build_runner: ^2.4.15
 
 dev_dependencies:
   flutter_test:

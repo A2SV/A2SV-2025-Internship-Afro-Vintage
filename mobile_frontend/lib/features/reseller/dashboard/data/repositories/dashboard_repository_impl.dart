@@ -20,6 +20,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
     if (await networkInfo.isConnected) {
       try {
         final metrics = await remoteDataSource.getResellerMetrics();
+        print('Metrics: $metrics');
         return Right(metrics);
       } on UnauthorizedException catch (e) {
         return Left(UnauthorizedFailure());
