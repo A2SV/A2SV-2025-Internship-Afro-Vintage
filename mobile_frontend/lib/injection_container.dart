@@ -13,6 +13,11 @@ import 'package:mobile_frontend/features/consumer/orders/data/repositories/order
 import 'package:mobile_frontend/features/consumer/orders/domain/repositories/order_repository.dart';
 import 'package:mobile_frontend/features/consumer/orders/domain/usecases/get_orders.dart';
 import 'package:mobile_frontend/features/consumer/orders/presentation/bloc/order_bloc.dart';
+import 'package:mobile_frontend/features/consumer/reviews/data/datasources/review_data_source.dart';
+import 'package:mobile_frontend/features/consumer/reviews/data/repositories/review_repository_impl.dart';
+import 'package:mobile_frontend/features/consumer/reviews/domain/repositories/review_repository.dart';
+import 'package:mobile_frontend/features/consumer/reviews/domain/usecases/add_review.dart';
+import 'package:mobile_frontend/features/consumer/reviews/presentation/bloc/review_bloc.dart';
 import 'package:mobile_frontend/features/reseller/dashboard/data/datasources/dashboard_remote_data_source.dart';
 import 'package:mobile_frontend/features/reseller/dashboard/data/repositories/dashboard_repository_impl.dart';
 import 'package:mobile_frontend/features/reseller/dashboard/domain/repository/dashboard_repository.dart';
@@ -73,6 +78,8 @@ Future<void> init() async {
 
   sl.registerFactory(() => OrderBloc(getOrders: sl()));
 
+  sl.registerFactory(() => ReviewBloc(addReviewUseCase: sl()));
+
   // Use cases
   sl.registerLazySingleton(() => SignupUseCase(repository: sl()));
   sl.registerLazySingleton(() => SigninUseCase(repository: sl()));
@@ -82,6 +89,7 @@ Future<void> init() async {
   sl.registerLazySingleton(() => RemoveFromCartUseCase(repository: sl()));
   sl.registerLazySingleton(() => CheckoutUseCase(repository: sl()));
   sl.registerLazySingleton(() => GetOrdersUseCase(repository: sl()));
+  sl.registerLazySingleton(() => AddReviewUseCase(repository: sl()));
 
   // repository
   sl.registerLazySingleton<AuthRepository>(
@@ -103,6 +111,10 @@ Future<void> init() async {
     () => OrderRepositoryImpl(orderDataSource: sl()),
   );
 
+  sl.registerLazySingleton<ReviewRepository>(
+    () => ReviewRepositoryImpl(reviewDataSource: sl()),
+  );
+
   // Data sources
   sl.registerLazySingleton<AuthDataSource>(
     () => AuthDataSourceImpl(client: sl()),
@@ -121,6 +133,10 @@ Future<void> init() async {
 
   sl.registerLazySingleton<OrderDataSource>(
     () => OrderDataSourceImpl(client: sl()),
+  );
+
+  sl.registerLazySingleton<ReviewDataSource>(
+    () => ReviewDataSourceImpl(client: sl()),
   );
 
   // Marketplace

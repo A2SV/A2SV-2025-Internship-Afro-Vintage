@@ -8,9 +8,11 @@ class DashboardRepository {
 
   Future<DashboardData> fetchDashboardData() async {
     try {
-      final response = await ApiService.get('/supplier/dashboard');
+      final response = await ApiService.get(
+          'https://2kps99nm-8081.uks1.devtunnels.ms/supplier/dashboard');
       if (response['success'] == false) {
-        throw Exception(response['message'] ?? 'Failed to fetch dashboard data');
+        throw Exception(
+            response['message'] ?? 'Failed to fetch dashboard data');
       }
       return DashboardData.fromJson(response['data'] ?? response);
     } catch (e) {

@@ -14,7 +14,8 @@ class ApiService {
     throw UnimplementedError('post method is not implemented yet.');
   }
 
-  static Future<Map<String, dynamic>> put(String endpoint, {required Map body}) async {
+  static Future<Map<String, dynamic>> put(String endpoint,
+      {required Map body}) async {
     final uri = Uri.parse(endpoint);
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
@@ -35,7 +36,7 @@ class ApiService {
   }
 
   static Future<Map<String, dynamic>> get(String endpoint) async {
-    final uri = Uri.parse(endpoint);
+    final uri = Uri.parse('https://2kps99nm-8081.uks1.devtunnels.ms/$endpoint');
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('auth_token');
     final headers = <String, String>{

@@ -59,13 +59,14 @@ class _SigninPageState extends State<SigninPage> {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('auth_token', state.data.token);
             await prefs.setString('role', selectedRole!);
+            await prefs.setString('user_id', state.data.user!.id);
 
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text('Success: ${state.data.user!.username}')),
             );
 
             if (selectedRole == 'supplier') {
-              Navigator.pushNamed(context, '/consumermarketplace');
+              Navigator.pushNamed(context, '/dashboard');
             } else if (selectedRole == 'reseller') {
               Navigator.pushNamed(context, '/supplier-reseller-marketplace');
             } else if (selectedRole == 'consumer') {

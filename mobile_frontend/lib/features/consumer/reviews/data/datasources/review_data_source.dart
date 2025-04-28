@@ -32,8 +32,14 @@ class ReviewDataSourceImpl implements ReviewDataSource {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
-        print("Boyssss: ${responseData['message']}");
         return responseData['message'] ?? 'Review added successfully';
+      } else if (response.statusCode == 400) {
+        final responseData = jsonDecode(response.body);
+        if (responseData['error'] == 'you already reviewed this item') {
+          return 'You have already reviewed this item.';
+        } else {
+          throw Exception('Failed to add review: ${response.body}');
+        }
       } else {
         throw Exception('Failed to add review: ${response.body}');
       }
