@@ -1,6 +1,8 @@
+import '../../../marketplace/data/models/bundle_model.dart';
+
 class DashboardData {
   final int totalSales;
-  final List<Map<String, dynamic>> activeBundles;
+  final List<BundleModel> activeBundles;
   final int totalBundlesListed;
   final int activeCount;
   final int soldCount;
@@ -24,9 +26,9 @@ class DashboardData {
       return 0;
     }
 
-    List<Map<String, dynamic>> parseActiveBundles(dynamic value) {
+    List<BundleModel> parseActiveBundles(dynamic value) {
       if (value is List) {
-        return value.map((e) => Map<String, dynamic>.from(e)).toList();
+        return value.map((e) => BundleModel.fromJson(e)).toList();
       }
       return [];
     }

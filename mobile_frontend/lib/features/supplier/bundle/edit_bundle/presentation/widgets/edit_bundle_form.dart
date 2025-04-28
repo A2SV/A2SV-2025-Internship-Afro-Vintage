@@ -4,6 +4,7 @@ import '../../../create_bundle/presentation/bundle_request_model.dart';
 import '../../../create_bundle/presentation/repository/bundle_repository.dart';
 import 'package:mobile_frontend/features/consumer/core/widgets/input.dart';
 import 'package:mobile_frontend/features/consumer/core/widgets/button.dart';
+import 'package:mobile_frontend/core/network/api_service.dart';
 
 class EditBundleForm extends StatefulWidget {
   final BundleRepository repository;
@@ -100,22 +101,20 @@ class _EditBundleFormState extends State<EditBundleForm> {
     if (!_formKey.currentState!.validate()) return;
     setState(() { _loading = true; _error = null; });
     try {
-      final bundle = BundleRequestModel(
-        title: _titleController.text,
-        sampleImage: _imageController.text,
-        quantity: int.parse(_numberOfItemsController.text),
-        grade: _selectedGrade ?? 'A',
-        price: double.parse(_priceController.text),
-        description: _descriptionController.text,
-        type: _typeController.text,
-        declaredRating: int.parse(_declaredRatingController.text),
-      );
-
-      await widget.repository.editBundle(
-        id: widget.bundleId,
-        bundle: bundle,
-      );
-
+      final bundle = {
+        'title': _titleController.text,
+        'sample_image': _imageController.text,
+        'number_of_items': int.parse(_numberOfItemsController.text),
+        'grade': _selectedGrade ?? 'A',
+        'price': double.parse(_priceController.text),
+        'description': _descriptionController.text,
+        'size_range': 'S-XL', // You may want to make this a field in the form if needed
+        'clothing_types': ['T-Shirt', 'Jeans'], // You may want to make this a field in the form if needed
+        'type': _typeController.text,
+        'estimated_breakdown': { 'T-Shirt': 4, 'Jeans': 6 }, // You may want to make this a field in the form if needed
+        'declared_rating': int.parse(_declaredRatingController.text),
+      };
+      await ApiService.put('/bundles/${widget.bundleId}', body: bundle);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -266,22 +265,11 @@ class _EditBundleFormState extends State<EditBundleForm> {
                 Expanded(
                   child: SizedBox(
                     height: 48,
-                    child: OutlinedButton(
-                      onPressed: _loading ? null : () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF979797)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: Color(0xFF6F3DE9),
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                        ),
-                      ),
+                    child: UnColoredButton(
+                      label: 'Cancel',
+                      onPressed: () {
+                        if (!_loading) Navigator.pop(context);
+                      },
                     ),
                   ),
                 ),
@@ -289,22 +277,9 @@ class _EditBundleFormState extends State<EditBundleForm> {
                 Expanded(
                   child: SizedBox(
                     height: 48,
-                    child: ElevatedButton(
-                      onPressed: _loading ? null : () => _submit(),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.secondary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                      child: Text(
-                        _loading ? 'Saving...' : 'Edit',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                        ),
-                      ),
+                    child: PrimaryButton(
+                      label: _loading ? 'Saving...' : 'Edit',
+                      onPressed: _loading ? () {} : () => _submit(),
                     ),
                   ),
                 ),
