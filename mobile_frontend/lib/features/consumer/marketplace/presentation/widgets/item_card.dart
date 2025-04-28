@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_frontend/features/consumer/cart/presentation/bloc/cart_event.dart';
@@ -37,7 +39,7 @@ class _ItemCardState extends State<ItemCard> {
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).primaryColor;
-
+    print("Imageeeeeeeeeee ${widget.product.image_url}");
     return BlocListener<CartBloc, CartState>(
       listener: (context, state) {
         if (state is Success) {
@@ -74,22 +76,48 @@ class _ItemCardState extends State<ItemCard> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: widget.product.image_url != null
-                          ? Image.network(
-                              widget.product.image_url,
-                              width: widget.cardWidth,
-                              height: 180,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  "assets/images/cloth_3.png",
+                          ? (widget.product.image_url.startsWith('http')
+                              ? Image.network(
+                                  widget.product.image_url,
                                   width: widget.cardWidth,
                                   height: 180,
                                   fit: BoxFit.cover,
-                                );
-                              },
-                            )
-                          : Image.asset(
-                              "assets/images/cloth_3.png",
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Image.network(
+                                      "https://www.ever-pretty.com/cdn/shop/products/ES01750TE-R.jpg",
+                                      width: widget.cardWidth,
+                                      height: 180,
+                                      fit: BoxFit.cover,
+                                    );
+                                  },
+                                )
+                              : (RegExp(r'^[A-Za-z0-9+/=]+$').hasMatch(
+                                      widget.product.image_url.split(',').last)
+                                  ? Image.memory(
+                                      base64Decode(widget.product.image_url
+                                          .split(',')
+                                          .last),
+                                      width: widget.cardWidth,
+                                      height: 180,
+                                      fit: BoxFit.cover,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                        return Image.network(
+                                          "https://www.ever-pretty.com/cdn/shop/products/ES01750TE-R.jpg",
+                                          width: widget.cardWidth,
+                                          height: 180,
+                                          fit: BoxFit.cover,
+                                        );
+                                      },
+                                    )
+                                  : Image.network(
+                                      "https://www.ever-pretty.com/cdn/shop/products/ES01750TE-R.jpg",
+                                      width: widget.cardWidth,
+                                      height: 180,
+                                      fit: BoxFit.cover,
+                                    )))
+                          : Image.network(
+                              "https://www.ever-pretty.com/cdn/shop/products/ES01750TE-R.jpg",
                               width: widget.cardWidth,
                               height: 180,
                               fit: BoxFit.cover,

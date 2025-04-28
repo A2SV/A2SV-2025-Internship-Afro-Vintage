@@ -292,16 +292,16 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                                   height: 200,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
-                                    return Image.asset(
-                                      "assets/images/cloth_3.png",
+                                    return Image.network(
+                                      "https://www.ever-pretty.com/cdn/shop/products/ES01750TE-R.jpg",
                                       width: 300,
                                       height: 200,
                                       fit: BoxFit.cover,
                                     );
                                   },
                                 )
-                              : Image.asset(
-                                  "assets/images/cloth_3.png",
+                              : Image.network(
+                                  "https://www.ever-pretty.com/cdn/shop/products/ES01750TE-R.jpg",
                                   width: 300,
                                   height: 200,
                                   fit: BoxFit.cover,

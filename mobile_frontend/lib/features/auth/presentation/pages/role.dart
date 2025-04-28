@@ -64,8 +64,9 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
           final selectedRole = state.data.user!.role;
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('auth_token', state.data.token);
+          await prefs.setString('role', selectedRole!);
           await prefs.setString(
-              'role', selectedRole!); // Save the role to local storage
+              'user_id', state.data.user!.id); // Save the role to local storage
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Success: ${state.data.user!.username}')),
@@ -73,7 +74,7 @@ class _RoleSelectionPageState extends State<RoleSelectionPage> {
 
           // Navigate to the appropriate page based on the role
           if (selectedRole == 'supplier') {
-            Navigator.pushNamed(context, '/consumermarketplace');
+            Navigator.pushNamed(context, '/dashboard');
           } else if (selectedRole == 'reseller') {
             Navigator.pushNamed(context, '/supplier-reseller-marketplace');
           } else if (selectedRole == 'consumer') {
