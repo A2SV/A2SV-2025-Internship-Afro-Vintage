@@ -107,7 +107,7 @@ class _ItemCardState extends State<ItemCard> {
             onPressed: () {
               Navigator.pushNamed(
                 context,
-                '/editproduct',
+                '/editbundle',
                 arguments: {'bundleId': widget.itemId},
               );
             },

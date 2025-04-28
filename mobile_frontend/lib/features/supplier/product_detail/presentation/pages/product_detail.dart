@@ -210,6 +210,10 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text(msg)),
                                   );
+                                  Future.delayed(const Duration(milliseconds: 200), () {
+                                    Navigator.of(context, rootNavigator: true)
+                                        .pushNamedAndRemoveUntil('/mywarehouse', (route) => false);
+                                  });
                                 }
                               } catch (e) {
                                 print('Delete error: \\${e}');

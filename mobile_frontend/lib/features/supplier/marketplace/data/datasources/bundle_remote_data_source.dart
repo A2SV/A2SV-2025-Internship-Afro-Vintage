@@ -19,6 +19,7 @@ class BundleRemoteDataSource {
     if (response.statusCode == 200) {
       final body = json.decode(response.body);
       if (body['success'] == true && body['data'] is List) {
+        print('[DEBUG] Raw bundles data: \\n${body['data']}');
         return (body['data'] as List)
             .map((item) => BundleModel.fromJson(item))
             .toList();

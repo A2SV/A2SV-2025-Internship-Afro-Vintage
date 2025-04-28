@@ -8,7 +8,8 @@ import 'package:mobile_frontend/features/consumer/core/widgets/button.dart';
 
 class CreateBundleForm extends StatefulWidget {
   final BundleRepository repository;
-  const CreateBundleForm({Key? key, required this.repository}) : super(key: key);
+  const CreateBundleForm({Key? key, required this.repository})
+      : super(key: key);
 
   @override
   State<CreateBundleForm> createState() => _CreateBundleFormState();
@@ -42,41 +43,61 @@ class _CreateBundleFormState extends State<CreateBundleForm> {
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() { _loading = true; _error = null; });
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
-      final bundle = BundleRequestModel(
-        title: _titleController.text,
-        sampleImage: _imageController.text,
-        quantity: int.parse(_numberOfItemsController.text),
-        grade: _gradeController.text,
-        price: double.parse(_priceController.text),
-        description: _descriptionController.text,
-        type: _typeController.text,
-        declaredRating: int.parse(_declaredRatingController.text),
-      );
-      await widget.repository.createBundle(
-        name: bundle.title,
-        itemCount: bundle.quantity,
-        type: bundle.type,
-        price: bundle.price,
-        description: bundle.description,
-        imageFiles: [], // No image upload
-        imageUrls: [bundle.sampleImage],
-        grade: bundle.grade,
-        declaredRating: bundle.declaredRating,
-      );
+      final bundle = {
+        'title': _titleController.text.isEmpty ? null : _titleController.text,
+        'sample_image':
+            _imageController.text.isEmpty ? null : _imageController.text,
+        'number_of_items': _numberOfItemsController.text.isEmpty
+            ? null
+            : int.parse(_numberOfItemsController.text),
+        'grade': _gradeController.text.isEmpty ? 'A' : _gradeController.text,
+        'price': _priceController.text.isEmpty
+            ? null
+            : double.parse(_priceController.text),
+        'description': _descriptionController.text.isEmpty
+            ? null
+            : _descriptionController.text,
+        'size_range':
+            'S-XL', // You may want to make this a field in the form if needed
+        'clothing_types': [
+          'T-Shirt',
+          'Jeans'
+        ], // You may want to make this a field in the form if needed
+        'type': _typeController.text.isEmpty ? null : _typeController.text,
+        'estimated_breakdown': {
+          'T-Shirt': 4,
+          'Jeans': 6
+        }, // You may want to make this a field in the form if needed
+        'declared_rating': _declaredRatingController.text.isEmpty
+            ? null
+            : int.parse(_declaredRatingController.text),
+      };
+      print('[DEBUG] Bundle request body:');
+      print(bundle);
+      await widget.repository.api.post('/bundles', body: bundle);
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/consumermarketplace');
+        Navigator.pushReplacementNamed(context, '/mywarehouse');
       }
     } catch (e) {
-      setState(() { _error = 'Failed to create bundle: $e'; });
+      print('[DEBUG] Error creating bundle: $e');
+      setState(() {
+        _error = 'Failed to create bundle: $e';
+      });
     } finally {
-      setState(() { _loading = false; });
+      setState(() {
+        _loading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final Color secondaryColor = Theme.of(context).colorScheme.secondary;
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
@@ -94,7 +115,6 @@ class _CreateBundleFormState extends State<CreateBundleForm> {
               label: 'Sample Image URL',
               controller: _imageController,
               fieldKey: const Key('imageField'),
-              validator: (v) => v == null || v.isEmpty ? 'Required' : null,
             ),
             CustomTextField(
               label: 'Number of Items',
@@ -104,7 +124,8 @@ class _CreateBundleFormState extends State<CreateBundleForm> {
               validator: (v) => v == null || v.isEmpty ? 'Required' : null,
             ),
             DropdownButtonFormField<String>(
-              value: _gradeController.text.isEmpty ? 'A' : _gradeController.text,
+              value:
+                  _gradeController.text.isEmpty ? 'A' : _gradeController.text,
               decoration: const InputDecoration(
                 labelText: 'Grade',
                 border: OutlineInputBorder(),
@@ -119,12 +140,6 @@ class _CreateBundleFormState extends State<CreateBundleForm> {
                 setState(() {
                   _gradeController.text = newValue ?? 'A';
                 });
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please select a grade';
-                }
-                return null;
               },
             ),
             CustomTextField(
@@ -181,34 +196,32 @@ class _CreateBundleFormState extends State<CreateBundleForm> {
                 Expanded(
                   child: SizedBox(
                     height: 48,
-                    child: OutlinedButton(
-                      onPressed: _loading ? null : () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF979797)),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(
-                          color: Color(0xFF6F3DE9),
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                        ),
-                      ),
+                    child: UnColoredButton(
+                      label: 'Cancel',
+                      onPressed: () {
+                        if (!_loading) Navigator.pop(context);
+                      },
                     ),
                   ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
                   child: SizedBox(
-                    height: 48,
-                    child: PrimaryButton(
-                      label: 'Create Bundle',
-                      onPressed: _loading ? () {} : () => _submit(),
-                    ),
-                  ),
+                      height: 48,
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 70,
+                        child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: secondaryColor,
+                            ),
+                            onPressed: _loading ? () {} : () => _submit(),
+                            child: const Text(
+                              'Create Bundle',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 16),
+                            )),
+                      )),
                 ),
               ],
             ),

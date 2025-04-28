@@ -104,13 +104,6 @@ class _SupplierMarketPlaceState extends State<SupplierMarketPlace> {
                       const SizedBox(height: 25),
                       SearchMarket(products: _bundles),
                       const SizedBox(height: 25),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: ElevatedButton(
-                          onPressed: _goToCreateBundle,
-                          child: const Text('Create Bundle'),
-                        ),
-                      ),
                       Expanded(
                         child: GridItem(
                           items: _bundles
@@ -131,6 +124,12 @@ class _SupplierMarketPlaceState extends State<SupplierMarketPlace> {
                   ),
                 ),
       bottomNavigationBar: BottomNavBar(onCartTap: _viewCart),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _goToCreateBundle,
+        backgroundColor: const Color(0xFF008080),
+        child: const Icon(Icons.add, color: Colors.white),
+        tooltip: 'Create Bundle',
+      ),
     );
   }
 }
