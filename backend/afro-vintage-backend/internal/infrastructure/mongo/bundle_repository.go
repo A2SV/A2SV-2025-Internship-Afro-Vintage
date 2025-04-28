@@ -8,6 +8,7 @@ import (
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/internal/domain/bundle"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type BundleRepository struct {
@@ -62,7 +63,11 @@ func (r *BundleRepository) ListBundles(ctx context.Context, supplierID string) (
 
 func (r *BundleRepository) ListAvailableBundles(ctx context.Context) ([]*bundle.Bundle, error) {
 	var bundles []*bundle.Bundle
-	cursor, err := r.collection.Find(ctx, bson.M{"status": "available"})
+
+	opts := options.Find()
+	opts.SetSort(bson.D{{"createdat", -1}}) // ✅ Newest bundles first
+
+	cursor, err := r.collection.Find(ctx, bson.M{"status": "available"}, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +90,7 @@ func (r *BundleRepository) ListAvailableBundles(ctx context.Context) ([]*bundle.
 
 func (r *BundleRepository) ListPurchasedByReseller(ctx context.Context, resellerID string) ([]*bundle.Bundle, error) {
 	fmt.Printf("🔍 Fetching purchased bundles for reseller: %s\n", resellerID)
-	
+
 	var bundles []*bundle.Bundle
 	cursor, err := r.collection.Find(ctx, bson.M{"resellerid": resellerID, "status": "purchased"})
 	if err != nil {

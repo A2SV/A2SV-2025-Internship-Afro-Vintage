@@ -322,8 +322,7 @@ func (c *BundleController) UpdateBundle(ctx *gin.Context) {
 		Data:    resp,
 	})
 }
-
-func (c *BundleController) GetBundle(ctx *gin.Context) { // Added
+func (c *BundleController) GetBundle(ctx *gin.Context) {
 	// Extract Supplier ID from JWT
 	supplierID, exists := ctx.Get("userID")
 	if !exists {
@@ -353,7 +352,6 @@ func (c *BundleController) GetBundle(ctx *gin.Context) { // Added
 		return
 	}
 
-	// Extract bundle ID from URL
 	id := ctx.Param("id")
 	if id == "" {
 		ctx.JSON(http.StatusBadRequest, common.APIResponse{
@@ -363,7 +361,7 @@ func (c *BundleController) GetBundle(ctx *gin.Context) { // Added
 		return
 	}
 
-	// Fetch the bundle using the use case
+	// Fetch the bundle
 	b, err := c.bundleUsecase.GetBundleByID(ctx, supplierIDStr, id)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, common.APIResponse{
@@ -373,14 +371,22 @@ func (c *BundleController) GetBundle(ctx *gin.Context) { // Added
 		return
 	}
 
-	// Map to response DTO
+	// ✅ Map ALL fields properly
 	resp := models.BundleResponse{
-		ID:     b.ID,
-		Title:  b.Title,
-		Grade:  b.Grade,
-		Price:  b.Price,
-		Type:   string(b.SortingLevel),
-		Status: b.Status,
+		ID:                 b.ID,
+		Title:              b.Title,
+		SampleImage:        b.SampleImage,
+		Quantity:           b.Quantity,
+		Grade:              b.Grade,
+		Description:        b.Description,
+		SizeRange:          b.SizeRange,
+		Type:               b.Type,
+		Price:              b.Price,
+		Status:             b.Status,
+		EstimatedBreakdown: b.EstimatedBreakdown,
+		DeclaredRating:     b.DeclaredRating,
+		SortingLevel:       string(b.SortingLevel),
+		CreatedAt:          b.CreatedAt,
 	}
 
 	ctx.JSON(http.StatusOK, common.APIResponse{
@@ -393,10 +399,18 @@ func (c *BundleController) GetBundle(ctx *gin.Context) { // Added
 func (c *BundleController) ListAvailableBundles(ctx *gin.Context) {
 	bundles, err := c.bundleUsecase.ListAvailableBundles(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.JSON(http.StatusInternalServerError, common.APIResponse{
+			Success: false,
+			Message: "failed to fetch available bundles",
+		})
 		return
 	}
-	ctx.JSON(http.StatusOK, bundles)
+
+	ctx.JSON(http.StatusOK, common.APIResponse{
+		Success: true,
+		Message: "available bundles fetched successfully",
+		Data:    bundles,
+	})
 }
 
 func (c *BundleController) GetBundleDetail(ctx *gin.Context) {

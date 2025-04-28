@@ -47,10 +47,11 @@ const Sidebar = () => {
 
   const resellerNavItems = [
     { name: "Dashboard", href: "/reseller/dashboard", icon: LayoutDashboard },
+    { name: "Marketplace", href: "/reseller/marketplace", icon: ShoppingBag }, // ✅
+    { name: "My Warehouse", href: "/reseller/warehouse", icon: Package },      // ✅
     { name: "Orders", href: "/reseller/orders", icon: ShoppingCart },
-    { name: "Settings", href: "/reseller/settings", icon: Settings },
   ];
-
+  
   // Determine which nav items to display based on the role
   let navItems = [];
 

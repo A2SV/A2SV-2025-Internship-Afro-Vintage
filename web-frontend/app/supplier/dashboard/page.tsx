@@ -66,7 +66,7 @@ export default function SupplierDashboardPage() {
           return;
         }
 
-        const res = await fetch('http://localhost:8080/supplier/dashboard', {
+        const res = await fetch('http://localhost:8081/supplier/dashboard', {
           headers: { Authorization: `Bearer ${token}` },
         });
 

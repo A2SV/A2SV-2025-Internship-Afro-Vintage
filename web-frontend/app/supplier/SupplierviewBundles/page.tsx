@@ -23,14 +23,14 @@ export default function ViewBundlesPage() {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
 
-        const res = await fetch('http://localhost:8080/bundles', {
+        const res = await fetch('http://localhost:8081/bundles', {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         if (!res.ok) throw new Error('Failed to fetch bundles');
 
         const result = await res.json();
-setBundles(result.data); // ✅ Corrected here
+        setBundles(result?.data || []); // ✅ Corrected here
       } catch (err) {
         console.error('❌ Error fetching bundles:', err);
         setError(true);
@@ -50,7 +50,7 @@ setBundles(result.data); // ✅ Corrected here
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found');
 
-      const res = await fetch(`http://localhost:8080/bundles/${bundleId}`, {
+      const res = await fetch(`http://localhost:8081/bundles/${bundleId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,

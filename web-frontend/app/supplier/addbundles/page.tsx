@@ -94,7 +94,7 @@ export default function AddBundlePage() {
         estimated_breakdown: null,
       };
 
-      const res = await fetch("http://localhost:8080/bundles", {
+      const res = await fetch("http://localhost:8081/bundles", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

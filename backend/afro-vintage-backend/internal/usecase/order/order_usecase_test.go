@@ -140,6 +140,11 @@ type MockWarehouseRepo struct {
 	mock.Mock
 }
 
+// HasResellerReceivedWarehouseItem implements warehouse.Repository.
+func (m *MockWarehouseRepo) HasResellerReceivedWarehouseItem(ctx context.Context, resellerID string, warehouseItemID string) (bool, error) {
+	panic("unimplemented")
+}
+
 func (m *MockWarehouseRepo) AddItem(ctx context.Context, item *warehouse.WarehouseItem) error {
 	args := m.Called(ctx, item)
 	return args.Error(0)

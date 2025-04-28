@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/gin-gonic/gin"
 
 	"github.com/Zeamanuel-Admasu/afro-vintage-backend/config"
@@ -104,6 +107,11 @@ func main() {
 	routes.SetupUploadRoutes(r)               // ✅ Register Upload Route
 	r.Static("/uploads", "./uploads")
 
-	// Run server
-	r.Run(":8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080" // default if PORT not set
+	}
+
+	// Start Server
+	r.Run(fmt.Sprintf(":%s", port))
 }

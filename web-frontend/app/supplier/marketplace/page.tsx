@@ -21,7 +21,7 @@ export default function MarketplacePage() {
     const fetchBundles = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:8080/bundles/available', {
+        const res = await fetch('http://localhost:8081/bundles/available', {
           headers: {
             Authorization: `Bearer ${token}`,
           },

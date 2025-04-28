@@ -49,7 +49,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, user }: ProfileS
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await axios.post('http://localhost:8080/api/upload', formData, {
+    const res = await axios.post('http://localhost:8081/api/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return res.data.image_url;
@@ -69,7 +69,7 @@ export default function ProfileSettingsModal({ isOpen, onClose, user }: ProfileS
       }
 
       const res = await axios.put(
-        'http://localhost:8080/api/users/profile',
+        'http://localhost:8081/api/users/profile',
         { name, username, email, image_url: uploadedImageUrl },
         {
           headers: {

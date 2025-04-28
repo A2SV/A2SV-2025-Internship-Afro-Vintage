@@ -23,7 +23,7 @@ const OrderTable: React.FC = () => {
         const token = localStorage.getItem('token');
         if (!token) throw new Error('No token found');
 
-        const response = await fetch('http://localhost:8080/orders/supplier/history', {
+        const response = await fetch('http://localhost:8081/orders/supplier/history', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -36,7 +36,7 @@ const OrderTable: React.FC = () => {
         const data = await response.json();
         console.log('🛠 Server Response:', data);
 
-        setOrders(data.data.orders); // ✅ correctly setting orders
+        setOrders(data?.data?.orders || []); // ✅ correctly setting orders
       } catch (err) {
         console.error('Error fetching orders:', err);
         setError(true);
