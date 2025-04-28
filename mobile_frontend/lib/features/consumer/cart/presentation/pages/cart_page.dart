@@ -144,30 +144,36 @@ class _CartCardState extends State<CartCard> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.all(15),
+                // padding: const EdgeInsets.all(15),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: widget.imageURL != null && widget.imageURL!.isNotEmpty
-                    ? Image.network(
-                        widget.imageURL!,
-                        width: 80,
-                        height: 80,
-                        errorBuilder: (context, error, stackTrace) {
-                          // Fallback to asset image if network image fails
-                          return Image.asset(
-                            "assets/images/cloth_3.png",
-                            width: 80,
-                            height: 80,
-                          );
-                        },
-                      )
-                    : Image.asset(
-                        "assets/images/cloth_3.png", // Default asset image
-                        width: 80,
-                        height: 80,
-                      ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: widget.imageURL != null && widget.imageURL!.isNotEmpty
+                      ? Image.network(
+                          widget.imageURL!,
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            // Fallback to asset image if network image fails
+                            return Image.network(
+                              "https://www.ever-pretty.com/cdn/shop/products/ES01750TE-R.jpg",
+                              width: 80,
+                              height: 80,
+                              fit: BoxFit.cover,
+                            );
+                          },
+                        )
+                      : Image.network(
+                          "https://www.ever-pretty.com/cdn/shop/products/ES01750TE-R.jpg", // Default asset image
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                        ),
+                ),
               ),
               const SizedBox(width: 16),
               SizedBox(

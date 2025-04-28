@@ -29,7 +29,7 @@ class ProductModel extends Product {
       status: json['status'] ?? 'Unavailable',
       seller_id: json['seller_id']?.toString() ?? '',
       rating: json['rating'] != null
-          ? (double.tryParse(json['rating'].toString()) ?? 0.0) / 20
+          ? (double.tryParse(json['rating'].toString()) ?? 0.0)
           : 0.0, // Divide rating by 20
       description: json['description'] ?? 'No description available',
       type: json['type'] ?? 'Unknown',

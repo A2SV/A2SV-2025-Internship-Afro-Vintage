@@ -1,17 +1,21 @@
 import { ItemPreview, MarketplaceFilters, MarketplaceResponse } from '@/types/marketplace';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://a2sv-2025-internship-afro-vintage.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
 export const marketplaceApi = {
   async getProducts(filters: MarketplaceFilters): Promise<MarketplaceResponse> {
     try {
-      console.log('Fetching products with URL:', API_URL);
       const queryParams = new URLSearchParams({
         page: filters.page?.toString() || '1',
         limit: filters.limit?.toString() || '10',
+        minPrice: filters.minPrice?.toString() || '0',
+        maxPrice: filters.maxPrice?.toString() || '1000',
+        type: filters.type || '',
+        size: filters.size?.join(',') || '',
+        grade: filters.grade?.join(',') || '',
+        search: filters.search || ''
       });
-
       const token = localStorage.getItem('token');
       if (!token) {
         throw new Error('Authentication required');
@@ -35,17 +39,12 @@ export const marketplaceApi = {
       }
 
       const data = await response.json();
-      console.log('Raw API response data:', JSON.stringify(data, null, 2));
-      console.log('Sample product fields:', data.length > 0 ? Object.keys(data[0]) : 'No products');
+      // Handle direct array response from backend
+      const products = Array.isArray(data) ? data : [];
 
-      // Handle both array response and object response with products field
-      const products = Array.isArray(data) ? data : (data.products || []);
-      console.log('Processed products:', products);
 
       const mappedItems = products.map((item: any) => {
-        console.log('Processing item:', item);
         const imageUrl = item.image_url;
-        console.log('Image URL from API:', imageUrl);
 
         return {
           id: item.id || item._id,
@@ -65,7 +64,7 @@ export const marketplaceApi = {
 
       return {
         items: mappedItems,
-        total: products.length,
+        total: mappedItems.length,
         page: filters.page || 1,
         limit: filters.limit || 10
       };

@@ -11,6 +11,8 @@ class GridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final cardWidth = (screenWidth - 48) / 2;
     return BlocBuilder<ProductBloc, ProductState>(
       builder: (context, state) {
         if (state is Loading) {
@@ -25,18 +27,16 @@ class GridItem extends StatelessWidget {
 
           return Expanded(
             child: GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.6,
-                mainAxisSpacing: 20,
-                crossAxisSpacing: 15,
+                childAspectRatio: cardWidth / 290,
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 12,
               ),
               itemCount: products.length,
               itemBuilder: (context, index) {
                 final product = products[index];
-                return ItemCard(
-                  product: product,
-                );
+                return ItemCard(product: product, cardWidth: cardWidth);
               },
             ),
           );

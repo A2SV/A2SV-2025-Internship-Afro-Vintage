@@ -19,10 +19,10 @@ export default function Home() {
 
   const handleChoice = (choice: string) => {
     if (choice === "login") {
-      router.push("login");
+      router.push("auth/login");
       // After successful login
     } else if (choice === "Sign up") {
-      router.push("signup"); // After logout
+      router.push("auth/signup"); // After logout
     }
   };
   return (
@@ -32,7 +32,7 @@ export default function Home() {
         <div className="container mx-auto flex justify-between items-center py-4 px-6">
           <div className="flex items-center gap-2">
             <Image
-              src="/AfroV.svg"
+              src="/images/logo.png"
               alt="Afro Vintage Logo"
               width={100}
               height={100}
@@ -89,7 +89,7 @@ export default function Home() {
         </div>
         <div className="mt-8 md:mt-0 md:w-1/2 flex justify-center">
           <Image
-            src="/hero-dress.png"
+            src="/images/hero-dress.png"
             alt="Afro Vintage Hero"
             width={300}
             height={300}
@@ -107,7 +107,7 @@ export default function Home() {
           </p>
           <div className="flex justify-center">
             <Image
-              src="/Clients-Logos.png"
+              src="/images/Clients-Logos.png"
               alt="Clients Logos"
               width={1200}
               height={600}
@@ -124,7 +124,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="text-center">
             <Image
-              src="/role1.svg"
+              src="/images/role1.svg"
               alt="Supplier"
               width={50}
               height={50}
@@ -138,7 +138,7 @@ export default function Home() {
           </div>
           <div className="text-center">
             <Image
-              src="/role2.svg"
+              src="/images/role2.svg"
               alt="Reseller"
               width={50}
               height={50}
@@ -152,7 +152,7 @@ export default function Home() {
           </div>
           <div className="text-center">
             <Image
-              src="/role3.svg"
+              src="/images/role3.svg"
               alt="Consumer"
               width={50}
               height={50}
@@ -171,7 +171,7 @@ export default function Home() {
       <section className="container mx-auto flex flex-col md:flex-row items-center justify-between py-16 px-6">
         <div className="md:w-1/2 flex justify-center">
           <Image
-            src="/hero-dress.png"
+            src="/images/hero-dress.png"
             alt="Empowering Africa"
             width={300}
             height={300}
@@ -234,7 +234,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
           <div>
             <Image
-              src="/hero-dress.png"
+              src="/images/hero-dress.png"
               alt="Fashion Marketplace"
               width={300}
               height={300}
@@ -262,7 +262,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center mt-16">
           <div>
             <Image
-              src="/hero-dress.png"
+              src="/images/hero-dress.png"
               alt="Sponsor Logo"
               width={300}
               height={300}
@@ -288,15 +288,15 @@ export default function Home() {
               British Dragon Boat Racing Association
             </p>
             <div className="flex items-center gap-4 mt-4">
-              <Image src="/file.svg" alt="File Icon" width={24} height={24} />
-              <Image src="/globe.svg" alt="Globe Icon" width={24} height={24} />
+              <Image src="/images/file.svg" alt="File Icon" width={24} height={24} />
+              <Image src="/images/globe.svg" alt="Globe Icon" width={24} height={24} />
               <Image
-                src="/window.svg"
+                src="/images/window.svg"
                 alt="Window Icon"
                 width={24}
                 height={24}
               />
-              <Image src="/next.svg" alt="Next Icon" width={24} height={24} />
+              <Image src="/images/next.svg" alt="Next Icon" width={24} height={24} />
               <a href="#" className="text-teal-700 font-bold">
                 Meet all Sponsors
               </a>
@@ -318,7 +318,7 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="bg-white shadow-md rounded-lg p-4 text-center">
             <Image
-              src="/hero-dress.png"
+              src="/images/hero-dress.png"
               alt="Product 1"
               width={200}
               height={200}
@@ -331,7 +331,7 @@ export default function Home() {
           </div>
           <div className="bg-white shadow-md rounded-lg p-4 text-center">
             <Image
-              src="/dress2.png"
+              src="/images/dress2.png"
               alt="Product 2"
               width={200}
               height={200}
@@ -344,7 +344,7 @@ export default function Home() {
           </div>
           <div className="hero-dress-white shadow-md rounded-lg p-4 text-center">
             <Image
-              src="/hero-dress.png"
+              src="/images/hero-dress.png"
               alt="Product 3"
               width={200}
               height={200}

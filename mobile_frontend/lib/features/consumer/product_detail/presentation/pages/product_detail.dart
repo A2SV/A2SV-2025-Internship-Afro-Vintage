@@ -209,16 +209,24 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                               final cartBloc = context.read<CartBloc>();
                               cartBloc.add(
                                   AddToCartEvent(productId: widget.product.id));
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      '${widget.product.title} added to cart!'),
-                                ),
-                              );
                             },
-                            child: const Text(
-                              "Add to Cart",
-                              style: TextStyle(color: Colors.white),
+                            child: BlocBuilder<CartBloc, CartState>(
+                              builder: (context, state) {
+                                if (state is Loading) {
+                                  return const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  );
+                                }
+                                return const Text(
+                                  "Add to Cart",
+                                  style: TextStyle(color: Colors.white),
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -284,16 +292,16 @@ class _ProductDetailPageState extends State<ProductDetailPage>
                                   height: 200,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) {
-                                    return Image.asset(
-                                      "assets/images/cloth_3.png",
+                                    return Image.network(
+                                      "https://www.ever-pretty.com/cdn/shop/products/ES01750TE-R.jpg",
                                       width: 300,
                                       height: 200,
                                       fit: BoxFit.cover,
                                     );
                                   },
                                 )
-                              : Image.asset(
-                                  "assets/images/cloth_3.png",
+                              : Image.network(
+                                  "https://www.ever-pretty.com/cdn/shop/products/ES01750TE-R.jpg",
                                   width: 300,
                                   height: 200,
                                   fit: BoxFit.cover,

@@ -11,4 +11,5 @@ export interface Order {
   estimatedDeliveryTime?: string;
   imageUrl?: string;
   hasReview?: boolean;
+  resellerName?: string;
 } 
