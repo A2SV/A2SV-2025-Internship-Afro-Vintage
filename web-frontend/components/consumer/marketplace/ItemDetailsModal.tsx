@@ -53,6 +53,7 @@ export default function ItemDetailsModal({ item, onClose, isOpen }: ItemDetailsM
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
+          aria-label="close"
         >
           <X className="w-6 h-6" />
         </button>

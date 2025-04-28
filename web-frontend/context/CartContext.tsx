@@ -67,7 +67,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       ? cartItems.filter(item => selectedItems.includes(item.id))
       : cartItems;
 
-    const result = await cartApi.checkout(itemsToCheckout.map(item => item.id));
+    const result = await cartApi.checkout();
     if (result.success) {
       // Only remove the checked out items from the cart
       setCartItems(prev => prev.filter(item => !selectedItems?.includes(item.id)));
