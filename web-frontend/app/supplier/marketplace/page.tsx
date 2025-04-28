@@ -16,7 +16,6 @@ export default function MarketplacePage() {
   const [bundles, setBundles] = useState<Bundle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-
   useEffect(() => {
     const fetchBundles = async () => {
       try {
@@ -26,11 +25,11 @@ export default function MarketplacePage() {
             Authorization: `Bearer ${token}`,
           },
         });
-
+  
         if (!res.ok) throw new Error('Failed to fetch bundles');
-
-        const data: Bundle[] = await res.json();
-        setBundles(data);
+  
+        const result = await res.json(); // 👈
+        setBundles(result.data);         // 👈 not just result
       } catch (err) {
         console.error('❌ Error fetching bundles:', err);
         setError(true);
@@ -38,10 +37,10 @@ export default function MarketplacePage() {
         setLoading(false);
       }
     };
-
+  
     fetchBundles();
   }, []);
-
+  
   if (loading) {
     return <div className="text-center text-lg mt-10">Loading marketplace...</div>;
   }
