@@ -31,6 +31,11 @@ import 'package:mobile_frontend/features/reseller/marketplace/domain/usecases/ge
 import 'package:mobile_frontend/features/reseller/marketplace/domain/usecases/purchase_bundle.dart';
 import 'package:mobile_frontend/features/reseller/marketplace/domain/usecases/search_bundles_by_title.dart';
 import 'package:mobile_frontend/features/reseller/marketplace/presentation/blocs/marketplace_bloc.dart';
+import 'package:mobile_frontend/features/reseller/reseller_order/data/datasources/order_remote_data_source.dart';
+import 'package:mobile_frontend/features/reseller/reseller_order/data/repositories/order_repository_impl.dart';
+import 'package:mobile_frontend/features/reseller/reseller_order/domain/repository/reseller_order_repository.dart';
+import 'package:mobile_frontend/features/reseller/reseller_order/domain/usecases/get_order_history.dart';
+import 'package:mobile_frontend/features/reseller/reseller_order/presentation/bloc/reseller_order_bloc.dart';
 import 'package:mobile_frontend/features/reseller/unpack/data/datasources/unpack_remote_data_source.dart';
 import 'package:mobile_frontend/features/reseller/unpack/data/repositories/unpack_repository_impl.dart';
 import 'package:mobile_frontend/features/reseller/unpack/domain/repository/unpack_repository.dart';
@@ -54,6 +59,12 @@ import 'package:mobile_frontend/features/consumer/marketplace/data/repositories/
 import 'package:mobile_frontend/features/consumer/marketplace/domain/repositories/product_repository.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/domain/usecases/get_products.dart';
 import 'package:mobile_frontend/features/consumer/marketplace/presentation/bloc/product_bloc.dart';
+import 'package:mobile_frontend/features/profile/data/datasources/profile_remote_data_source.dart';
+import 'package:mobile_frontend/features/profile/data/datasources/profile_remote_data_source_impl.dart';
+import 'package:mobile_frontend/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:mobile_frontend/features/profile/domain/repositories/profile_repository.dart';
+import 'package:mobile_frontend/features/profile/domain/usecases/get_profile.dart';
+import 'package:mobile_frontend/features/profile/presentation/bloc/profile_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -216,6 +227,27 @@ Future<void> init() async {
     ),
   );
 
+  // Bloc
+  sl.registerFactory(
+    () => ResellerOrderBloc(getOrderHistory: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetOrderHistory(sl()));
+
+  // Repository
+  sl.registerLazySingleton<ResellerOrderRepository>(
+    () => ResellerOrderRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<OrderRemoteDataSource>(
+    () => OrderRemoteDataSourceImpl(
+      client: sl(),
+      sharedPreferences: sl(),
+    ),
+  );
+
   // Get SharedPreferences instance
   final sharedPreferences = await SharedPreferences.getInstance();
   sl.registerLazySingleton(() => sharedPreferences);
@@ -225,6 +257,28 @@ Future<void> init() async {
     () => BundleRemoteDataSourceImpl(
       client: sl(),
       sharedPreferences: sl<SharedPreferences>(),
+    ),
+  );
+
+  // Profile Feature
+  // Bloc
+  sl.registerFactory(
+    () => ProfileBloc(getProfile: sl()),
+  );
+
+  // Use cases
+  sl.registerLazySingleton(() => GetProfile(sl()));
+
+  // Repository
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(remoteDataSource: sl()),
+  );
+
+  // Data sources
+  sl.registerLazySingleton<ProfileRemoteDataSource>(
+    () => ProfileRemoteDataSourceImpl(
+      client: sl(),
+      sharedPreferences: sl(),
     ),
   );
 

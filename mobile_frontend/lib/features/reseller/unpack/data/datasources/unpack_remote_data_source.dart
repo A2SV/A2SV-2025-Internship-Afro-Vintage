@@ -17,7 +17,7 @@ class UnpackRemoteDataSourceImpl implements UnpackRemoteDataSource {
   UnpackRemoteDataSourceImpl({
     required this.client,
     required this.sharedPreferences,
-    this.baseUrl = "https://a2sv-2025-internship-afro-vintage.onrender.com",
+    this.baseUrl = "https://2kps99nm-8081.uks1.devtunnels.ms",
   });
 
   Map<String, String> get _headers {
@@ -31,6 +31,8 @@ class UnpackRemoteDataSourceImpl implements UnpackRemoteDataSource {
   @override
   Future<void> unpackBundleItem(UnpackBundleModel item) async {
     try {
+      final jsonData = await item.toJson();
+    print('Sending payload: $jsonData');
       // Create the request payload
       final payload = {
         'title': item.clothName,
@@ -39,14 +41,16 @@ class UnpackRemoteDataSourceImpl implements UnpackRemoteDataSource {
         'type': item.category,
         'grade': item.status,
         'price': item.price,
-        'image_url': item.imageUrl,
+        'image_url': item.imageFile,
         'bundle_id': item.bundleId,
+        'rating': item.rating,
+        'size': item.size,
       };
-
+      print('Payload: $payload');
       final response = await client.post(
         Uri.parse('$baseUrl/products'),
         headers: _headers,
-        body: json.encode(payload),
+        body: json.encode(jsonData),
       );
 
       print('Response status: ${response.statusCode}');

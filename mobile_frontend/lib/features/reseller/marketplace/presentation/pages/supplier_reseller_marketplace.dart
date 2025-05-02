@@ -25,7 +25,7 @@ class SupplierResellerMarketPlacePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Header(),
+              // const Header(),
               const SizedBox(height: 25),
               const SearchSection(),
               const SizedBox(height: 25),

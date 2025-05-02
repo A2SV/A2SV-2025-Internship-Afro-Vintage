@@ -1,6 +1,10 @@
-// lib/features/reseller/unpack/data/models/unpack_item_model.dart
+// lib/features/reseller/unpack/data/models/unpack_bundle_model.dart
+import 'dart:convert';
+import 'dart:io';
 import '../../domain/entities/unpack_bundle.dart';
+import 'package:image_picker/image_picker.dart';
 
+// lib/features/reseller/unpack/data/models/unpack_bundle_model.dart
 class UnpackBundleModel extends UnpackBundle {
   UnpackBundleModel({
     required String clothName,
@@ -8,39 +12,36 @@ class UnpackBundleModel extends UnpackBundle {
     required String status,
     required double price,
     required String description,
-    required String imageUrl,
+    required XFile imageFile,
     required String bundleId,
+    required String size,
+    required int rating,
   }) : super(
           clothName: clothName,
           category: category,
           status: status,
           price: price,
           description: description,
-          imageUrl: imageUrl,
+          imageFile: imageFile,
           bundleId: bundleId,
+          size: size,
+          rating: rating,
         );
 
-  factory UnpackBundleModel.fromJson(Map<String, dynamic> json) {
-    return UnpackBundleModel(
-      clothName: json['clothName'],
-      category: json['category'],
-      status: json['status'],
-      price: json['price'].toDouble(),
-      description: json['description'],
-      imageUrl: json['imageUrl'],
-      bundleId: json['bundleId'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
+  Future<Map<String, dynamic>> toJson() async {
+    final bytes = await imageFile.readAsBytes();
+    final base64Image = base64Encode(bytes);
+    
     return {
-      'clothName': clothName,
-      'category': category,
-      'status': status,
-      'price': price,
+      'title': clothName,  // Changed from clothName to title
       'description': description,
-      'imageUrl': imageUrl,
-      'bundleId': bundleId,
+      'size': size,
+      'type': category,  // Changed from category to type
+      'grade': status,   // Changed from status to grade
+      'price': price,
+      'image_url': base64Image,  // Changed from image_url to sample_image
+      'bundle_id': bundleId,  // Changed from bundleId to bundle_id
+      'rating': rating,
     };
   }
 }

@@ -30,8 +30,10 @@ class _UnpackBundlePageState extends State<UnpackBundlePage> {
   final _clothNameController = TextEditingController();
   final _priceController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _ratingController = TextEditingController();
   String? _selectedCategory;
   String? _selectedStatus;
+  String? _selectedSize;
   XFile? _imageFile;
   bool _isLoading = false;
 
@@ -42,6 +44,7 @@ class _UnpackBundlePageState extends State<UnpackBundlePage> {
     'Accessories'
   ];
   final List<String> _statuses = ['Type A', 'Type B', 'Type C'];
+  final List<String> _sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
   @override
   void dispose() {
@@ -97,10 +100,10 @@ class _UnpackBundlePageState extends State<UnpackBundlePage> {
                     status: _selectedStatus!,
                     price: double.parse(_priceController.text),
                     description: _descriptionController.text,
-                    imageUrl: kIsWeb 
-                      ? _imageFile!.path
-                      : base64Encode(File(_imageFile!.path).readAsBytesSync()),
+                    imageFile: _imageFile!,
                     bundleId: widget.bundle.id,
+                    size: _selectedSize!,
+                    rating: int.parse(_ratingController.text),
                   );
                   context.read<UnpackBloc>().add(UnpackBundleItemEvent(unpackItem));
                 },
@@ -260,6 +263,15 @@ class _UnpackBundlePageState extends State<UnpackBundlePage> {
         ),
         const SizedBox(height: 15),
         _buildDropdownField(
+          label: 'Size',
+          value: _selectedSize,
+          items: _sizes,
+          onChanged: (value) {
+            setState(() => _selectedSize = value);
+          },
+        ),
+        const SizedBox(height: 15),
+        _buildDropdownField(
           label: 'Status',
           value: _selectedStatus,
           items: _statuses,
@@ -278,6 +290,22 @@ class _UnpackBundlePageState extends State<UnpackBundlePage> {
             }
             if (double.tryParse(value) == null) {
               return 'Please enter a valid number';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 15),
+        _buildTextField(
+          label: 'Rating (0-100)',
+          controller: _ratingController,
+          keyboardType: TextInputType.number,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a rating';
+            }
+            final rating = int.tryParse(value);
+            if (rating == null || rating < 0 || rating > 100) {
+              return 'Please enter a rating between 0 and 100';
             }
             return null;
           },

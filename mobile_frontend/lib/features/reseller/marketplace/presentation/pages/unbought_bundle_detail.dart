@@ -40,7 +40,7 @@ class UnboughtBundleDetail extends StatelessWidget {
                   top: 16,
                   left: 16,
                   child: GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () => Navigator.pushNamed(context, '/supplier-reseller-marketplace'),
                     child: Container(
                       width: 32,
                       height: 32,

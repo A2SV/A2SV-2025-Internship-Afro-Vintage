@@ -28,8 +28,10 @@ class UnpackRepositoryImpl implements UnpackRepository {
           status: item.status,
           price: item.price,
           description: item.description,
-          imageUrl: item.imageUrl,
+          imageFile: item.imageFile,
           bundleId: item.bundleId,
+          size: item.size, // Add this
+          rating: item.rating,
         );
         
         await remoteDataSource.unpackBundleItem(unpackItemModel);
